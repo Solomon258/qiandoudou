@@ -7,6 +7,12 @@ spring:
   application:
     name: qiandoudou-backend
 
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/qiandoudou?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+#    username: root
+#    password: root
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://8.148.206.18:3306/qiandoudou?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
@@ -61,6 +67,12 @@ ai:
     base-url: https://api.openai.com/v1
     api-key: your-api-key-here
     model: gpt-3.5-turbo
+  # 字节跳动API配置
+  bytedance:
+    api-key: "b54d7870-6458-4594-b119-e64f66077413"
+    model: "doubao-seed-1-6-vision-250815"
+    enabled: true
+  # 原有图生文API配置（作为备用）
   image-to-text:
     api-url: http://113.45.231.186:1236/generate
 

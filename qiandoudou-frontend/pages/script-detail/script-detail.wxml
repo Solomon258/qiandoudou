@@ -44,49 +44,63 @@
   <view wx:else class="script-detail-page">
     <!-- 头部导航 -->
     <view class="detail-header">
-      <view class="back-button" bindtap="goBack">
-        <text class="back-icon">‹</text>
-        <text class="back-text">剧本攒</text>
-      </view>
+      <text class="page-title">{{selectedScript.title}}</text>
     </view>
 
-    <!-- 剧本标题和进度 -->
-    <view class="script-title-section">
+    <!-- 剧本标题和进度 - 已隐藏 -->
+    <!-- <view class="script-title-section">
       <image class="script-avatar" src="{{selectedScript.coverImage}}" mode="aspectFill" />
       <view class="title-info">
         <text class="main-title">{{selectedScript.title}}</text>
         <text class="progress-info">{{currentChapter}}/{{selectedScript.totalChapters}}集 | 已攒{{userProgress.totalPaid || 0}}元</text>
       </view>
-    </view>
+    </view> -->
 
     <!-- 章节内容区域 -->
     <view class="chapter-content">
-      <text class="chapter-title">第{{currentChapter}}集 {{chapterContent.title}}</text>
+      <!-- <text class="chapter-title">第{{currentChapter}}集 {{chapterContent.title}}</text> -->
       
       <!-- 内容展示 -->
       <view class="content-display">
-        <!-- 视频内容 -->
-        <video wx:if="{{chapterContent.videoUrl && !videoLoadError}}" 
-               id="chapterVideo"
-               class="chapter-video"
-               src="{{chapterContent.videoUrl}}"
-               controls
-               show-fullscreen-btn
-               object-fit="cover"
-               initial-time="0"
-               binderror="onVideoError"
-               bindloadeddata="onVideoLoaded"
-               bindfullscreenchange="onFullscreenChange"
-               bindcanplay="onVideoCanPlay">
-        </video>
+        <!-- 视频内容容器 -->
+        <view wx:if="{{chapterContent.videoUrl && !videoLoadError}}" class="video-container">
+          <!-- 视频组件 - 大尺寸播放器 -->
+          <video id="chapterVideo"
+                 class="chapter-video"
+                 src="{{chapterContent.videoUrl}}"
+                 controls
+                 show-fullscreen-btn="{{false}}"
+                 object-fit="contain"
+                 initial-time="0"
+                 binderror="onVideoError"
+                 bindloadeddata="onVideoLoaded"
+                 bindcanplay="onVideoCanPlay">
+          </video>
+          
+          <!-- 自定义全屏按钮 - 已隐藏，使用大尺寸播放器 -->
+          <!-- <view class="custom-fullscreen-btn {{isFullscreen ? 'exit-fullscreen' : 'enter-fullscreen'}}" 
+                bindtap="toggleFullscreen">
+            <text class="fullscreen-icon">{{isFullscreen ? '⤡' : '⤢'}}</text>
+          </view> -->
+          
+          <!-- 视频控制遮罩层（全屏时显示） -->
+          <view wx:if="{{isFullscreen}}" class="fullscreen-controls">
+            <view class="fullscreen-header">
+              <text class="fullscreen-title">{{chapterContent.title}}</text>
+              <view class="fullscreen-close" bindtap="exitFullscreen">
+                <text class="close-icon">✕</text>
+              </view>
+            </view>
+          </view>
+        </view>
         
-        <!-- 调试信息显示 -->
-        <view wx:if="{{chapterContent.videoUrl}}" class="debug-info">
+        <!-- 调试信息显示 - 已隐藏 -->
+        <!-- <view wx:if="{{chapterContent.videoUrl}}" class="debug-info">
           <text class="debug-text">视频URL: {{chapterContent.videoUrl}}</text>
-          <text class="debug-text">全屏状态: {{isFullscreen ? '是' : '否'}}</text>
+          <text class="debug-text">播放器尺寸: 400px 高度 (2倍大小)</text>
           <text class="debug-text">视频上下文: {{videoContext ? '已初始化' : '未初始化'}}</text>
           <button class="debug-button" bindtap="clearVideoCache">清除视频缓存</button>
-        </view>
+        </view> -->
         
         <!-- 视频加载失败时的替代显示 -->
         <view wx:if="{{chapterContent.videoUrl && videoLoadError}}" class="video-error-fallback">
@@ -115,8 +129,8 @@
             <view class="choice-button {{selectedChoice === item.selection ? 'selected' : ''}}"
                   bindtap="selectChoice"
                   data-choice="{{item.selection}}">
-              <text class="choice-text">{{item.selection}}</text>
               <text class="choice-cost">¥ {{item.cost}}.00</text>
+              <text class="choice-text">{{item.selection}}</text>
             </view>
           </block>
         </view>

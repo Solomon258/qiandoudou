@@ -110,6 +110,14 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         
+        <!-- OkHttp (用于API调用) -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        
+        
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

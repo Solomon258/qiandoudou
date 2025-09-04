@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,12 @@ public class ImageToTextServiceImpl implements ImageToTextService {
     @Value("${ai.image-to-text.api-url:http://113.45.231.186:1236/generate}")
     private String apiUrl;
 
+    @Value("${ai.bytedance.enabled:true}")
+    private boolean byteDanceEnabled;
+
+    @Autowired
+    private ByteDanceImageToTextService byteDanceImageToTextService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Pattern thinkTagPattern = Pattern.compile("<think>.*?</think>", Pattern.DOTALL);
     // 用于提取JSON中text字段内容的正则表达式
@@ -38,6 +45,29 @@ public class ImageToTextServiceImpl implements ImageToTextService {
 
     @Override
     public String generateTextFromImage(String imageBase64, String prompt) {
+        // 1. 优先尝试字节跳动API
+        if (byteDanceEnabled && byteDanceImageToTextService.isAvailable()) {
+            try {
+                logger.info("使用字节跳动API进行图生文");
+                String result = byteDanceImageToTextService.generateTextFromImage(imageBase64, prompt);
+                logger.info("字节跳动API调用成功");
+                return result;
+            } catch (Exception e) {
+                logger.warn("字节跳动API调用失败，降级到原有API: {}", e.getMessage());
+                // 继续执行原有API逻辑
+            }
+        } else {
+            logger.info("字节跳动API未启用或不可用，使用原有API");
+        }
+
+        // 2. 降级到原有API
+        return callOriginalApi(imageBase64, prompt);
+    }
+
+    /**
+     * 调用原有的图生文API
+     */
+    private String callOriginalApi(String imageBase64, String prompt) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // 构造请求
             HttpPost httpPost = new HttpPost(apiUrl);
@@ -60,7 +90,7 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     
                     // 添加日志：打印AI接口返回值
-                    logger.info("图生文API返回值: {}", responseBody);
+                    logger.info("原有图生文API返回值: {}", responseBody);
                     
                     // 处理响应
                     String resultText = extractTextFromResponse(responseBody);
@@ -73,12 +103,12 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                     return resultText.trim();
                 } else {
                     String errorBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                    logger.error("图生文API调用失败，状态码: {}, 响应: {}", statusCode, errorBody);
+                    logger.error("原有图生文API调用失败，状态码: {}, 响应: {}", statusCode, errorBody);
                     throw new RuntimeException("API调用失败，状态码: " + statusCode);
                 }
             }
         } catch (IOException e) {
-            logger.error("图生文API调用异常: {}", e.getMessage(), e);
+            logger.error("原有图生文API调用异常: {}", e.getMessage(), e);
             throw new RuntimeException("图生文API调用异常: " + e.getMessage(), e);
         }
     }

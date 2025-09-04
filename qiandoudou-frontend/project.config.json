@@ -22,16 +22,6 @@
     "preloadBackgroundData": false,
     "autoAudits": false,
     "showShadowRootInWxmlPanel": true,
-    "scopeDataCheck": false,
-    "uglifyFileName": false,
-    "checkInvalidKey": true,
-    "checkSiteMap": true,
-    "uploadWithSourceMap": true,
-    "compileHotReLoad": false,
-    "lazyloadPlaceholderEnable": false,
-    "preloadBackgroundData": false,
-    "autoAudits": false,
-    "showShadowRootInWxmlPanel": true,
     "scopeDataCheck": false
   },
   "compileType": "miniprogram",
@@ -40,7 +30,7 @@
     "ignore": [],
     "include": []
   },
-  "appid": "wx86b697bfbe182700",
+  "appid": "wx8372421078267cd9",
   "editorSetting": {},
   "localSetting": {
     "urlCheck": false,

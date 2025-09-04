@@ -31,9 +31,54 @@ Page({
     // 视频相关
     videoLoadError: false,
     videoContext: null,
+    isFullscreen: false,
+    videoUrl: 'https://example.com/video.mp4',
+    posterUrl: 'https://example.com/poster.jpg',
     isFullscreen: false
   },
+  onReady() {
+    this.videoContext = wx.createVideoContext('chapterVideo', this)
+  },
 
+  onFullscreenChange(e) {
+    this.setData({
+      isFullscreen: e.detail.fullScreen
+    })
+  },
+
+  playVideo() {
+    this.videoContext.play()
+  },
+
+  pauseVideo() {
+    this.videoContext.pause()
+  },
+
+  requestFullscreen() {
+    this.videoContext.requestFullScreen({
+      direction: 0
+    })
+  },
+
+  exitFullscreen() {
+    this.videoContext.exitFullScreen()
+  },
+
+  onPlay() {
+    console.log('视频开始播放')
+  },
+
+  onPause() {
+    console.log('视频暂停')
+  },
+
+  onError(e) {
+    console.error('视频错误:', e.detail)
+  },
+
+  onLoaded() {
+    console.log('视频加载完成')
+  },
   onLoad(options) {
     const userInfo = wx.getStorageSync('userInfo')
     const walletId = options.walletId
@@ -54,14 +99,38 @@ Page({
   },
 
   onReady() {
+    console.log('页面Ready，开始初始化')
     // 延迟创建视频上下文，确保DOM已完全渲染
     setTimeout(() => {
-      const videoContext = wx.createVideoContext('chapterVideo', this)
+      this.initVideoContextForce()
+    }, 300)
+  },
+
+  // 强制初始化视频上下文
+  initVideoContextForce() {
+    console.log('强制初始化视频上下文')
+    const videoContext = wx.createVideoContext('chapterVideo', this)
+    
+    if (videoContext) {
       this.setData({
         videoContext: videoContext
       })
-      console.log('视频上下文初始化完成')
-    }, 200)
+      console.log('✅ onReady 视频上下文初始化完成')
+      
+      // 验证上下文方法
+      console.log('上下文方法验证:', {
+        play: typeof videoContext.play,
+        pause: typeof videoContext.pause,
+        requestFullScreen: typeof videoContext.requestFullScreen,
+        exitFullScreen: typeof videoContext.exitFullScreen
+      })
+    } else {
+      console.error('❌ onReady 视频上下文创建失败')
+      // 延迟重试
+      setTimeout(() => {
+        this.initVideoContextForce()
+      }, 500)
+    }
   },
 
   onShow() {
@@ -451,24 +520,29 @@ Page({
   // 视频可以播放事件
   onVideoCanPlay(e) {
     console.log('视频可以播放:', e)
+    console.log('当前视频上下文状态:', this.data.videoContext ? '已存在' : '不存在')
     
-    // 在视频可以播放时初始化上下文，这是最佳时机
-    if (!this.data.videoContext) {
-      console.log('视频可播放，初始化视频上下文')
-      setTimeout(() => {
-        const videoContext = wx.createVideoContext('chapterVideo', this)
-        if (videoContext) {
-          this.setData({
-            videoContext: videoContext
-          })
-          console.log('视频上下文初始化完成，可以使用全屏功能')
-        } else {
-          console.error('视频上下文创建失败')
-        }
-      }, 300)
-    } else {
-      console.log('视频上下文已存在，无需重新创建')
-    }
+    // 强制重新创建视频上下文，确保功能正常
+    console.log('视频可播放，强制重新初始化视频上下文')
+    
+    setTimeout(() => {
+      const videoContext = wx.createVideoContext('chapterVideo', this)
+      if (videoContext) {
+        this.setData({
+          videoContext: videoContext
+        })
+        console.log('✅ 视频上下文重新初始化完成，全屏功能已就绪')
+        
+        // 验证上下文是否可用
+        console.log('验证视频上下文方法:', {
+          play: typeof videoContext.play,
+          requestFullScreen: typeof videoContext.requestFullScreen,
+          exitFullScreen: typeof videoContext.exitFullScreen
+        })
+      } else {
+        console.error('❌ 视频上下文创建失败')
+      }
+    }, 200)
   },
 
   // 视频错误事件
@@ -514,20 +588,30 @@ Page({
 
   // 全屏状态变化事件
   onFullscreenChange(e) {
-    console.log('全屏状态变化:', e.detail)
+    console.log('全屏状态变化事件:', e.detail)
+    
+    const newFullscreenState = e.detail.fullScreen || e.detail.fullscreen
     
     // 避免频繁的状态更新导致闪烁，只在状态真正改变时更新
-    if (this.data.isFullscreen !== e.detail.fullScreen) {
+    if (this.data.isFullscreen !== newFullscreenState) {
       this.setData({
-        isFullscreen: e.detail.fullScreen
+        isFullscreen: newFullscreenState
       })
       
-      if (e.detail.fullScreen) {
-        console.log('进入全屏模式')
-        // 全屏模式下的处理（暂时不做额外操作，避免API错误）
+      if (newFullscreenState) {
+        console.log('✅ 成功进入全屏模式')
+        wx.showToast({
+          title: '已进入全屏',
+          icon: 'success',
+          duration: 1000
+        })
       } else {
-        console.log('退出全屏模式')
-        // 退出全屏模式下的处理
+        console.log('✅ 成功退出全屏模式')
+        wx.showToast({
+          title: '已退出全屏',
+          icon: 'success', 
+          duration: 1000
+        })
       }
     }
   },
@@ -558,49 +642,102 @@ Page({
     // console.log('播放进度:', e.detail.currentTime, '/', e.detail.duration)
   },
 
-  // 手动请求全屏（如果需要自定义全屏按钮）
-  requestFullscreen() {
-    console.log('尝试请求全屏，视频上下文状态:', !!this.data.videoContext)
+  // 切换全屏状态（自定义按钮点击）
+  toggleFullscreen() {
+    console.log('🔘 自定义全屏按钮被点击')
+    console.log('当前全屏状态:', this.data.isFullscreen)
+    console.log('视频上下文状态:', this.data.videoContext ? '已初始化' : '未初始化')
     
-    if (this.data.videoContext) {
-      try {
-        this.data.videoContext.requestFullScreen()
-        console.log('全屏请求已发送')
-      } catch (error) {
-        console.error('请求全屏失败:', error)
-        wx.showToast({
-          title: '全屏功能暂不可用',
-          icon: 'none'
-        })
-      }
-    } else {
-      console.error('视频上下文未初始化，尝试重新创建')
-      // 如果上下文未初始化，尝试重新创建
-      this.initVideoContext()
+    // 详细检查视频上下文
+    if (!this.data.videoContext) {
+      console.error('❌ 视频上下文未初始化，尝试立即创建')
+      this.initVideoContextForce()
       
-      // 延迟重试全屏
+      // 延迟执行全屏操作
       setTimeout(() => {
         if (this.data.videoContext) {
-          try {
-            this.data.videoContext.requestFullScreen()
-          } catch (error) {
-            console.error('延迟全屏请求失败:', error)
-          }
+          console.log('✅ 重新创建上下文成功，继续全屏操作')
+          this.requestFullscreen()
+        } else {
+          console.error('❌ 重新创建上下文失败')
+          wx.showToast({
+            title: '视频上下文初始化失败',
+            icon: 'error'
+          })
         }
-      }, 300)
+      }, 600)
+      return
+    }
+    
+    if (this.data.isFullscreen) {
+      this.exitFullscreen()
+    } else {
+      this.requestFullscreen()
+    }
+  },
+
+  // 手动请求全屏
+  requestFullscreen() {
+    console.log('🔄 开始请求全屏')
+    console.log('视频上下文状态:', !!this.data.videoContext)
+    console.log('当前全屏状态:', this.data.isFullscreen)
+    
+    if (!this.data.videoContext) {
+      console.error('❌ 视频上下文未初始化')
+      wx.showToast({
+        title: '视频上下文未初始化',
+        icon: 'error'
+      })
+      return
+    }
+
+    // 检查上下文方法是否可用
+    if (typeof this.data.videoContext.requestFullScreen !== 'function') {
+      console.error('❌ requestFullScreen 方法不存在')
+      wx.showToast({
+        title: '全屏方法不可用',
+        icon: 'error'
+      })
+      return
+    }
+
+    try {
+      console.log('📱 调用 requestFullScreen API')
+      // 使用微信小程序的全屏API
+      this.data.videoContext.requestFullScreen({
+        direction: 0 // 0: 默认方向
+      })
+      console.log('✅ 全屏请求已发送，等待状态变化...')
+    } catch (error) {
+      console.error('❌ 请求全屏失败:', error)
+      wx.showToast({
+        title: '全屏功能调用失败',
+        icon: 'error'
+      })
     }
   },
 
   // 退出全屏
   exitFullscreen() {
+    console.log('尝试退出全屏')
+    
     if (this.data.videoContext) {
       try {
         this.data.videoContext.exitFullScreen()
+        console.log('退出全屏请求已发送')
       } catch (error) {
         console.error('退出全屏失败:', error)
+        // 如果API调用失败，手动设置状态
+        this.setData({
+          isFullscreen: false
+        })
       }
     } else {
       console.error('视频上下文未初始化')
+      // 手动设置状态
+      this.setData({
+        isFullscreen: false
+      })
     }
   },
 

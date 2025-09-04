@@ -2,7 +2,12 @@
 const app = getApp()
 
 // 后端API基础地址
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+//  const BASE_URL = 'https://8.148.206.18:443/api'  // IP访问（微信小程序不支持）
+// const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
+
+// https://heartllo.cn/api/scripts/2/chapters/2
+
 
 /**
  * 通用网络请求函数
@@ -61,10 +66,21 @@ function request(options) {
       },
       fail: (error) => {
         // 只在网络真正失败时输出错误
-        if (options.debug !== false) {
-          console.log('网络请求失败:', options.url)
+        console.error('=== API请求失败详细信息 ===')
+        console.error('请求URL:', `${BASE_URL}${options.url}`)
+        console.error('请求方法:', options.method || 'GET')
+        console.error('请求数据:', options.data)
+        console.error('错误详情:', error)
+        console.error('错误类型:', typeof error)
+        console.error('错误属性:', Object.keys(error || {}))
+        console.error('=== 请求失败信息结束 ===')
+        
+        // 根据错误类型提供更具体的错误信息
+        let errorMessage = '网络连接失败'
+        if (error && error.errMsg) {
+          errorMessage = error.errMsg
         }
-        reject(new Error('网络连接失败'))
+        reject(new Error(errorMessage))
       }
     })
   })
@@ -572,10 +588,83 @@ const scriptAPI = {
   }
 }
 
+// 测试函数 - 用于诊断网络问题
+const testAPI = {
+  // 测试网络连接
+  testConnection() {
+    console.log('开始测试网络连接...')
+    console.log('测试URL:', BASE_URL)
+    
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: `${BASE_URL}/wallet/public`,
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json'
+        },
+        success: (res) => {
+          console.log('✅ 网络测试成功!')
+          console.log('状态码:', res.statusCode)
+          console.log('响应头:', res.header)
+          console.log('响应数据:', res.data)
+          resolve(res)
+        },
+        fail: (error) => {
+          console.error('❌ 网络测试失败!')
+          console.error('错误信息:', error)
+          console.error('错误码:', error.errno)
+          console.error('错误描述:', error.errMsg)
+          reject(error)
+        }
+      })
+    })
+  },
+  
+  // 测试简单的GET请求
+  testSimpleRequest() {
+    return wx.request({
+      url: 'https://heartllo.cn/api/wallet/public',
+      method: 'GET',
+      success: (res) => console.log('简单请求成功:', res),
+      fail: (err) => console.error('简单请求失败:', err)
+    })
+  },
+  
+  // 测试域名连通性
+  testDomainConnectivity() {
+    console.log('🔍 开始测试域名连通性...')
+    
+    // 测试1: 直接访问域名根路径
+    wx.request({
+      url: 'https://heartllo.cn/',
+      method: 'GET',
+      success: (res) => {
+        console.log('✅ 域名根路径访问成功:', res.statusCode)
+      },
+      fail: (err) => {
+        console.error('❌ 域名根路径访问失败:', err)
+      }
+    })
+    
+    // 测试2: 访问API路径
+    wx.request({
+      url: 'https://heartllo.cn/api/',
+      method: 'GET', 
+      success: (res) => {
+        console.log('✅ API路径访问成功:', res.statusCode)
+      },
+      fail: (err) => {
+        console.error('❌ API路径访问失败:', err)
+      }
+    })
+  }
+}
+
 module.exports = {
   request,
   authAPI,
   walletAPI,
   uploadFile,
-  scriptAPI
+  scriptAPI,
+  testAPI
 }
