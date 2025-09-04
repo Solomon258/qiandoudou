@@ -6,7 +6,7 @@ Page({
   data: {
     userInfo: {
       nickname: '昆虫记',
-      avatar: '/images/icons/user-avatar.png',
+      avatar: 'https://8.148.206.18:443/res/image/include_images/user-avatar.png',
       description: '每100个粉丝，打卡一个5A级景区'
     },
     socialStats: {
@@ -44,7 +44,7 @@ Page({
       this.setData({
         userInfo: {
           nickname: userInfo.nickname || '用户',
-          avatar: userInfo.avatar || '/images/icons/user-avatar.png',
+          avatar: userInfo.avatar || 'https://8.148.206.18:443/res/image/include_images/user-avatar.png',
           description: userInfo.description || '这个人很懒，什么都没留下',
           hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
         }

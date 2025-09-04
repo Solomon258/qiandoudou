@@ -54,7 +54,7 @@
         
         <view class="follow-buttons">
           <image class="follow-btn-image {{isFollowing ? 'followed' : ''}}" 
-                 src="{{isFollowing ? '/images/res/个人主详情/png/已关注.png' : '/images/res/个人主详情/png/关注.png'}}" 
+                 src="{{isFollowing ? 'https://8.148.206.18:443/res/image/include_images/已关注.png' : 'https://8.148.206.18:443/res/image/include_images/关注.png'}}" 
                  bindtap="toggleFollow"
                  mode="aspectFit" />
         </view>

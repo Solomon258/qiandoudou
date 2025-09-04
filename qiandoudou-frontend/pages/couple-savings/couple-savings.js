@@ -11,8 +11,8 @@ Page({
         name: '黎初言',
         tags: ['娱乐圈小明星'],
         description: '明珠本蛋美人，超爱撒娇',
-        fullImage: '/images/res/情侣攒钱/images/柳如烟/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/柳如烟/人像.jpg', // 人像
+        fullImage: 'https://8.148.206.18:443/res/image/柳如烟_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/柳如烟_人像.jpg', // 人像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -20,8 +20,8 @@ Page({
         name: '江梦溪',
         tags: ['温柔知性'],
         description: '优雅迷人，理财达人',
-        fullImage: '/images/res/情侣攒钱/images/江梦溪/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/江梦溪/人像.jpg', // 头像
+        fullImage: 'https://8.148.206.18:443/res/image/江梦溪_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/江梦溪_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -29,8 +29,8 @@ Page({
         name: '苏晨曦',
         tags: ['温柔知性'],
         description: '优雅迷人，理财达人',
-        fullImage: '/images/res/情侣攒钱/images/李晓月/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/李晓月/人像.jpg', // 头像
+        fullImage: 'https://8.148.206.18:443/res/image/李晓月_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/李晓月_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -38,8 +38,8 @@ Page({
         name: '林若汐',
         tags: ['活泼可爱'],
         description: '青春洋溢，节约小能手',
-        fullImage: '/images/res/情侣攒钱/images/吴梦菲/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/吴梦菲/人像.jpg', // 头像
+        fullImage: 'https://8.148.206.18:443/res/image/吴梦菲_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/吴梦菲_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -47,8 +47,8 @@ Page({
         name: '方子逸',
         tags: ['成熟稳重'],
         description: '放浪不羁，八块腹肌',
-        fullImage: '/images/res/情侣攒钱/images/方子逸/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/方子逸/人像.jpg', // 头像
+        fullImage: 'https://8.148.206.18:443/res/image/方子逸_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/方子逸_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -56,8 +56,8 @@ Page({
         name: '王玉玄',
         tags: ['邻家大男孩'],
         description: '温柔暖男，爱心呵护',
-        fullImage: '/images/res/情侣攒钱/images/王玉玄/背景图.jpg', // 全身照
-        avatar: '/images/res/情侣攒钱/images/王玉玄/人像.jpg', // 头像
+        fullImage: 'https://8.148.206.18:443/res/image/王玉玄_背景图.jpg', // 全身照
+        avatar: 'https://8.148.206.18:443/res/image/王玉玄_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       }
     ]
