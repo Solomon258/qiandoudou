@@ -849,10 +849,13 @@
 }
 
 /* 统计行 */
+.profit-view {
+  border-bottom: 1px solid #ccc
+}
+
 .stats-row {
   display: flex;
   gap: 12px;
-  border-bottom: 1px solid #ccc;
 }
 
 .stats-row:last-child {
