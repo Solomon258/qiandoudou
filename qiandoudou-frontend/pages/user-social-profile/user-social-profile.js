@@ -6,7 +6,7 @@ Page({
   data: {
     userInfo: {
       nickname: '昆虫记',
-      avatar: 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+      avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
       description: '每100个粉丝，打卡一个5A级景区'
     },
     socialStats: {
@@ -50,7 +50,7 @@ Page({
       // 有本地用户信息，直接使用
       const displayUserInfo = {
         nickname: userInfo.nickname || '钱兜兜用户',
-        avatar: userInfo.avatar || 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+        avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
         description: userInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
       }
@@ -86,7 +86,7 @@ Page({
         const displayUserInfo = {
           id: serverUserInfo.id || 1,
           nickname: serverUserInfo.nickname || '钱兜兜用户',
-          avatar: serverUserInfo.avatar || 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
           hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
         }
@@ -108,7 +108,7 @@ Page({
         const defaultUserInfo = {
           id: 1,
           nickname: '钱兜兜用户',
-          avatar: 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
           description: '这个人很懒，什么都没留下',
           hasCustomAvatar: false
         }

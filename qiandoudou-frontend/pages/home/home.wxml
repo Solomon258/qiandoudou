@@ -12,7 +12,7 @@
       </view>
       <view class="nav-right">
         <view class="notification-icon-new" bindtap="showNotifications">
-          <image class="notification-icon-img" src="https://8.148.206.18:443/res/image/include_images/7AB14F84-3AAF-42E6-9C09-AD1AC9545E14.png" mode="aspectFit"/>
+          <image class="notification-icon-img" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/7AB14F84-3AAF-42E6-9C09-AD1AC9545E14.png" mode="aspectFit"/>
           <view wx:if="{{unreadMessageCount > 0}}" class="unread-badge">
             <text class="unread-count">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</text>
           </view>
@@ -78,10 +78,10 @@
       <view class="nav-title">兜圈圈</view>
       <view class="nav-right">
         <view class="user-icon-new" bindtap="navigateToUserSocialProfile">
-          <image class="user-icon-img" src="https://8.148.206.18:443/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png" mode="aspectFit"/>
+          <image class="user-icon-img" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png" mode="aspectFit"/>
         </view>
         <view class="notification-icon-new" bindtap="showNotifications">
-          <image class="notification-icon-img" src="https://8.148.206.18:443/res/image/include_images/7AB14F84-3AAF-42E6-9C09-AD1AC9545E14.png" mode="aspectFit"/>
+          <image class="notification-icon-img" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/7AB14F84-3AAF-42E6-9C09-AD1AC9545E14.png" mode="aspectFit"/>
           <view wx:if="{{unreadMessageCount > 0}}" class="unread-badge">
             <text class="unread-count">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</text>
           </view>
@@ -145,13 +145,13 @@
   <view class="bottom-nav">
     <view class="nav-item {{currentTab === 'wallet' ? 'active' : ''}}" bindtap="switchTab" data-tab="wallet">
       <view class="nav-icon-container">
-        <image class="notification-icon-img2" src="https://8.148.206.18:443/res/image/icon2.png" mode="aspectFit"/>
+        <image class="notification-icon-img2" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon2.png" mode="aspectFit"/>
       </view>
       <text class="nav-text">钱兜兜</text>
     </view>
     <view class="nav-item {{currentTab === 'social' ? 'active' : ''}}" bindtap="switchTab" data-tab="social">
       <view class="nav-icon-container">
-        <image class="notification-icon-img2" src="https://8.148.206.18:443/res/image/icon1.png" mode="aspectFit"/>
+        <image class="notification-icon-img2" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon1.png" mode="aspectFit"/>
       </view>
       <text class="nav-text">兜圈圈</text>
     </view>
@@ -192,7 +192,7 @@
         <!-- 情侣攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'couple' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="couple">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="https://8.148.206.18:443/res/image/include_images/情侣攒头像2.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/情侣攒头像2.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">情侣攒钱</text>
@@ -207,7 +207,7 @@
         <!-- 情侣攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'couple2' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="couple2">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="https://8.148.206.18:443/res/image/brother.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/brother.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">搭子攒钱</text>

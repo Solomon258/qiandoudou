@@ -11,8 +11,8 @@ Page({
         name: '黎初言',
         tags: ['娱乐圈小明星'],
         description: '明珠本蛋美人，超爱撒娇',
-        fullImage: 'https://8.148.206.18:443/res/image/柳如烟_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/柳如烟_人像.jpg', // 人像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/柳如烟_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/柳如烟_人像.jpg', // 人像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -20,8 +20,8 @@ Page({
         name: '江梦溪',
         tags: ['温柔知性'],
         description: '优雅迷人，理财达人',
-        fullImage: 'https://8.148.206.18:443/res/image/江梦溪_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/江梦溪_人像.jpg', // 头像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/江梦溪_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/江梦溪_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -29,8 +29,8 @@ Page({
         name: '苏晨曦',
         tags: ['温柔知性'],
         description: '优雅迷人，理财达人',
-        fullImage: 'https://8.148.206.18:443/res/image/李晓月_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/李晓月_人像.jpg', // 头像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/李晓月_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/李晓月_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -38,8 +38,8 @@ Page({
         name: '林若汐',
         tags: ['活泼可爱'],
         description: '青春洋溢，节约小能手',
-        fullImage: 'https://8.148.206.18:443/res/image/吴梦菲_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/吴梦菲_人像.jpg', // 头像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/吴梦菲_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/吴梦菲_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -47,8 +47,8 @@ Page({
         name: '方子逸',
         tags: ['成熟稳重'],
         description: '放浪不羁，八块腹肌',
-        fullImage: 'https://8.148.206.18:443/res/image/方子逸_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/方子逸_人像.jpg', // 头像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/方子逸_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/方子逸_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       },
       {
@@ -56,8 +56,8 @@ Page({
         name: '王玉玄',
         tags: ['邻家大男孩'],
         description: '温柔暖男，爱心呵护',
-        fullImage: 'https://8.148.206.18:443/res/image/王玉玄_背景图.jpg', // 全身照
-        avatar: 'https://8.148.206.18:443/res/image/王玉玄_人像.jpg', // 头像
+        fullImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/王玉玄_背景图.jpg', // 全身照
+        avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/王玉玄_人像.jpg', // 头像
         background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
       }
     ]
@@ -83,14 +83,22 @@ Page({
 
   // 处理下方轮播滑动
   onSwiperChange(e) {
-    const currentIndex = e.detail.current
+    // 添加边界检查，确保 e 存在
+    if (!e) {
+      console.error('事件对象未定义');
+      return;
+    }
+    
+    const current = e.detail?.current ?? 0;
+    console.log('当前索引:', current);
     this.setData({
-      currentIndex: currentIndex
-    })
+      currentIndex: current
+    });
   },
 
   // 点击头像切换
   onAvatarTap(e) {
+    console.log('当前索引:', e);
     const index = e.currentTarget.dataset.index
     this.setData({
       currentIndex: index

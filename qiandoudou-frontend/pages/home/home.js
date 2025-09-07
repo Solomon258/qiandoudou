@@ -581,14 +581,14 @@ Page({
   getValidBackgroundImage(backgroundImage) {
     // 如果没有背景图片，使用默认图片
     if (!backgroundImage) {
-      return 'https://8.148.206.18:443/res/image/usages/bg.png'
+      return 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png'
     }
     
     // 如果是预设的渐变背景或自定义背景，都使用默认图片
     if (backgroundImage.startsWith('gradient') || 
         backgroundImage.startsWith('/img/backgrounds/') || 
         backgroundImage.startsWith('custom_bg_')) {
-      return 'https://8.148.206.18:443/res/image/usages/bg.png'
+      return 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png'
     }
     
     // 如果是完整的URL或base64，直接使用
@@ -599,7 +599,7 @@ Page({
     }
     
     // 其他情况使用默认图片
-    return 'https://8.148.206.18:443/res/image/usages/bg.png'
+    return 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png'
   },
 
   // 处理兜圈圈页面的回退按钮
@@ -777,7 +777,7 @@ Page({
     // 更新失败的图片为默认图片
     const posts = this.data.posts
     if (posts[index]) {
-      posts[index].bgImage = 'https://8.148.206.18:443/res/image/usages/bg.png'
+      posts[index].bgImage = 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png'
       this.setData({ posts })
     }
   },

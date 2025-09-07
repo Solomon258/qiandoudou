@@ -11,13 +11,6 @@
         <text class="hint-text">点击更换背景</text>
       </view>
       
-      <!-- 顶部导航 -->
-      <view class="header-nav">
-        <view class="nav-left" bindtap="goBackToWalletList">
-          <view class="back-icon"></view>
-        </view>
-      </view>
-      
       <!-- 用户信息 -->
       <view class="user-info" catchtap="stopPropagation">
         <view class="user-avatar">
@@ -51,7 +44,7 @@
       <!-- 关注按钮（在背景图右下角） -->
       <view wx:if="{{fromSocial && !isOwnWallet}}" class="follow-button-corner">
         <image class="follow-btn-image {{isFollowing ? 'following' : ''}}" 
-               src="{{isFollowing ? 'https://8.148.206.18:443/res/image/usages/已关注.png' : 'https://8.148.206.18:443/res/image/usages/关注.png'}}" 
+               src="{{isFollowing ? 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/已关注.png' : 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/关注.png'}}" 
                bindtap="toggleFollow"
                mode="aspectFit" />
       </view>
@@ -120,11 +113,6 @@
       <!-- 统计标签（只在自己钱包时显示） -->
       <view wx:if="{{isOwnWallet}}" class="tab-item {{activeTab === 'stats' ? 'active' : ''}}" bindtap="switchTab" data-tab="stats">
         <text class="tab-text">统计</text>
-      </view>
-      <!-- 过滤按钮（只在自己钱包时显示） -->
-      <view wx:if="{{isOwnWallet}}" class="filter-btn" bindtap="showFilter">
-        <text class="filter-text">过滤</text>
-        <text class="filter-icon">🔽</text>
       </view>
     </view>
     
@@ -230,7 +218,7 @@
         <text class="current-month">{{currentYear}}年{{currentMonth}}月</text>
         <picker mode="date" fields="month" value="{{currentDate}}" bindchange="onMonthChange" class="month-picker">
           <view class="picker-trigger">
-            <text class="picker-icon">📅</text>
+            <text class="picker-icon">▲</text>
           </view>
         </picker>
       </view>
@@ -238,16 +226,19 @@
       <!-- 统计数据展示 -->
       <view class="stats-content">
         <!-- 第二行：月收入和月支出 -->
-        <view class="stats-row">
-          <view class="stat-card income-card">
-            <text class="stat-label">月收入(元)</text>
-            <text class="stat-value income-value">{{monthlyStats.monthlyIncome || '0.00'}}</text>
-          </view>
-          <view class="stat-card expense-card">
-            <text class="stat-label">月支出(元)</text>
-            <text class="stat-value expense-value">{{monthlyStats.monthlyExpense || '0.00'}}</text>
+        <view class="status-view">
+          <view class="stats-row">
+            <view class="stat-card income-card">
+              <text class="stat-label">月收入(元)</text>
+              <text class="stat-value income-value">{{monthlyStats.monthlyIncome || '0.00'}}</text>
+            </view>
+            <view class="stat-card expense-card">
+              <text class="stat-label">月支出(元)</text>
+              <text class="stat-value expense-value">{{monthlyStats.monthlyExpense || '0.00'}}</text>
+            </view>
           </view>
         </view>
+
 
         <!-- 第三行：月收益 -->
         <view class="stats-row">
