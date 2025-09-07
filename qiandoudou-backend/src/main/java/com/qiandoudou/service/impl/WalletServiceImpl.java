@@ -7,6 +7,8 @@ import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.service.AiService;
 import com.qiandoudou.service.TransactionService;
 import com.qiandoudou.service.WalletService;
+import com.qiandoudou.event.TransactionCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
 
     @Autowired
     private TransactionService transactionService;
+    
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private AiService aiService;
@@ -45,7 +50,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         wallet.setBalance(BigDecimal.ZERO);
         wallet.setBackgroundImage(backgroundImage);
         wallet.setAiPartnerId(aiPartnerId);
-        wallet.setIsPublic(0); // 默认不公开
+        wallet.setIsPublic(1); // 修改：默认公开到社交圈
 
         save(wallet);
         return wallet;
@@ -81,6 +86,14 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
+        
+        // 发布交易创建事件，触发AI情侣钱包互动
+        try {
+            eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
+            logger.debug("发布交易创建事件，交易ID: {}", transaction.getId());
+        } catch (Exception e) {
+            logger.error("发布交易创建事件失败，交易ID: {}", transaction.getId(), e);
+        }
     }
 
     @Override
@@ -117,6 +130,14 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
+        
+        // 发布交易创建事件，触发AI情侣钱包互动
+        try {
+            eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
+            logger.debug("发布交易创建事件，交易ID: {}", transaction.getId());
+        } catch (Exception e) {
+            logger.error("发布交易创建事件失败，交易ID: {}", transaction.getId(), e);
+        }
     }
 
     @Override
@@ -148,6 +169,14 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
+        
+        // 发布交易创建事件，触发AI情侣钱包互动
+        try {
+            eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
+            logger.debug("发布交易创建事件，交易ID: {}", transaction.getId());
+        } catch (Exception e) {
+            logger.error("发布交易创建事件失败，交易ID: {}", transaction.getId(), e);
+        }
     }
 
     @Override

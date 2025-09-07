@@ -17,46 +17,54 @@ import java.util.Map;
 public interface UserFollowMapper extends BaseMapper<UserFollow> {
 
     /**
-     * 检查用户是否已关注某个用户
+     * 检查用户是否已关注某个钱包
      */
     @Select("SELECT COUNT(*) FROM user_follows " +
-            "WHERE follower_id = #{followerId} AND following_id = #{followingId} AND deleted = 0")
-    Integer checkUserFollowed(@Param("followerId") Long followerId, @Param("followingId") Long followingId);
+            "WHERE follower_id = #{followerId} AND wallet_id = #{walletId} AND deleted = 0")
+    Integer checkUserFollowed(@Param("followerId") Long followerId, @Param("walletId") Long walletId);
 
     /**
-     * 获取用户的粉丝数量
+     * 获取钱包的粉丝数量
      */
     @Select("SELECT COUNT(*) FROM user_follows " +
-            "WHERE following_id = #{userId} AND deleted = 0")
-    Integer getUserFansCount(@Param("userId") Long userId);
+            "WHERE wallet_id = #{walletId} AND deleted = 0")
+    Integer getWalletFansCount(@Param("walletId") Long walletId);
 
     /**
-     * 获取用户的关注数量
+     * 获取用户关注的钱包数量
      */
     @Select("SELECT COUNT(*) FROM user_follows " +
             "WHERE follower_id = #{userId} AND deleted = 0")
     Integer getUserFollowingCount(@Param("userId") Long userId);
 
     /**
-     * 获取用户的粉丝列表
+     * 获取用户的粉丝数量（通过用户的钱包被关注数统计）
+     */
+    @Select("SELECT COUNT(DISTINCT uf.follower_id) FROM user_follows uf " +
+            "INNER JOIN wallets w ON uf.wallet_id = w.id " +
+            "WHERE w.user_id = #{userId} AND uf.deleted = 0 AND w.deleted = 0")
+    Integer getUserFansCount(@Param("userId") Long userId);
+
+    /**
+     * 获取钱包的粉丝列表
      */
     @Select("SELECT uf.*, u.nickname, u.avatar " +
             "FROM user_follows uf " +
             "INNER JOIN users u ON uf.follower_id = u.id " +
-            "WHERE uf.following_id = #{userId} AND uf.deleted = 0 " +
+            "WHERE uf.wallet_id = #{walletId} AND uf.deleted = 0 " +
             "ORDER BY uf.create_time DESC " +
             "LIMIT #{offset}, #{pageSize}")
-    List<Map<String, Object>> getUserFans(@Param("userId") Long userId, 
-                                         @Param("offset") Integer offset, 
-                                         @Param("pageSize") Integer pageSize);
+    List<Map<String, Object>> getWalletFans(@Param("walletId") Long walletId, 
+                                           @Param("offset") Integer offset, 
+                                           @Param("pageSize") Integer pageSize);
 
     /**
-     * 获取用户关注的人列表
+     * 获取用户关注的钱包列表
      */
-    @Select("SELECT uf.*, u.nickname, u.avatar " +
+    @Select("SELECT uf.*, w.name as wallet_name, w.balance, w.background_image " +
             "FROM user_follows uf " +
-            "INNER JOIN users u ON uf.following_id = u.id " +
-            "WHERE uf.follower_id = #{userId} AND uf.deleted = 0 " +
+            "INNER JOIN wallets w ON uf.wallet_id = w.id " +
+            "WHERE uf.follower_id = #{userId} AND uf.deleted = 0 AND w.deleted = 0 " +
             "ORDER BY uf.create_time DESC " +
             "LIMIT #{offset}, #{pageSize}")
     List<Map<String, Object>> getUserFollowing(@Param("userId") Long userId, 
@@ -64,9 +72,9 @@ public interface UserFollowMapper extends BaseMapper<UserFollow> {
                                               @Param("pageSize") Integer pageSize);
 
     /**
-     * 取消关注（软删除）
+     * 取消关注钱包（软删除）
      */
     @Delete("UPDATE user_follows SET deleted = 1 " +
-            "WHERE follower_id = #{followerId} AND following_id = #{followingId}")
-    void removeFollow(@Param("followerId") Long followerId, @Param("followingId") Long followingId);
+            "WHERE follower_id = #{followerId} AND wallet_id = #{walletId}")
+    void removeFollow(@Param("followerId") Long followerId, @Param("walletId") Long walletId);
 }

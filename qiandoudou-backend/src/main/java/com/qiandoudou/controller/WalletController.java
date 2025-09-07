@@ -564,4 +564,66 @@ public class WalletController {
             return Result.error("钱包余额修复失败: " + e.getMessage());
         }
     }
+
+    /**
+     * 测试接口：将所有钱包设置为公开状态（仅用于测试）
+     */
+    @PostMapping("/test/make-all-public")
+    public Result<String> makeAllWalletsPublic() {
+        try {
+            // 获取所有钱包
+            List<Wallet> wallets = walletService.list();
+            int updatedCount = 0;
+            
+            for (Wallet wallet : wallets) {
+                if (wallet.getIsPublic() != 1) {
+                    wallet.setIsPublic(1);
+                    walletService.updateById(wallet);
+                    updatedCount++;
+                }
+            }
+            
+            return Result.success("成功将 " + updatedCount + " 个钱包设置为公开状态，总钱包数: " + wallets.size());
+        } catch (Exception e) {
+            return Result.error("设置钱包公开状态失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 测试接口：获取钱包统计信息
+     */
+    @GetMapping("/test/stats")
+    public Result<Map<String, Object>> getWalletStats() {
+        try {
+            Map<String, Object> stats = new HashMap<>();
+            
+            // 统计总钱包数
+            long totalWallets = walletService.count();
+            stats.put("totalWallets", totalWallets);
+            
+            // 统计公开钱包数
+            long publicWallets = walletService.count(
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Wallet>()
+                    .eq("is_public", 1)
+                    .eq("deleted", 0)
+            );
+            stats.put("publicWallets", publicWallets);
+            
+            // 统计私密钱包数
+            long privateWallets = walletService.count(
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Wallet>()
+                    .eq("is_public", 0)
+                    .eq("deleted", 0)
+            );
+            stats.put("privateWallets", privateWallets);
+            
+            // 统计交易记录数
+            long totalTransactions = transactionService.count();
+            stats.put("totalTransactions", totalTransactions);
+            
+            return Result.success("钱包统计信息获取成功", stats);
+        } catch (Exception e) {
+            return Result.error("获取钱包统计信息失败: " + e.getMessage());
+        }
+    }
 }

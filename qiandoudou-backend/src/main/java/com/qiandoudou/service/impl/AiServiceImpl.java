@@ -55,6 +55,46 @@ public class AiServiceImpl implements AiService {
     }
 
     @Override
+    public String generatePartnerComment(String transactionType, String description, Double amount) {
+        // TODO: 集成AI服务生成个性化评论
+        // 这里返回模拟的AI情侣评论
+        
+        String[] comments = {
+            "哇！又有新的收入啦，真棒！💕",
+            "看到你的努力，我很开心呢～",
+            "钱包又充实了一点，我们离目标更近了！",
+            "你真的很厉害呢，继续加油！✨",
+            "每一笔收入都是我们共同的成就！",
+            "看到这个数字我就很开心，爱你哦～",
+            "又存了一笔钱，我们的小金库越来越丰富了！",
+            "你的每一份努力我都看在眼里，真的很感动！",
+            "这样的进步让我为你感到骄傲！💖",
+            "我们一起攒钱的日子真的很幸福呢！"
+        };
+        
+        // 根据金额大小选择不同的评论风格
+        if (amount != null && amount > 1000) {
+            String[] bigAmountComments = {
+                "哇！这是一笔大收入呢！我们可以实现更多梦想了！🎉",
+                "看到这个数字我都激动了！你真的太厉害了！",
+                "这么大的进账，我们离目标又近了一大步！💕",
+                "你的努力终于有了回报，我为你感到骄傲！✨"
+            };
+            return bigAmountComments[(int)(Math.random() * bigAmountComments.length)];
+        } else if (amount != null && amount < 10) {
+            String[] smallAmountComments = {
+                "虽然金额不大，但积少成多呢！💪",
+                "每一分钱都是我们的小幸福～",
+                "细水长流，我们慢慢来！💕",
+                "小钱也是钱，我们一起珍惜！"
+            };
+            return smallAmountComments[(int)(Math.random() * smallAmountComments.length)];
+        }
+        
+        return comments[(int)(Math.random() * comments.length)];
+    }
+
+    @Override
     public String generatePartnerComment(Long partnerId, String postContent) {
         try {
             AiPartner partner = aiPartnerService.getById(partnerId);
@@ -183,28 +223,35 @@ public class AiServiceImpl implements AiService {
     @Override
     public String generatePartnerVoice(Long partnerId, String text) {
         try {
+            logger.info("开始生成AI伴侣语音，伴侣ID: {}, 文本: {}", partnerId, text);
+            
             // 获取AI伴侣信息，确定声音类型
             AiPartner partner = aiPartnerService.getById(partnerId);
             String voiceType = "奇妙栩"; // 默认声音类型
             
             if (partner != null) {
+                logger.info("找到AI伴侣信息: {}, 性格: {}", partner.getName(), partner.getPersonality());
                 // 根据AI伴侣的性格选择合适的声音类型
                 String personality = partner.getPersonality();
-                if (personality.contains("温柔")) {
-                    voiceType = "温柔女声";
-                } else if (personality.contains("甜美") || personality.contains("可爱")) {
-                    voiceType = "甜美女声";
-                } else if (personality.contains("成熟")) {
-                    voiceType = "成熟男声";
-                } else if (personality.contains("阳光")) {
-                    voiceType = "阳光男声";
+                if (personality != null) {
+                    if (personality.contains("温柔")) {
+                        voiceType = "温柔女声";
+                    } else if (personality.contains("甜美") || personality.contains("可爱")) {
+                        voiceType = "甜美女声";
+                    } else if (personality.contains("成熟")) {
+                        voiceType = "成熟男声";
+                    } else if (personality.contains("阳光")) {
+                        voiceType = "阳光男声";
+                    }
                 }
-                // 默认使用奇妙栩
+                logger.info("选择的声音类型: {}", voiceType);
+            } else {
+                logger.warn("未找到AI伴侣信息，伴侣ID: {}, 使用默认声音类型", partnerId);
             }
             
             // 清理文本，去掉名字前缀
             String cleanText = text;
-            if (partner != null) {
+            if (partner != null && partner.getName() != null) {
                 String name = partner.getName();
                 if (cleanText.startsWith(name + "：")) {
                     cleanText = cleanText.substring((name + "：").length()).trim();
@@ -213,11 +260,30 @@ public class AiServiceImpl implements AiService {
                 }
             }
             
+            logger.info("清理后的文本: {}", cleanText);
+            
             // 调用TTS服务生成语音并上传
-            return ttsService.generateVoiceAndUpload(cleanText, voiceType);
+            String voiceUrl = ttsService.generateVoiceAndUpload(cleanText, voiceType);
+            if (voiceUrl != null) {
+                logger.info("语音生成成功，URL: {}", voiceUrl);
+            } else {
+                logger.warn("语音生成返回null");
+            }
+            return voiceUrl;
             
         } catch (Exception e) {
-            // 如果TTS生成失败，返回null或空字符串，表示没有语音
+            logger.error("AI伴侣语音生成失败，伴侣ID: {}, 错误: {}", partnerId, e.getMessage(), e);
+            
+            // 详细记录错误类型
+            if (e.getMessage().contains("No such file or directory")) {
+                logger.error("TTS服务音频文件缺失，请检查TTS服务器配置");
+            } else if (e.getMessage().contains("TTS API调用失败")) {
+                logger.error("TTS API服务异常，请检查TTS服务状态");
+            } else {
+                logger.error("未知的语音生成错误");
+            }
+            
+            // 如果TTS生成失败，返回null，表示没有语音，前端会降级到模拟播放
             return null;
         }
     }

@@ -6,16 +6,13 @@ App({
     logs.unshift(Date.now())
     wx.setStorageSync('logs', logs)
 
-    // 登录
-    wx.login({
-      success: res => {
-        // 发送 res.code 到后台换取 openId, sessionKey, unionId
-        console.log('微信登录成功:', res.code)
-      }
-    })
+    console.log('小程序启动')
 
     // 检查登录状态
     this.checkLoginStatus()
+    
+    // 检查token是否过期
+    this.checkTokenExpiry()
   },
 
   globalData: {
@@ -38,24 +35,48 @@ App({
     }
   },
 
-  // 设置登录信息
-  setLoginInfo(token, userInfo) {
-    this.globalData.token = token
-    this.globalData.userInfo = userInfo
-    wx.setStorageSync('token', token)
-    wx.setStorageSync('userInfo', userInfo)
-  },
-
   // 清除登录信息
   clearLoginInfo() {
     this.globalData.token = null
     this.globalData.userInfo = null
     wx.removeStorageSync('token')
     wx.removeStorageSync('userInfo')
+    wx.removeStorageSync('tokenTime')
   },
 
   // 检查是否已登录
   isLoggedIn() {
     return !!(this.globalData.token && this.globalData.userInfo)
+  },
+
+  // 检查token是否过期
+  checkTokenExpiry() {
+    const token = this.globalData.token
+    if (!token) return
+
+    // 简单的token过期检查（实际项目中可以解析JWT获取过期时间）
+    const tokenTime = wx.getStorageSync('tokenTime')
+    if (tokenTime) {
+      const now = Date.now()
+      const expireTime = tokenTime + 24 * 60 * 60 * 1000 // 24小时
+      
+      if (now > expireTime) {
+        console.log('Token已过期，清除登录信息')
+        this.clearLoginInfo()
+      }
+    }
+  },
+
+  // 更新setLoginInfo方法，记录token时间
+  setLoginInfo(token, userInfo) {
+    this.globalData.token = token
+    this.globalData.userInfo = userInfo
+    wx.setStorageSync('token', token)
+    wx.setStorageSync('userInfo', userInfo)
+    wx.setStorageSync('tokenTime', Date.now()) // 记录token获取时间
+    
+    // 安全地获取用户名称
+    const userName = userInfo && (userInfo.nickname || userInfo.username) || '未知用户'
+    console.log('登录信息已保存:', userName)
   }
 })

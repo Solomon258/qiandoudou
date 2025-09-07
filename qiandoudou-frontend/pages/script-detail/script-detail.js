@@ -175,10 +175,13 @@ Page({
   // 加载剧本详情
   async loadScriptDetail(scriptId) {
     try {
+      console.log('开始加载剧本详情，scriptId:', scriptId, '类型:', typeof scriptId)
       wx.showLoading({ title: '加载中...' })
       
       // 获取剧本详情
+      console.log('调用API获取剧本详情...')
       const scriptResponse = await scriptAPI.getScriptDetail(scriptId)
+      console.log('剧本详情API响应:', scriptResponse)
       if (scriptResponse.code !== 200) {
         throw new Error('获取剧本详情失败')
       }
@@ -308,15 +311,19 @@ Page({
   // 选择剧本
   selectScript(e) {
     const script = e.currentTarget.dataset.script
+    console.log('选择的剧本:', script)
+    console.log('剧本ID:', script.id, '类型:', typeof script.id)
     
     // 根据剧本类型跳转到不同页面
-    if (script.id === 3) {
+    if (script.id == 3 || script.id === '3') {
       // 图文类型剧本，跳转到新页面
+      console.log('跳转到图文剧本页面')
       wx.navigateTo({
         url: '/pages/script-image-detail/script-image-detail?walletId=' + this.data.walletId
       })
     } else {
       // 视频类型剧本，继续使用当前页面
+      console.log('加载视频剧本详情，scriptId:', script.id)
       this.loadScriptDetail(script.id)
     }
   },

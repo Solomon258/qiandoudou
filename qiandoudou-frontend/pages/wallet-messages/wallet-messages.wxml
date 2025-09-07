@@ -44,7 +44,7 @@
         
         <!-- 第三行：来源和时间 -->
         <view class="message-meta">
-          <text class="source">支付宝钱兜兜</text>
+          <text class="source">钱兜兜</text>
           <text class="time">{{item.timeText}}</text>
         </view>
       </view>

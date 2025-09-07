@@ -30,8 +30,8 @@
     <!-- 章节标题和状态 -->
     <view class="chapter-header">
       <view class="chapter-title">第{{currentChapter}}集 {{chapterContent.title}}</view>
-      <view class="chapter-status {{userProgress.completedChapters && userProgress.completedChapters.includes(currentChapter) ? 'completed' : 'pending'}}">
-        {{userProgress.completedChapters && userProgress.completedChapters.includes(currentChapter) ? '已完成' : '未完成'}}
+      <view class="chapter-status {{userProgress.status === 2 && currentChapter <= userProgress.currentChapter ? 'completed' : 'pending'}}">
+        {{userProgress.status === 2 && currentChapter <= userProgress.currentChapter ? '已完成' : '未完成'}}
       </view>
     </view>
 

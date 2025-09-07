@@ -405,7 +405,7 @@ Page({
               bgImage: wallet.backgroundImage || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png',
               backgroundStyle: backgroundStyles[index % backgroundStyles.length],
               participantCount: wallet.type === 2 ? 2 : 1,
-              fansCount: 0, // 初始值，稍后从API获取
+              fansCount: 0, // 新钱包粉丝数为0，稍后从API获取真实数据
               comments: recentTransactions.slice(0, 2).map(tx => ({
                 username: wallet.owner_nickname || '用户',
                 message: tx.description || '攒钱记录',

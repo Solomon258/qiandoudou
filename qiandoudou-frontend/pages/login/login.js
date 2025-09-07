@@ -37,13 +37,40 @@ Page({
       loginType: 'wechat'
     })
 
+    console.log('开始微信登录流程')
+    
+    // 调用微信登录接口获取code
     wx.login({
       success: (res) => {
+        console.log('wx.login 成功，获取到code:', res.code)
+        
         if (res.code) {
           // 发送code到后端进行微信登录
+          console.log('发送code到后端进行验证')
           authAPI.wechatLogin(res.code)
             .then(result => {
+              console.log('微信登录成功，后端返回:', result)
+              
+              // 检查返回数据结构
+              if (!result.data) {
+                throw new Error('后端返回数据格式错误')
+              }
+              
               const { token, user } = result.data
+              
+              // 验证必要字段
+              if (!token) {
+                throw new Error('未获取到登录token')
+              }
+              
+              if (!user) {
+                throw new Error('未获取到用户信息')
+              }
+              
+              console.log('Token:', token ? '已获取' : '未获取')
+              console.log('用户信息:', user)
+              
+              // 保存登录信息
               app.setLoginInfo(token, user)
               
               wx.showToast({
@@ -51,6 +78,7 @@ Page({
                 icon: 'success'
               })
 
+              // 登录成功后跳转到首页
               setTimeout(() => {
                 wx.redirectTo({
                   url: '/pages/home/home'
@@ -58,14 +86,16 @@ Page({
               }, 1500)
             })
             .catch(error => {
-              // 不在控制台输出错误，只显示用户友好的提示
+              console.error('微信登录失败:', error)
               wx.showToast({
                 title: error.message || '微信登录失败',
-                icon: 'none'
+                icon: 'none',
+                duration: 3000
               })
               this.setData({ loading: false, loginType: '' })
             })
         } else {
+          console.error('wx.login 未返回code')
           wx.showToast({
             title: '获取微信授权失败',
             icon: 'none'
@@ -73,7 +103,8 @@ Page({
           this.setData({ loading: false, loginType: '' })
         }
       },
-      fail: () => {
+      fail: (error) => {
+        console.error('wx.login 调用失败:', error)
         wx.showToast({
           title: '微信登录失败',
           icon: 'none'

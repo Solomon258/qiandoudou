@@ -26,15 +26,15 @@
       <!-- 统计信息 -->
       <view class="stats-info" catchtap="stopPropagation">
         <view class="stat-item">
-          <text class="stat-number">{{socialStats.fansCount !== undefined ? socialStats.fansCount : (wallet.followers_count || 0)}}</text>
+          <text class="stat-number">{{socialStats.fansCount}}</text>
           <text class="stat-label">粉丝</text>
         </view>
         <view class="stat-item">
-          <text class="stat-number">{{socialStats.likesCount !== undefined ? socialStats.likesCount : (wallet.likes_count || 0)}}</text>
+          <text class="stat-number">{{socialStats.likesCount}}</text>
           <text class="stat-label">获赞</text>
         </view>
         <view class="stat-item">
-          <text class="stat-number">{{socialStats.viewsCount !== undefined ? socialStats.viewsCount : 0}}</text>
+          <text class="stat-number">{{socialStats.viewsCount}}</text>
           <text class="stat-label">浏览</text>
         </view>
         
@@ -70,10 +70,13 @@
       </view>
     </view>
     
-    <!-- 第二行：剧本攒 -->
+    <!-- 第二行：剧本攒和设置 -->
     <view class="script-button-row">
       <view class="script-btn" bindtap="goToScripts">
         <text class="script-btn-text">剧本攒</text>
+      </view>
+      <view class="settings-btn" bindtap="showWalletSettings">
+        <text class="settings-btn-text">设置</text>
       </view>
     </view>
   </view>
@@ -187,15 +190,15 @@
           <image class="note-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
         </view>
         
-        <!-- 社交互动按钮（只在来自社交圈时显示） -->
-        <view wx:if="{{fromSocial}}" class="social-actions">
+        <!-- 社交互动按钮（在所有钱包详情页显示） -->
+        <view class="social-actions">
           <view class="action-btn {{item.isLiked ? 'liked' : ''}}" bindtap="toggleLike" data-transaction="{{item}}">
             <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
-            <text class="action-text">{{item.likeCount || 0}}</text>
+            <text class="action-text">{{item.likeCount === null ? '...' : (item.likeCount || 0)}}</text>
           </view>
           <view class="action-btn" bindtap="showComments" data-transaction="{{item}}">
             <text class="action-icon">💬</text>
-            <text class="action-text">{{item.commentCount || 0}}</text>
+            <text class="action-text">{{item.commentCount === null ? '...' : (item.commentCount || 0)}}</text>
           </view>
         </view>
         
@@ -206,6 +209,14 @@
               <text class="comment-username-inline">{{comment.userName}}：</text>
             </view>
             <text class="comment-content-inline">{{comment.content}}</text>
+            <!-- AI情侣评论的语音播放按钮 -->
+            <view wx:if="{{comment.isAiComment && comment.voiceUrl}}" class="comment-voice-play">
+              <view class="voice-play-btn-small {{comment.isPlayingVoice ? 'playing' : ''}}" 
+                    bindtap="playCommentVoice" 
+                    data-comment="{{comment}}">
+                <text class="voice-icon-small">🎵</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -412,6 +423,38 @@
               {{commentLoading ? '发送中...' : '发送'}}
             </button>
           </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 钱包设置模态框 -->
+  <view wx:if="{{showWalletSettings}}" class="modal-overlay" bindtap="hideWalletSettings">
+    <view class="wallet-settings-modal" catchtap="stopPropagation">
+      <view class="settings-header">
+        <text class="settings-title">钱包设置</text>
+        <view class="close-settings-btn" bindtap="hideWalletSettings">×</view>
+      </view>
+      
+      <view class="settings-content">
+        <!-- 公开/私密切换 -->
+        <view class="setting-item">
+          <view class="setting-info">
+            <text class="setting-label">在兜圈圈中公开显示</text>
+            <text class="setting-desc">开启后，其他用户可以在兜圈圈中看到你的钱包动态</text>
+          </view>
+          <switch class="setting-switch" 
+                  checked="{{wallet.is_public === 1}}" 
+                  bindchange="toggleWalletPublic" />
+        </view>
+        
+        <!-- 其他设置项可以在这里添加 -->
+        <view class="setting-item">
+          <view class="setting-info">
+            <text class="setting-label">钱包名称</text>
+            <text class="setting-desc">{{wallet.name || '钱兜兜'}}</text>
+          </view>
+          <text class="setting-action" bindtap="editWalletName">修改</text>
         </view>
       </view>
     </view>

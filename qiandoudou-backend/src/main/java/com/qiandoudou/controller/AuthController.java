@@ -70,11 +70,10 @@ public class AuthController {
                 return Result.error("微信授权码不能为空");
             }
 
-            String token = userService.wechatLogin(code);
-            
-            // 通过token解析出用户信息（简化处理）
-            String openid = "wx_demo_" + code;
-            User user = userService.getUserByOpenid(openid);
+            // 调用微信登录服务，返回token和用户信息
+            Map<String, Object> loginResult = userService.wechatLoginWithUser(code);
+            String token = (String) loginResult.get("token");
+            User user = (User) loginResult.get("user");
 
             Map<String, Object> result = new HashMap<>();
             result.put("token", token);

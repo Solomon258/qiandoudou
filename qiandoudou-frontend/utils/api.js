@@ -2,8 +2,8 @@
 const app = getApp()
 
 // 后端API基础地址
-const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  // const BASE_URL = 'http://8.148.206.18/api'  // IP访问（微信小程序不支持）
+// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+  const BASE_URL = 'http://8.148.206.18/api'  // IP访问（微信小程序不支持）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // const BASE_URL = 'https://ai-where.com/api'
@@ -249,6 +249,15 @@ const walletAPI = {
     })
   },
 
+  // 设置钱包公开/私密状态
+  setWalletPublic(walletId, isPublic) {
+    return request({
+      url: '/wallet/set-public',
+      method: 'PUT',
+      data: { walletId, isPublic }
+    })
+  },
+
   // 获取用户关注的钱包列表
   getUserFollowedWallets(userId) {
     return request({
@@ -437,6 +446,24 @@ const walletAPI = {
     })
   },
 
+  // 获取钱包社交统计数据
+  getWalletSocialStats(walletId) {
+    return request({
+      url: '/social/wallet/social-stats',
+      method: 'GET',
+      data: { walletId }
+    })
+  },
+
+  // 记录钱包浏览
+  recordWalletView(userId, walletId) {
+    return request({
+      url: '/social/wallet/view',
+      method: 'POST',
+      data: { userId, walletId }
+    })
+  },
+
   // 关注钱包
   followWallet(userId, walletId) {
     return request({
@@ -562,6 +589,11 @@ const scriptAPI = {
 
   // 获取剧本详情
   getScriptDetail: (scriptId) => {
+    console.log('API调用 getScriptDetail，scriptId:', scriptId, '类型:', typeof scriptId)
+    if (!scriptId || scriptId === 'undefined' || scriptId === 'null') {
+      console.error('无效的scriptId:', scriptId)
+      return Promise.reject(new Error('无效的剧本ID'))
+    }
     return request({
       url: `/scripts/${scriptId}`,
       method: 'GET'

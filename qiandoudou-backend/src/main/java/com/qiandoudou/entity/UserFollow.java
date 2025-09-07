@@ -32,10 +32,10 @@ public class UserFollow implements Serializable {
     private Long followerId;
 
     /**
-     * 被关注者ID
+     * 被关注的钱包ID
      */
-    @TableField("following_id")
-    private Long followingId;
+    @TableField("wallet_id")
+    private Long walletId;
 
     /**
      * 创建时间

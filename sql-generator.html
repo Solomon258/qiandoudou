@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL生成器 - 剧本章节数据生成工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: inline-block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .required {
+            color: #dc3545;
+            margin-left: 4px;
+        }
+
+        input, textarea {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .image-upload-section {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .image-input-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .image-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            object-fit: cover;
+        }
+
+        .preview-text {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .choices-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .choices-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .choice-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .choice-input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .choice-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .json-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .json-title {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .json-content {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', Monaco, monospace;
+            font-size: 13px;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .sql-history {
+            margin-top: 40px;
+        }
+
+        .sql-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .sql-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .sql-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .sql-time {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .sql-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sql-content {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', Monaco, monospace;
+            font-size: 13px;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .choices-header,
+            .choice-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .choice-row {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+                margin-bottom: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .sql-header {
+                flex-direction: column;
+            }
+
+            .image-upload-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SQL生成器</h1>
+            <p>剧本章节数据生成工具</p>
+        </div>
+
+        <div class="content">
+            <!-- 基本信息表单 -->
+            <div class="form-section">
+                <h2 class="section-title">基本信息</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="chapterNumber">章节号 <span class="required">*</span></label>
+                        <input type="number" id="chapterNumber" placeholder="请输入章节号" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">标题 <span class="required">*</span></label>
+                        <input type="text" id="title" placeholder="请输入章节标题">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="content">内容 <span class="required">*</span></label>
+                        <textarea id="content" placeholder="请输入章节内容" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="imageUrl">图片URL</label>
+                        <div class="image-upload-section">
+                            <div class="image-input-group">
+                                <input type="url" id="imageUrl" placeholder="图片URL（可手动输入或上传生成）">
+                            </div>
+                            <div class="image-buttons">
+                                <button type="button" class="btn btn-info btn-small" onclick="uploadImage()">上传图片</button>
+                                <button type="button" class="btn btn-warning btn-small" onclick="testImageUrl()" id="testImageBtn" style="display:none;">测试链接</button>
+                            </div>
+                        </div>
+                        <div id="imagePreview" class="image-preview" style="display:none;">
+                            <img id="previewImg" alt="图片预览">
+                            <div class="preview-text">图片预览</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 选择项配置 -->
+            <div class="form-section">
+                <h2 class="section-title">选择项配置</h2>
+                
+                <div class="choices-section">
+                    <div class="choices-header">
+                        <div>选择内容</div>
+                        <div>消费金额</div>
+                        <div>下一章节</div>
+                    </div>
+                    
+                    <div id="choicesContainer">
+                        <div class="choice-row">
+                            <input type="text" class="choice-input" placeholder="选择项1" data-field="selection" data-index="0">
+                            <input type="number" class="choice-input" placeholder="金额" data-field="cost" data-index="0">
+                            <input type="number" class="choice-input" placeholder="下一章" data-field="nextId" data-index="0">
+                        </div>
+                        <div class="choice-row">
+                            <input type="text" class="choice-input" placeholder="选择项2" data-field="selection" data-index="1">
+                            <input type="number" class="choice-input" placeholder="金额" data-field="cost" data-index="1">
+                            <input type="number" class="choice-input" placeholder="下一章" data-field="nextId" data-index="1">
+                        </div>
+                        <div class="choice-row">
+                            <input type="text" class="choice-input" placeholder="选择项3" data-field="selection" data-index="2">
+                            <input type="number" class="choice-input" placeholder="金额" data-field="cost" data-index="2">
+                            <input type="number" class="choice-input" placeholder="下一章" data-field="nextId" data-index="2">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="generateJson()" style="margin-top: 20px;">生成JSON</button>
+                    
+                    <div id="jsonDisplay" class="json-display" style="display:none;">
+                        <div class="json-title">生成的JSON：</div>
+                        <div id="jsonContent" class="json-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-success" onclick="generateSql()">生成SQL</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">清空表单</button>
+            </div>
+
+            <!-- SQL历史记录 -->
+            <div class="form-section">
+                <h2 class="section-title">SQL历史记录</h2>
+                <div id="sqlHistory">
+                    <div class="empty-state">
+                        <h3>暂无SQL记录</h3>
+                        <p>填写信息并点击"生成SQL"按钮来创建第一条记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+
+    <script>
+        // 全局变量
+        let sqlHistory = [];
+        let generatedJson = '';
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 监听章节号变化，自动更新nextId
+            document.getElementById('chapterNumber').addEventListener('input', updateChoicesNextId);
+            
+            // 监听图片URL变化
+            document.getElementById('imageUrl').addEventListener('input', function() {
+                const url = this.value;
+                const testBtn = document.getElementById('testImageBtn');
+                if (url.trim()) {
+                    testBtn.style.display = 'inline-block';
+                } else {
+                    testBtn.style.display = 'none';
+                    hideImagePreview();
+                }
+            });
+
+            // 从localStorage加载历史记录
+            loadSqlHistory();
+        });
+
+        // 更新选择项的下一章节ID
+        function updateChoicesNextId() {
+            const chapterNumber = parseInt(document.getElementById('chapterNumber').value);
+            if (!isNaN(chapterNumber)) {
+                const nextIdInputs = document.querySelectorAll('input[data-field="nextId"]');
+                nextIdInputs.forEach(input => {
+                    // 总是更新为章节号+1，不管输入框是否为空
+                    input.value = chapterNumber + 1;
+                });
+            } else {
+                // 如果章节号被清空，也清空下一章节
+                const nextIdInputs = document.querySelectorAll('input[data-field="nextId"]');
+                nextIdInputs.forEach(input => {
+                    input.value = '';
+                });
+            }
+        }
+
+        // 上传图片
+        function uploadImage() {
+            document.getElementById('fileInput').click();
+        }
+
+        // 处理文件选择
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type.startsWith('image/')) {
+                    uploadImageToOSS(file);
+                } else {
+                    showToast('请选择图片文件', 'error');
+                }
+            }
+        }
+
+        // 上传图片到OSS
+        async function uploadImageToOSS(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showToast('正在上传图片...', 'warning');
+
+            try {
+                const response = await fetch('http://localhost:8080/api/wallet/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('上传响应:', result);
+
+                if (result.code === 200 && result.data && result.data.imageUrl) {
+                    const imageUrl = result.data.imageUrl;
+                    document.getElementById('imageUrl').value = imageUrl;
+                    showImagePreview(imageUrl);
+                    document.getElementById('testImageBtn').style.display = 'inline-block';
+                    showToast(`图片上传成功！文件路径: /res/image/${file.name}`, 'success');
+                } else {
+                    throw new Error(result.message || result.msg || '上传失败，未知错误');
+                }
+            } catch (error) {
+                console.error('图片上传失败:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    showToast('无法连接到后端服务，请确保后端服务已启动', 'error');
+                } else {
+                    showToast('图片上传失败: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // 测试图片URL
+        function testImageUrl() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            if (!imageUrl.trim()) {
+                showToast('请先输入图片URL', 'warning');
+                return;
+            }
+            
+            // 在新窗口打开图片URL
+            window.open(imageUrl, '_blank');
+        }
+
+        // 显示图片预览
+        function showImagePreview(url) {
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            
+            img.onload = function() {
+                preview.style.display = 'block';
+                showToast('图片加载成功', 'success');
+            };
+            
+            img.onerror = function() {
+                hideImagePreview();
+                showToast('图片加载失败，请检查URL', 'error');
+            };
+            
+            img.src = url;
+        }
+
+        // 隐藏图片预览
+        function hideImagePreview() {
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        // 生成JSON
+        function generateJson() {
+            const choices = [];
+            const choiceInputs = document.querySelectorAll('.choice-input');
+            
+            // 按行收集数据
+            for (let i = 0; i < 3; i++) {
+                const selection = document.querySelector(`input[data-field="selection"][data-index="${i}"]`).value;
+                const cost = document.querySelector(`input[data-field="cost"][data-index="${i}"]`).value;
+                const nextId = document.querySelector(`input[data-field="nextId"][data-index="${i}"]`).value;
+                
+                if (selection && cost && nextId) {
+                    choices.push({
+                        cost: parseInt(cost) || 0,
+                        nextId: nextId,
+                        selection: selection
+                    });
+                }
+            }
+
+            if (choices.length === 0) {
+                showToast('请至少填写一个完整的选择项', 'warning');
+                return;
+            }
+
+            generatedJson = JSON.stringify(choices, null, 2);
+            
+            document.getElementById('jsonContent').textContent = generatedJson;
+            document.getElementById('jsonDisplay').style.display = 'block';
+            
+            showToast('JSON生成成功', 'success');
+        }
+
+        // 生成SQL
+        function generateSql() {
+            const chapterNumber = document.getElementById('chapterNumber').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+
+            // 验证必填字段
+            if (!chapterNumber || !title || !content) {
+                showToast('请填写完整信息', 'warning');
+                return;
+            }
+
+            if (!generatedJson) {
+                showToast('请先生成JSON', 'warning');
+                return;
+            }
+
+            // 转义单引号
+            const escapedTitle = title.replace(/'/g, "\\'");
+            const escapedContent = content.replace(/'/g, "\\'");
+            const escapedJson = generatedJson.replace(/'/g, "\\'");
+            const escapedImageUrl = (imageUrl || '').replace(/'/g, "\\'");
+
+            // 生成SQL语句
+            const sql = `INSERT INTO \`qiandoudou\`.\`script_chapters\` (  \`script_id\`, \`chapter_number\`, \`title\`, \`content\`, \`image_url\`, \`video_url\`, \`choices\`, \`unlock_amount\`, \`create_time\`, \`update_time\`, \`deleted\` )
+VALUES
+\t( 3, ${chapterNumber}, '${escapedTitle}', '${escapedContent}', '${escapedImageUrl}', NULL, '${escapedJson}', 0.00, now(), now(), 0 );`;
+
+            // 添加到历史记录
+            const sqlItem = {
+                id: Date.now(),
+                sql: sql,
+                timestamp: new Date().toLocaleString(),
+                chapterNumber: chapterNumber,
+                title: title
+            };
+
+            sqlHistory.unshift(sqlItem);
+            saveSqlHistory();
+            renderSqlHistory();
+
+            showToast('SQL生成成功', 'success');
+        }
+
+        // 复制SQL
+        function copySql(sql) {
+            // 处理模板字符串中的反引号转义
+            const cleanSql = sql.replace(/\\`/g, '`');
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(cleanSql).then(() => {
+                    showToast('已复制到剪贴板', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(cleanSql);
+                });
+            } else {
+                fallbackCopyTextToClipboard(cleanSql);
+            }
+        }
+
+        // 降级复制方案
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('已复制到剪贴板', 'success');
+            } catch (err) {
+                console.error('复制失败:', err);
+                showToast('复制失败，请手动复制', 'error');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // 通过索引复制SQL
+        function copySqlByIndex(index) {
+            if (index >= 0 && index < sqlHistory.length) {
+                const sql = sqlHistory[index].sql;
+                copySql(sql);
+            } else {
+                showToast('复制失败，记录不存在', 'error');
+            }
+        }
+
+        // 删除SQL记录
+        function deleteSql(id) {
+            if (confirm('确定要删除这条SQL记录吗？')) {
+                sqlHistory = sqlHistory.filter(item => item.id !== id);
+                saveSqlHistory();
+                renderSqlHistory();
+                showToast('删除成功', 'success');
+            }
+        }
+
+        // 清空表单
+        function clearForm() {
+            if (confirm('确定要清空所有输入内容吗？')) {
+                document.getElementById('chapterNumber').value = '';
+                document.getElementById('title').value = '';
+                document.getElementById('content').value = '';
+                document.getElementById('imageUrl').value = '';
+                
+                // 清空选择项
+                document.querySelectorAll('.choice-input').forEach(input => {
+                    input.value = '';
+                });
+                
+                // 隐藏JSON显示和图片预览
+                document.getElementById('jsonDisplay').style.display = 'none';
+                document.getElementById('testImageBtn').style.display = 'none';
+                hideImagePreview();
+                
+                generatedJson = '';
+                
+                showToast('表单已清空', 'success');
+            }
+        }
+
+        // 渲染SQL历史记录
+        function renderSqlHistory() {
+            const container = document.getElementById('sqlHistory');
+            
+            if (sqlHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无SQL记录</h3>
+                        <p>填写信息并点击"生成SQL"按钮来创建第一条记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sqlHistory.map((item, index) => `
+                <div class="sql-item">
+                    <div class="sql-header">
+                        <div class="sql-info">
+                            <h4>章节 ${item.chapterNumber}: ${item.title}</h4>
+                            <div class="sql-time">${item.timestamp}</div>
+                        </div>
+                        <div class="sql-actions">
+                            <button class="btn btn-success btn-small" onclick="copySqlByIndex(${index})">复制</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteSql(${item.id})">删除</button>
+                        </div>
+                    </div>
+                    <div class="sql-content">${item.sql}</div>
+                </div>
+            `).join('');
+        }
+
+        // 保存SQL历史记录到localStorage
+        function saveSqlHistory() {
+            localStorage.setItem('sqlGeneratorHistory', JSON.stringify(sqlHistory));
+        }
+
+        // 从localStorage加载SQL历史记录
+        function loadSqlHistory() {
+            const saved = localStorage.getItem('sqlGeneratorHistory');
+            if (saved) {
+                sqlHistory = JSON.parse(saved);
+                renderSqlHistory();
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'success') {
+            // 移除现有的toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // 创建新的toast
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // 显示toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // 3秒后隐藏toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -464,9 +464,9 @@ Page({
               type: walletType,
               backgroundImage: wallet.backgroundImage || wallet.background_image
             }),
-            fansCount: 0, // 真实粉丝数，暂时设为0，后续可从后端获取
+            fansCount: 0, // 新钱包粉丝数为0，从后端获取真实数据
             participantCount: recentTransactions.length,
-            like_count: 0, // 真实点赞数，暂时设为0，后续可从后端获取  
+            like_count: 0, // 新钱包点赞数为0，从后端获取真实数据  
             comment_count: recentTransactions.length,
             is_liked: false,
             recent_transactions: recentTransactions.slice(0, 2).map(transaction => ({
@@ -750,8 +750,9 @@ Page({
       if (post) {
         const ownerNickname = encodeURIComponent(post.owner_nickname || '')
         const title = encodeURIComponent(post.title || '')
-        const fansCount = post.fansCount || 0
-        const likeCount = post.like_count || 0
+        // 确保新钱包的社交数据为0，不传递任何可能的模拟数据
+        const fansCount = 0  // 新钱包粉丝数应该为0
+        const likeCount = 0  // 新钱包获赞数应该为0
         
         url += `&ownerNickname=${ownerNickname}&title=${title}&fansCount=${fansCount}&likeCount=${likeCount}`
       }

@@ -37,6 +37,11 @@ public interface SocialService {
      * 评论交易记录
      */
     Map<String, Object> commentTransaction(Long userId, Long transactionId, String content);
+
+    /**
+     * AI伴侣评论交易记录
+     */
+    Map<String, Object> aiCommentTransaction(Long transactionId, String content, Long aiPartnerId, String voiceUrl);
     
     /**
      * 获取交易评论列表
@@ -62,6 +67,16 @@ public interface SocialService {
      * 检查用户关注状态
      */
     Boolean checkUserFollowStatus(Long currentUserId, Long targetUserId);
+
+    /**
+     * 获取钱包社交统计数据
+     */
+    Map<String, Object> getWalletSocialStats(Long walletId);
+
+    /**
+     * 记录钱包浏览
+     */
+    void recordWalletView(Long userId, Long walletId);
     
     /**
      * 获取交易的社交数据（点赞数、评论数、用户是否已点赞）

@@ -9,6 +9,9 @@ import com.qiandoudou.mapper.UserFollowMapper;
 import com.qiandoudou.mapper.PostCommentMapper;
 import com.qiandoudou.mapper.TransactionMapper;
 import com.qiandoudou.mapper.WalletMapper;
+import com.qiandoudou.mapper.WalletViewMapper;
+import com.qiandoudou.service.AiPartnerService;
+import com.qiandoudou.entity.WalletView;
 import com.qiandoudou.service.SocialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,12 @@ public class SocialServiceImpl implements SocialService {
     
     @Autowired
     private PostCommentMapper postCommentMapper;
+    
+    @Autowired
+    private WalletViewMapper walletViewMapper;
+    
+    @Autowired
+    private AiPartnerService aiPartnerService;
 
     @Override
     public Map<String, Object> getUserSocialStats(Long userId) {
@@ -97,16 +106,16 @@ public class SocialServiceImpl implements SocialService {
                 throw new RuntimeException("不能关注自己的钱包");
             }
             
-            // 1. 检查是否已经关注该用户
-            Integer existingFollow = userFollowMapper.checkUserFollowed(userId, walletOwnerId);
+            // 1. 检查是否已经关注该钱包
+            Integer existingFollow = userFollowMapper.checkUserFollowed(userId, walletId);
             if (existingFollow > 0) {
-                throw new RuntimeException("已关注该用户");
+                throw new RuntimeException("已关注该钱包");
             }
             
             // 2. 在user_follows表中插入关注记录
             UserFollow userFollow = new UserFollow();
             userFollow.setFollowerId(userId);
-            userFollow.setFollowingId(walletOwnerId);
+            userFollow.setWalletId(walletId);
             userFollowMapper.insert(userFollow);
             
             // 3. 创建关注通知
@@ -132,13 +141,13 @@ public class SocialServiceImpl implements SocialService {
             }
             
             // 1. 检查是否已经关注
-            Integer existingFollow = userFollowMapper.checkUserFollowed(userId, walletOwnerId);
+            Integer existingFollow = userFollowMapper.checkUserFollowed(userId, walletId);
             if (existingFollow == 0) {
-                throw new RuntimeException("未关注该用户");
+                throw new RuntimeException("未关注该钱包");
             }
             
             // 2. 删除关注记录（软删除）
-            userFollowMapper.removeFollow(userId, walletOwnerId);
+            userFollowMapper.removeFollow(userId, walletId);
             
             System.out.println("用户 " + userId + " 成功取消关注了钱包 " + walletId + " 的所有者 " + walletOwnerId);
         } catch (Exception e) {
@@ -161,17 +170,24 @@ public class SocialServiceImpl implements SocialService {
                 return;
             }
             
-            // 2. 在post_likes表中插入记录
+            // 2. 使用UPSERT方法，原子性地插入或激活点赞记录
             PostLike postLike = new PostLike();
             postLike.setPostId(transactionId);
             postLike.setUserId(userId);
             postLike.setIsAiLike(0);
-            postLikeMapper.insert(postLike);
+            postLike.setCreateTime(LocalDateTime.now());
             
-            // 3. 创建点赞通知
-            this.createLikeNotification(userId, transactionId);
+            // 使用UPSERT，如果记录已存在则激活它
+            int affected = postLikeMapper.upsertLike(postLike);
             
-            System.out.println("用户 " + userId + " 成功点赞了交易 " + transactionId);
+            if (affected > 0) {
+                // 3. 创建点赞通知
+                this.createLikeNotification(userId, transactionId);
+                System.out.println("用户 " + userId + " 成功点赞了交易 " + transactionId);
+            } else {
+                System.out.println("用户 " + userId + " 点赞交易 " + transactionId + " 无变化");
+            }
+            
         } catch (Exception e) {
             System.err.println("点赞失败: " + e.getMessage());
             e.printStackTrace();
@@ -245,6 +261,57 @@ public class SocialServiceImpl implements SocialService {
     }
 
     @Override
+    @Transactional
+    public Map<String, Object> aiCommentTransaction(Long transactionId, String content, Long aiPartnerId, String voiceUrl) {
+        try {
+            System.out.println("开始处理AI评论: aiPartnerId=" + aiPartnerId + ", transactionId=" + transactionId + ", content=" + content);
+            
+            // 获取AI伴侣信息
+            com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
+            if (aiPartner == null) {
+                throw new RuntimeException("AI伴侣不存在");
+            }
+            
+            // 1. 在post_comments表中插入AI评论记录
+            PostComment postComment = new PostComment();
+            postComment.setPostId(transactionId);
+            postComment.setUserId(aiPartnerId); // 使用AI伴侣ID作为用户ID
+            postComment.setContent(content);
+            postComment.setIsAiComment(1); // 标记为AI评论
+            
+            postCommentMapper.insert(postComment);
+            System.out.println("AI评论记录插入成功，ID: " + postComment.getId());
+            
+            // 2. 返回新创建的AI评论信息
+            Map<String, Object> comment = new HashMap<>();
+            comment.put("id", postComment.getId());
+            comment.put("userId", aiPartnerId);
+            comment.put("user_id", aiPartnerId);
+            comment.put("transactionId", transactionId);
+            comment.put("post_id", transactionId);
+            comment.put("content", content);
+            comment.put("createTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            comment.put("create_time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            comment.put("isAiComment", true);
+            comment.put("voiceUrl", voiceUrl);
+            
+            // 添加AI伴侣信息
+            comment.put("user_nickname", aiPartner.getName());
+            comment.put("userName", aiPartner.getName());
+            comment.put("user_avatar", aiPartner.getAvatar());
+            comment.put("userAvatar", aiPartner.getAvatar());
+            
+            System.out.println("AI伴侣 " + aiPartner.getName() + " 成功评论了交易 " + transactionId + ": " + content);
+            
+            return comment;
+        } catch (Exception e) {
+            System.err.println("AI评论失败: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("AI评论失败: " + e.getMessage());
+        }
+    }
+
+    @Override
     public List<Map<String, Object>> getTransactionComments(Long transactionId) {
         try {
             System.out.println("查询交易 " + transactionId + " 的评论列表");
@@ -254,8 +321,31 @@ public class SocialServiceImpl implements SocialService {
             
             // 处理评论数据格式
             for (Map<String, Object> comment : comments) {
-                // 确保字段名兼容前端
-                comment.put("userName", comment.get("user_nickname"));
+                // 检查是否为AI评论
+                Object isAiCommentObj = comment.get("is_ai_comment");
+                boolean isAiComment = isAiCommentObj != null && (Integer.valueOf(isAiCommentObj.toString()) == 1);
+                comment.put("isAiComment", isAiComment);
+                
+                if (isAiComment) {
+                    // 如果是AI评论，获取AI伴侣信息
+                    Long aiPartnerId = Long.valueOf(comment.get("user_id").toString());
+                    try {
+                        com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
+                        if (aiPartner != null) {
+                            comment.put("user_nickname", aiPartner.getName());
+                            comment.put("userName", aiPartner.getName());
+                            comment.put("user_avatar", aiPartner.getAvatar());
+                            comment.put("userAvatar", aiPartner.getAvatar());
+                            // 添加语音URL（如果有的话）
+                            comment.put("voiceUrl", comment.get("voice_url"));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("获取AI伴侣信息失败: " + e.getMessage());
+                    }
+                } else {
+                    // 普通用户评论，使用原有逻辑
+                    comment.put("userName", comment.get("user_nickname"));
+                }
                 
                 // 处理时间格式
                 Object createTimeObj = comment.get("create_time");
@@ -564,5 +654,61 @@ public class SocialServiceImpl implements SocialService {
         }
         
         return socialData;
+    }
+
+    @Override
+    public Map<String, Object> getWalletSocialStats(Long walletId) {
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // 获取钱包的粉丝数量
+            Integer fansCount = userFollowMapper.getWalletFansCount(walletId);
+            
+            // 获取钱包的获赞数量
+            Integer likesCount = postLikeMapper.getWalletTotalLikes(walletId);
+            
+            // 获取钱包的浏览数量
+            Integer viewsCount = walletViewMapper.getWalletViewCount(walletId);
+            
+            stats.put("fansCount", fansCount != null ? fansCount : 0);
+            stats.put("likesCount", likesCount != null ? likesCount : 0);
+            stats.put("viewsCount", viewsCount != null ? viewsCount : 0);
+            
+            System.out.println("钱包 " + walletId + " 的社交统计: 粉丝" + fansCount + ", 获赞" + likesCount + ", 浏览" + viewsCount);
+            
+        } catch (Exception e) {
+            System.err.println("获取钱包社交统计失败: " + e.getMessage());
+            e.printStackTrace();
+            
+            // 如果出错，返回默认数据
+            stats.put("fansCount", 0);
+            stats.put("likesCount", 0);
+            stats.put("viewsCount", 0);
+        }
+        
+        return stats;
+    }
+
+    @Override
+    @Transactional
+    public void recordWalletView(Long userId, Long walletId) {
+        try {
+            // 检查是否已经浏览过（同一用户同一钱包只记录一次）
+            Integer existingView = walletViewMapper.checkUserViewed(userId, walletId);
+            if (existingView > 0) {
+                return; // 已经浏览过，不重复记录
+            }
+            
+            // 记录浏览
+            WalletView walletView = new WalletView();
+            walletView.setUserId(userId);
+            walletView.setWalletId(walletId);
+            walletViewMapper.insert(walletView);
+            
+            System.out.println("用户 " + userId + " 浏览了钱包 " + walletId);
+        } catch (Exception e) {
+            System.err.println("记录钱包浏览失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

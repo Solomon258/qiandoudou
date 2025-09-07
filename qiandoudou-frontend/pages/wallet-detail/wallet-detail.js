@@ -31,10 +31,10 @@ Page({
     currentComments: [], // 当前交易的评论列表
     commentText: '', // 评论输入内容
     commentLoading: false, // 评论发送中
-    socialStats: { // 社交统计数据
-      fansCount: 0,  // 初始值为0，等待从后端加载真实数据
-      likesCount: 0, // 初始值为0，等待从后端加载真实数据
-      viewsCount: 0  // 初始值为0，等待从后端加载真实数据
+    socialStats: { // 社交统计数据 - 新钱包强制显示0
+      fansCount: 0,  // 新钱包粉丝数为0
+      likesCount: 0, // 新钱包获赞数为0
+      viewsCount: 0  // 新钱包浏览数为0
     },
     isFollowing: false, // 是否已关注
     // AI语音播放相关
@@ -58,7 +58,8 @@ Page({
       { value: 'gradient4', name: '橙色渐变', gradient: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);' },
       { value: 'gradient5', name: '紫色渐变', gradient: 'background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);' },
       { value: 'gradient6', name: '金色渐变', gradient: 'background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);' }
-    ]
+    ],
+    showWalletSettings: false // 显示钱包设置模态框
   },
 
   onLoad(options) {
@@ -99,6 +100,14 @@ Page({
       })
       this.loadWalletDetail()
       this.loadTransactions()
+      
+      // 加载社交统计数据（钱包的粉丝、获赞、浏览数）
+      this.loadSocialStats()
+      
+      // 如果不是自己的钱包，记录浏览
+      if (fromSocial) {
+        this.recordWalletView()
+      }
       
       // 如果是自己的钱包，加载统计数据
       if (!fromSocial) {
@@ -216,17 +225,17 @@ Page({
             wallet.likes_count = socialInfo.likeCount
             wallet.comments_count = 0 // 暂时设为0
             
-            // 设置社交统计数据，但仍然需要从后端获取完整的真实数据
+            // 初始设置社交统计数据为0，确保新钱包显示正确
             this.setData({
               socialStats: {
-                fansCount: socialInfo.fansCount || 0,
-                likesCount: socialInfo.likeCount || 0,
-                viewsCount: socialInfo.viewsCount || 0  // 使用真实数据，不使用计算值
+                fansCount: 0,  // 新钱包粉丝数为0
+                likesCount: 0, // 新钱包获赞数为0
+                viewsCount: 0  // 新钱包浏览数为0
               },
               isFollowing: false // 默认未关注，实际应该从API获取
             })
             
-            // 从后端重新获取最新的真实数据覆盖
+            // 从后端获取真实的社交统计数据
             this.loadSocialStats()
           }
         } else if (isOwnWallet) {
@@ -334,8 +343,8 @@ Page({
             scriptCoverImage: transaction.scriptCoverImage,
             scriptTitle: transaction.scriptTitle,
             // 初始化社交互动数据，稍后从后端加载
-            likeCount: 0,
-            commentCount: 0,
+            likeCount: null, // 设为null表示正在加载中
+            commentCount: null,
             isLiked: false,
             comments: []
           }
@@ -385,13 +394,20 @@ Page({
     Promise.all(socialDataPromises).then(results => {
       const updatedTransactions = [...this.data.transactions]
       
-      results.forEach(result => {
+      results.forEach((result, index) => {
         if (result) {
-          const index = updatedTransactions.findIndex(t => t.id === result.transactionId)
-          if (index !== -1) {
-            updatedTransactions[index].likeCount = result.socialData.likeCount || 0
-            updatedTransactions[index].commentCount = result.socialData.commentCount || 0
-            updatedTransactions[index].isLiked = result.socialData.isLiked || false
+          const transactionIndex = updatedTransactions.findIndex(t => t.id === result.transactionId)
+          if (transactionIndex !== -1) {
+            // 成功获取到数据，更新社交数据
+            updatedTransactions[transactionIndex].likeCount = result.socialData.likeCount || 0
+            updatedTransactions[transactionIndex].commentCount = result.socialData.commentCount || 0
+            updatedTransactions[transactionIndex].isLiked = result.socialData.isLiked || false
+          }
+        } else {
+          // 如果获取失败，将对应的交易数据设置为默认值
+          if (index < updatedTransactions.length && updatedTransactions[index].likeCount === null) {
+            updatedTransactions[index].likeCount = 0
+            updatedTransactions[index].commentCount = 0
           }
         }
       })
@@ -1066,8 +1082,13 @@ Page({
 
   // 切换点赞状态
   toggleLike(e) {
-    // 只在来自社交圈时启用点赞功能
-    if (!this.data.fromSocial) {
+    // 检查用户是否已登录
+    const app = getApp()
+    if (!app.isLoggedIn()) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
       return
     }
 
@@ -1079,6 +1100,16 @@ Page({
       // 防止重复点击
       if (transactions[index].liking) {
         console.log('正在处理点赞请求，忽略重复点击')
+        return
+      }
+      
+      // 防止点赞数为null时的操作（数据还在加载中）
+      if (transactions[index].likeCount === null) {
+        console.log('社交数据还在加载中，请稍后再试')
+        wx.showToast({
+          title: '加载中，请稍后',
+          icon: 'none'
+        })
         return
       }
       const isLiked = !transactions[index].isLiked
@@ -1201,11 +1232,31 @@ Page({
   },
 
   // 格式化时间
-  formatTime(timeStr) {
-    if (!timeStr) return '刚刚'
+  formatTime(timeInput) {
+    if (!timeInput) return '刚刚'
     
     try {
-      const commentTime = new Date(timeStr)
+      let commentTime
+      
+      // 处理Java LocalDateTime数组格式 [year, month, day, hour, minute, second]
+      if (Array.isArray(timeInput)) {
+        const [year, month, day, hour, minute, second] = timeInput
+        // 注意：JavaScript的月份是从0开始的，所以要减1
+        commentTime = new Date(year, month - 1, day, hour, minute, second || 0)
+      } else if (typeof timeInput === 'string') {
+        commentTime = new Date(timeInput.replace(/-/g, '/')) // 兼容iOS
+      } else if (typeof timeInput === 'number') {
+        commentTime = new Date(timeInput)
+      } else {
+        commentTime = new Date(timeInput)
+      }
+      
+      // 检查日期是否有效
+      if (isNaN(commentTime.getTime())) {
+        console.error('无效的时间格式:', timeInput)
+        return '刚刚'
+      }
+      
       const now = new Date()
       const diffMs = now - commentTime
       const diffMins = Math.floor(diffMs / (1000 * 60))
@@ -1219,6 +1270,7 @@ Page({
       
       return commentTime.toLocaleDateString()
     } catch (e) {
+      console.error('时间格式化失败:', timeInput, e)
       return '刚刚'
     }
   },
@@ -1387,7 +1439,11 @@ Page({
       let date
       
       // 处理不同的时间格式
-      if (typeof timestamp === 'string') {
+      if (Array.isArray(timestamp)) {
+        // 处理Java LocalDateTime数组格式 [year, month, day, hour, minute, second]
+        const [year, month, day, hour, minute, second] = timestamp
+        date = new Date(year, month - 1, day, hour, minute, second || 0)
+      } else if (typeof timestamp === 'string') {
         // 处理字符串格式的时间，如 "2024-01-15 10:30:00"
         date = new Date(timestamp.replace(/-/g, '/')) // 兼容iOS
       } else if (typeof timestamp === 'number') {
@@ -1429,30 +1485,33 @@ Page({
 
   // 加载社交统计数据
   loadSocialStats() {
-    const userId = this.data.wallet.userId || this.data.wallet.user_id || app.globalData.userInfo?.id
+    const walletId = this.data.walletId
     
-    if (!userId) {
+    if (!walletId) {
       return
     }
 
-    // 尝试从API获取真实数据
-    walletAPI.getUserSocialStats(userId)
+    // 获取钱包的社交统计数据（不是用户的）
+    walletAPI.getWalletSocialStats(walletId)
       .then(result => {
+        console.log('API返回的钱包社交统计数据:', result.data)
         const stats = result.data || {}
         const socialStats = {
-          fansCount: stats.fansCount || 0,  // 使用真实数据，新用户为0
-          likesCount: stats.likesCount || 0, // 使用真实数据，新用户为0
-          viewsCount: stats.viewsCount || 0  // 使用真实数据，新用户为0
+          fansCount: stats.fansCount || 0,  // 钱包粉丝数
+          likesCount: stats.likesCount || 0, // 钱包获赞数
+          viewsCount: stats.viewsCount || 0  // 钱包浏览数
         }
+        
+        console.log('设置的钱包社交统计数据:', socialStats)
         this.setData({ socialStats })
       })
       .catch(error => {
-        console.log('获取社交统计失败，使用默认数据:', error)
+        console.log('获取钱包社交统计失败，使用默认数据:', error)
         // API失败时使用真实的0值，不使用模拟数据
         const socialStats = {
-          fansCount: 0,  // 新用户真实数据为0
-          likesCount: 0, // 新用户真实数据为0
-          viewsCount: 0  // 新用户真实数据为0
+          fansCount: 0,  // 新钱包真实数据为0
+          likesCount: 0, // 新钱包真实数据为0
+          viewsCount: 0  // 新钱包真实数据为0
         }
         this.setData({ socialStats })
         
@@ -1460,6 +1519,25 @@ Page({
         if (error.message && error.message.includes('网络')) {
           console.log('检测到网络错误，可能是后端服务未启动')
         }
+      })
+  },
+
+  // 记录钱包浏览
+  recordWalletView() {
+    const userId = app.globalData.userInfo?.id
+    const walletId = this.data.walletId
+    
+    if (!userId || !walletId) {
+      return
+    }
+
+    // 记录浏览（不阻塞界面，静默执行）
+    walletAPI.recordWalletView(userId, walletId)
+      .then(() => {
+        console.log('钱包浏览记录成功')
+      })
+      .catch(error => {
+        console.log('钱包浏览记录失败:', error)
       })
   },
 
@@ -1694,10 +1772,19 @@ Page({
     
     console.log('=== 创建新的音频播放 ===')
     console.log('交易ID:', transactionId)
+    console.log('语音URL检查:', transaction.voiceUrl)
+    console.log('是否为AI交易:', transaction.isAiTransaction)
     
     // 检查是否有语音URL
-    if (!transaction.voiceUrl || transaction.voiceUrl.startsWith('mock_voice_')) {
-      console.log('使用模拟语音播放')
+    if (!transaction.voiceUrl || transaction.voiceUrl === 'undefined' || transaction.voiceUrl === 'null' || transaction.voiceUrl.startsWith('mock_voice_')) {
+      console.log('没有有效的语音URL，使用模拟语音播放')
+      this.simulateVoicePlay(transaction)
+      return
+    }
+    
+    // 检查URL是否有效
+    if (typeof transaction.voiceUrl !== 'string' || transaction.voiceUrl.trim() === '') {
+      console.log('语音URL无效，使用模拟播放')
       this.simulateVoicePlay(transaction)
       return
     }
@@ -1920,27 +2007,40 @@ Page({
   simulateVoicePlay(transaction) {
     const transactionId = transaction.id
     
+    console.log('开始模拟语音播放，交易ID:', transactionId)
+    console.log('AI消息内容:', transaction.aiMessage)
+    
     // 更新UI显示正在播放
     this.updateTransactionPlayingState(transactionId, true)
     this.setData({ currentPlayingVoice: transactionId })
     
+    // 显示友好的提示信息
     wx.showToast({
-      title: '语音播放中...',
+      title: '正在朗读AI消息...',
       icon: 'none',
-      duration: 1000
+      duration: 1500
     })
     
-    // 模拟播放时长（12秒）
+    // 根据消息长度计算模拟播放时长
+    const messageLength = transaction.aiMessage ? transaction.aiMessage.length : 20
+    const estimatedDuration = Math.max(3000, Math.min(messageLength * 200, 15000)) // 3-15秒
+    
+    console.log('预估播放时长:', estimatedDuration + 'ms')
+    
+    // 模拟播放过程
     setTimeout(() => {
-      this.updateTransactionPlayingState(transactionId, false)
-      this.setData({ currentPlayingVoice: null })
-      
-      wx.showToast({
-        title: '语音播放完成',
-        icon: 'success',
-        duration: 1000
-      })
-    }, 12000)
+      if (this.data.currentPlayingVoice === transactionId) {
+        this.updateTransactionPlayingState(transactionId, false)
+        this.setData({ currentPlayingVoice: null })
+        
+        console.log('模拟语音播放完成')
+        wx.showToast({
+          title: '播放完成',
+          icon: 'success',
+          duration: 800
+        })
+      }
+    }, estimatedDuration)
   },
 
   // 页面卸载时清理语音资源
@@ -2149,6 +2249,228 @@ Page({
 
     // 加载新选择月份的统计数据
     this.loadMonthlyStats()
+  },
+
+  // 显示钱包设置
+  showWalletSettings() {
+    this.setData({
+      showWalletSettings: true
+    })
+  },
+
+  // 隐藏钱包设置
+  hideWalletSettings() {
+    this.setData({
+      showWalletSettings: false
+    })
+  },
+
+  // 切换钱包公开/私密状态
+  toggleWalletPublic(e) {
+    const isPublic = e.detail.value ? 1 : 0
+    const walletId = this.data.walletId
+
+    console.log('切换钱包公开状态:', isPublic, '钱包ID:', walletId)
+
+    // 先更新UI状态
+    const wallet = { ...this.data.wallet }
+    wallet.is_public = isPublic
+    this.setData({ wallet })
+
+    // 调用API更新后端状态
+    walletAPI.setWalletPublic(walletId, isPublic)
+      .then(result => {
+        console.log('钱包公开状态更新成功:', result)
+        wx.showToast({
+          title: isPublic ? '已设为公开' : '已设为私密',
+          icon: 'success'
+        })
+      })
+      .catch(error => {
+        console.error('钱包公开状态更新失败:', error)
+        // 恢复原状态
+        wallet.is_public = isPublic ? 0 : 1
+        this.setData({ wallet })
+        
+        wx.showToast({
+          title: '设置失败，请重试',
+          icon: 'none'
+        })
+      })
+  },
+
+  // 播放评论语音
+  playCommentVoice(e) {
+    const comment = e.currentTarget.dataset.comment
+    
+    console.log('点击播放评论语音，评论:', comment)
+    console.log('评论内容:', comment.content)
+    console.log('语音URL:', comment.voiceUrl)
+    
+    // 如果正在播放其他语音，先停止
+    if (this.data.currentPlayingVoice) {
+      this.stopCurrentVoice()
+    }
+    
+    // 如果当前评论正在播放，则停止
+    if (comment.isPlayingVoice) {
+      this.stopCommentVoice(comment)
+      return
+    }
+    
+    // 检查语音URL
+    if (!comment.voiceUrl || comment.voiceUrl === '' || comment.voiceUrl === 'null') {
+      console.log('评论语音URL无效，使用模拟播放')
+      this.simulateCommentVoicePlay(comment)
+      return
+    }
+    
+    // 播放真实评论语音
+    this.playRealCommentVoice(comment)
+  },
+
+  // 停止评论语音
+  stopCommentVoice(comment) {
+    // 找到并更新评论的播放状态
+    const transactions = this.data.transactions
+    transactions.forEach((transaction, tIndex) => {
+      if (transaction.comments) {
+        transaction.comments.forEach((c, cIndex) => {
+          if (c.id === comment.id) {
+            this.setData({
+              [`transactions[${tIndex}].comments[${cIndex}].isPlayingVoice`]: false
+            })
+          }
+        })
+      }
+    })
+    
+    // 停止音频播放
+    if (this.data.voiceContext) {
+      try {
+        this.data.voiceContext.stop()
+        this.data.voiceContext.destroy()
+      } catch (error) {
+        console.error('停止评论语音失败:', error)
+      }
+    }
+    
+    this.setData({
+      currentPlayingVoice: null,
+      voiceContext: null
+    })
+  },
+
+  // 播放真实评论语音
+  playRealCommentVoice(comment) {
+    try {
+      // 创建音频上下文
+      const voiceContext = wx.createInnerAudioContext()
+      voiceContext.src = comment.voiceUrl
+      voiceContext.autoplay = true
+      
+      // 更新评论播放状态
+      this.updateCommentPlayingState(comment.id, true)
+      this.setData({ 
+        currentPlayingVoice: `comment_${comment.id}`,
+        voiceContext: voiceContext 
+      })
+      
+      console.log('开始播放评论语音:', comment.voiceUrl)
+      
+      voiceContext.onPlay(() => {
+        console.log('评论语音开始播放')
+        wx.showToast({
+          title: '正在播放评论语音',
+          icon: 'none',
+          duration: 1000
+        })
+      })
+      
+      voiceContext.onEnded(() => {
+        console.log('评论语音播放结束')
+        this.updateCommentPlayingState(comment.id, false)
+        this.setData({ currentPlayingVoice: null, voiceContext: null })
+      })
+      
+      voiceContext.onError((error) => {
+        console.error('评论语音播放失败:', error)
+        this.updateCommentPlayingState(comment.id, false)
+        this.setData({ currentPlayingVoice: null, voiceContext: null })
+        wx.showToast({
+          title: '语音播放失败',
+          icon: 'error'
+        })
+      })
+      
+    } catch (error) {
+      console.error('播放评论语音失败:', error)
+      wx.showToast({
+        title: '播放失败',
+        icon: 'error'
+      })
+    }
+  },
+
+  // 模拟评论语音播放
+  simulateCommentVoicePlay(comment) {
+    console.log('开始模拟评论语音播放，评论ID:', comment.id)
+    console.log('评论内容:', comment.content)
+    
+    // 更新UI显示正在播放
+    this.updateCommentPlayingState(comment.id, true)
+    this.setData({ currentPlayingVoice: `comment_${comment.id}` })
+    
+    // 显示友好的提示信息
+    wx.showToast({
+      title: '正在朗读AI评论...',
+      icon: 'none',
+      duration: 1500
+    })
+    
+    // 根据评论长度计算模拟播放时长
+    const commentLength = comment.content ? comment.content.length : 20
+    const estimatedDuration = Math.max(2000, Math.min(commentLength * 150, 10000)) // 2-10秒
+    
+    console.log('预估播放时长:', estimatedDuration + 'ms')
+    
+    // 模拟播放过程
+    setTimeout(() => {
+      if (this.data.currentPlayingVoice === `comment_${comment.id}`) {
+        this.updateCommentPlayingState(comment.id, false)
+        this.setData({ currentPlayingVoice: null })
+        
+        console.log('模拟评论语音播放完成')
+        wx.showToast({
+          title: '播放完成',
+          icon: 'success',
+          duration: 800
+        })
+      }
+    }, estimatedDuration)
+  },
+
+  // 更新评论播放状态
+  updateCommentPlayingState(commentId, isPlaying) {
+    const transactions = this.data.transactions
+    let updated = false
+    
+    transactions.forEach((transaction, tIndex) => {
+      if (transaction.comments) {
+        transaction.comments.forEach((comment, cIndex) => {
+          if (comment.id === commentId) {
+            this.setData({
+              [`transactions[${tIndex}].comments[${cIndex}].isPlayingVoice`]: isPlaying
+            })
+            updated = true
+          }
+        })
+      }
+    })
+    
+    if (updated) {
+      console.log(`评论 ${commentId} 播放状态更新为: ${isPlaying}`)
+    }
   }
 
 })

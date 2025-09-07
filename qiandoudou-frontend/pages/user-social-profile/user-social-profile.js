@@ -306,7 +306,8 @@ Page({
     
     if (wallet) {
       // 构建完整的跳转URL，传递必要的社交信息以访问真实数据
-      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=${wallet.fansCount || 0}&likeCount=${wallet.likesCount || 0}&viewsCount=${wallet.viewsCount || 0}`
+      // 确保新钱包的社交数据为0，不传递任何可能的模拟数据
+      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=0&likeCount=0&viewsCount=0`
       
       console.log('跳转到关注的钱包详情（真实数据）:', {
         walletId,

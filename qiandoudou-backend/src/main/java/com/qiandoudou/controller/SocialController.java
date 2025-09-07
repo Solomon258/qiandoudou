@@ -195,4 +195,33 @@ public class SocialController {
             return Result.error(e.getMessage());
         }
     }
+
+    /**
+     * 获取钱包社交统计数据
+     */
+    @GetMapping("/wallet/social-stats")
+    public Result<Map<String, Object>> getWalletSocialStats(@RequestParam Long walletId) {
+        try {
+            Map<String, Object> stats = socialService.getWalletSocialStats(walletId);
+            return Result.success(stats);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 记录钱包浏览
+     */
+    @PostMapping("/wallet/view")
+    public Result<String> recordWalletView(@RequestBody Map<String, Object> request) {
+        try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            Long walletId = Long.valueOf(request.get("walletId").toString());
+            
+            socialService.recordWalletView(userId, walletId);
+            return Result.success("浏览记录成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
 }
