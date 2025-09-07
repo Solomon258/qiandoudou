@@ -5,7 +5,12 @@ const { walletAPI } = require('../../utils/api.js')
 Page({
   data: {
     userId: null,
-    userInfo: {},
+    userInfo: {
+      nickname: '用户',
+      avatar: '',
+      description: '',
+      hasCustomAvatar: false
+    },
     wallet: {},
     walletBackgroundStyle: '',
     transactions: [],
@@ -46,6 +51,9 @@ Page({
   },
 
   onShow() {
+    // 页面显示时重新加载用户信息（确保头像是最新的）
+    this.loadUserProfile()
+    
     // 页面显示时更新背景样式和交易记录
     if (this.data.wallet && this.data.wallet.id) {
       this.updateWalletBackgroundStyle()
@@ -57,6 +65,25 @@ Page({
   loadUserProfile() {
     const userId = parseInt(this.data.userId)
     console.log('加载用户资料，userId:', userId)
+    
+    // 首先尝试从本地存储获取用户信息（包括头像）
+    const localUserInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
+    
+    if (localUserInfo && localUserInfo.avatar) {
+      // 如果本地有用户信息且有头像，优先使用
+      const userInfo = {
+        id: localUserInfo.id || userId,
+        nickname: localUserInfo.nickname || '用户',
+        avatar: localUserInfo.avatar,
+        description: localUserInfo.description || '这个人很懒，什么都没留下',
+        hasCustomAvatar: !!(localUserInfo.avatar && localUserInfo.hasCustomAvatar),
+        tags: ['成长', '生活']
+      }
+      
+      console.log('使用本地用户数据（含头像）:', userInfo)
+      this.setData({ userInfo })
+      return
+    }
     
     // 根据userId使用不同的模拟数据
     const mockUsers = {
@@ -88,6 +115,7 @@ Page({
       nickname: '07年小女生攒钱',
       avatar: '',
       description: '07年小女生从2025.2.1开始存钱 目标…',
+      hasCustomAvatar: false,
       tags: ['成长', '生活']
     }
     

@@ -18,6 +18,7 @@ Page({
     transferLoading: false,
     backgroundLoading: false,
     selectedBackground: '',
+    selectedImageUrl: '', // OSS上传的图片URL
     activeTab: 'bill', // 'bill' 或 'stats'
     showPromoCard: true,
     showNameEditModal: false,
@@ -39,6 +40,17 @@ Page({
     // AI语音播放相关
     currentPlayingVoice: null, // 当前播放的语音
     voiceContext: null, // 语音上下文
+    // 统计功能相关
+    currentYear: new Date().getFullYear(), // 当前年份
+    currentMonth: new Date().getMonth() + 1, // 当前月份
+    currentDate: '', // 当前日期字符串，用于picker
+    monthlyStats: { // 月度统计数据
+      monthlyIncome: '0.00',
+      monthlyExpense: '0.00',
+      monthlyProfit: '0.00',
+      transactionCount: 0
+    },
+    statsLoading: false, // 统计数据加载状态
     backgroundOptions: [
       { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' },
       { value: 'gradient2', name: '粉红渐变', gradient: 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' },
@@ -73,15 +85,25 @@ Page({
     
     console.log('从URL获取的社交信息:', socialInfo);
     
+    // 初始化当前日期
+    const now = new Date()
+    const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    
     if (walletId) {
       this.setData({ 
         walletId,
         fromSocial: fromSocial,
         socialInfo: socialInfo,
-        isOwnWallet: !fromSocial // 如果来自社交圈，则不是自己的钱包
+        isOwnWallet: !fromSocial, // 如果来自社交圈，则不是自己的钱包
+        currentDate: currentDate
       })
       this.loadWalletDetail()
       this.loadTransactions()
+      
+      // 如果是自己的钱包，加载统计数据
+      if (!fromSocial) {
+        this.loadMonthlyStats()
+      }
       
       // 如果不是自己的钱包，检查关注状态
       if (!this.data.isOwnWallet) {
@@ -91,10 +113,28 @@ Page({
   },
 
   onShow() {
-    // 页面显示时更新背景样式和交易记录
-    if (this.data.wallet && this.data.wallet.id) {
-      this.updateBackgroundStyle()
+    console.log('=== 页面显示 ===')
+    
+    
+    // 重置音频播放状态，避免状态不一致
+    this.resetAudioState()
+    
+    // 页面显示时重新加载钱包详情、交易记录和背景样式
+    if (this.data.walletId) {
+      console.log('页面显示时刷新钱包数据，钱包ID:', this.data.walletId)
+      this.loadWalletDetail() // 重新加载钱包详情（包括余额）
       this.loadTransactions() // 刷新交易记录
+      
+      // 如果已经有钱包数据，更新背景样式
+      if (this.data.wallet && this.data.wallet.id) {
+        this.updateBackgroundStyle()
+      }
+      
+      // 如果是自己的钱包且当前在统计标签页，刷新统计数据
+      if (this.data.isOwnWallet && this.data.activeTab === 'stats') {
+        console.log('页面显示时刷新统计数据')
+        this.loadMonthlyStats()
+      }
     }
     
     // 如果不是自己的钱包，重新检查关注状态
@@ -265,6 +305,16 @@ Page({
           // 检查是否为AI伴侣交易
           const isAiTransaction = transaction.aiPartnerId || transaction.ai_partner_id || transaction.isAiTransaction
           
+          console.log('交易AI检查:', {
+            id: transaction.id,
+            aiPartnerId: transaction.aiPartnerId,
+            ai_partner_id: transaction.ai_partner_id,
+            isAiTransaction: transaction.isAiTransaction,
+            aiMessage: transaction.aiMessage || transaction.ai_message,
+            voiceUrl: transaction.voiceUrl || transaction.voice_url,
+            最终判断: isAiTransaction
+          })
+          
           return {
             ...transaction,
             createTime: formattedTime,
@@ -280,6 +330,9 @@ Page({
             voiceUrl: transaction.voiceUrl || transaction.voice_url,
             voiceDuration: transaction.voiceDuration || transaction.voice_duration || '12s',
             isPlaying: false,
+            // 剧本攒钱相关数据
+            scriptCoverImage: transaction.scriptCoverImage,
+            scriptTitle: transaction.scriptTitle,
             // 初始化社交互动数据，稍后从后端加载
             likeCount: 0,
             commentCount: 0,
@@ -367,18 +420,28 @@ Page({
     let backgroundStyle = ''
     
     if (!currentBackground) {
+      // 没有背景设置，使用默认背景
       backgroundStyle = wallet.type === 2 ? 
         'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
         'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+    } else if (currentBackground.startsWith('http')) {
+      // OSS图片URL背景
+      backgroundStyle = `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
+      console.log('使用OSS图片背景:', currentBackground)
+    } else if (currentBackground.startsWith('data:')) {
+      // base64图片背景（向后兼容）
+      backgroundStyle = `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
+      console.log('使用base64图片背景，数据长度:', currentBackground.length)
     } else if (currentBackground.startsWith('custom_bg_')) {
-      // 自定义图片背景
+      // 本地存储的自定义图片背景（向后兼容）
       const customImages = wx.getStorageSync('custom_images') || {}
       const imagePath = customImages[currentBackground]
       if (imagePath) {
         backgroundStyle = `background-image: url('${imagePath}'); background-size: cover; background-position: center;`
-        console.log('使用自定义图片背景:', imagePath)
+        console.log('使用本地存储图片背景:', imagePath)
       } else {
         // 图片不存在，使用默认背景
+        console.warn('本地存储图片不存在，使用默认背景')
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
           'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
@@ -390,6 +453,8 @@ Page({
         backgroundStyle = bg.gradient
         console.log('使用预设背景:', bg.gradient)
       } else {
+        // 未知背景类型，使用默认背景
+        console.warn('未知背景类型，使用默认背景:', currentBackground)
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
           'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
@@ -480,6 +545,11 @@ Page({
         // 重新加载钱包详情和交易记录
         this.loadWalletDetail()
         this.loadTransactions()
+        
+        // 如果当前在统计标签页，刷新统计数据
+        if (this.data.activeTab === 'stats') {
+          this.loadMonthlyStats()
+        }
 
         this.setData({
           showTransferModal: false,
@@ -515,7 +585,9 @@ Page({
   // 隐藏背景选择对话框
   hideBackgroundModal() {
     this.setData({
-      showBackgroundModal: false
+      showBackgroundModal: false,
+      selectedBackground: '', // 清空预设背景选择
+      selectedImageUrl: ''     // 清空OSS图片选择
     })
   },
 
@@ -608,7 +680,7 @@ Page({
     console.log('当前选中的背景:', this.data.selectedBackground)
   },
 
-  // 上传自定义图片
+  // 上传自定义图片到OSS
   uploadCustomImage() {
     wx.chooseImage({
       count: 1,
@@ -620,7 +692,7 @@ Page({
         
         // 显示加载提示
         wx.showLoading({
-          title: '处理图片中...'
+          title: '上传图片中...'
         })
         
         // 检查文件大小
@@ -629,25 +701,25 @@ Page({
           success: (fileInfo) => {
             console.log('文件大小:', fileInfo.size, 'bytes')
             
-            // 如果文件大于4MB，提示用户
-            if (fileInfo.size > 4 * 1024 * 1024) {
+            // 如果文件大于5MB，提示用户
+            if (fileInfo.size > 5 * 1024 * 1024) {
               wx.hideLoading()
               wx.showModal({
                 title: '图片过大',
-                content: '图片处理后仍然过大，请选择更小的图片或使用预设背景',
+                content: '图片大小不能超过5MB，请选择更小的图片',
                 showCancel: false,
                 confirmText: '知道了'
               })
               return
             }
             
-            // 使用base64编码存储图片（避免saveFile的限制）
-            this.convertImageToBase64(tempFilePath)
+            // 上传图片到后端OSS
+            this.uploadImageToOSS(tempFilePath)
           },
           fail: (error) => {
             console.error('获取文件信息失败:', error)
-            // 如果获取文件信息失败，直接尝试转换
-            this.convertImageToBase64(tempFilePath)
+            // 如果获取文件信息失败，直接尝试上传
+            this.uploadImageToOSS(tempFilePath)
           }
         })
       },
@@ -661,7 +733,47 @@ Page({
     })
   },
 
-  // 将图片转换为base64格式存储
+  // 上传图片到OSS
+  uploadImageToOSS(filePath) {
+    const api = require('../../utils/api.js')
+    
+    // 使用API工具函数上传文件
+    api.uploadFile(filePath, '/wallet/upload-background', {
+      walletId: this.data.walletId
+    }).then((response) => {
+      console.log('图片上传成功:', response)
+      wx.hideLoading()
+      
+      if (response.data && response.data.imageUrl) {
+        const ossUrl = response.data.imageUrl
+        
+        // 设置选中的背景为OSS URL
+        this.setData({
+          selectedBackground: '', // 清空预设背景选择
+          selectedImageUrl: ossUrl // 设置自定义图片URL
+        })
+        
+        wx.showToast({
+          title: '图片上传成功',
+          icon: 'success'
+        })
+      } else {
+        wx.showToast({
+          title: '上传响应异常',
+          icon: 'error'
+        })
+      }
+    }).catch((error) => {
+      console.error('图片上传失败:', error)
+      wx.hideLoading()
+      wx.showToast({
+        title: error.message || '图片上传失败',
+        icon: 'error'
+      })
+    })
+  },
+
+  // 将图片转换为base64格式存储（已废弃，保留用于向后兼容）
   convertImageToBase64(filePath) {
     wx.getFileSystemManager().readFile({
       filePath: filePath,
@@ -737,7 +849,7 @@ Page({
     })
   },
 
-  // 清理存储数据
+  // 清理存储数据（已废弃，保留用于向后兼容）
   clearStorageData() {
     wx.showActionSheet({
       itemList: ['清理自定义背景图片', '清理所有缓存数据'],
@@ -781,7 +893,7 @@ Page({
     })
   },
 
-  // 应用自定义背景
+  // 应用自定义背景（已废弃，保留用于向后兼容）
   applyCustomBackground(imageKey, base64Data) {
     const wallet = this.data.wallet
     
@@ -818,13 +930,24 @@ Page({
 
   // 更换背景
   changeBackground() {
-    const { wallet, selectedBackground } = this.data
+    const { wallet, selectedBackground, selectedImageUrl } = this.data
     
-    // 如果没有选择新背景，使用当前背景
-    const backgroundToSave = selectedBackground || wallet.backgroundImage || wallet.background_image || 'gradient1'
+    // 确定要保存的背景：优先使用OSS URL，然后是预设背景，最后是当前背景
+    let backgroundToSave
+    if (selectedImageUrl) {
+      // 使用OSS上传的图片URL
+      backgroundToSave = selectedImageUrl
+    } else if (selectedBackground) {
+      // 使用预设渐变背景
+      backgroundToSave = selectedBackground
+    } else {
+      // 使用当前背景
+      backgroundToSave = wallet.backgroundImage || wallet.background_image || 'gradient1'
+    }
     
     console.log('开始更换背景 - 钱包ID:', wallet.id, '选择的背景:', backgroundToSave)
     console.log('当前钱包背景:', wallet.backgroundImage, wallet.background_image)
+    console.log('背景类型:', selectedImageUrl ? 'OSS图片' : selectedBackground ? '预设渐变' : '当前背景')
     
     this.setData({ backgroundLoading: true })
     
@@ -914,6 +1037,11 @@ Page({
     this.setData({
       activeTab: tab
     })
+    
+    // 如果切换到统计标签，加载统计数据
+    if (tab === 'stats' && this.data.isOwnWallet) {
+      this.loadMonthlyStats()
+    }
   },
 
   // 显示过滤选项
@@ -1510,78 +1638,249 @@ Page({
 
   // AI语音播放功能
   playAiVoice(e) {
-    const transaction = e.currentTarget.dataset.transaction
+    // 最基础的调试日志 - 确保事件能触发
+    console.log('🔥 playAiVoice 函数被调用了！')
+    console.log('事件对象:', e)
+    console.log('当前时间:', new Date().toLocaleTimeString())
+    
+    // 检查事件对象
+    if (!e || !e.currentTarget) {
+      console.error('❌ 事件对象异常:', e)
+      return
+    }
+    
+    // 检查数据绑定
+    const dataset = e.currentTarget.dataset
+    console.log('数据集:', dataset)
+    
+    if (!dataset || !dataset.transaction) {
+      console.error('❌ 缺少transaction数据:', dataset)
+      return
+    }
+    
+    const transaction = dataset.transaction
     const transactionId = transaction.id
     
-    // 如果当前有语音在播放，先停止
-    if (this.data.currentPlayingVoice) {
-      this.stopCurrentVoice()
+    console.log('=== 开始播放语音 ===')
+    console.log('交易ID:', transactionId)
+    console.log('语音URL:', transaction.voiceUrl)
+    console.log('当前播放状态:', this.data.currentPlayingVoice)
+    console.log('当前音频上下文:', this.data.voiceContext ? '存在' : '不存在')
+    console.log('页面数据状态:', {
+      transactions: this.data.transactions ? this.data.transactions.length : 0,
+      wallet: this.data.wallet ? this.data.wallet.id : 'null'
+    })
+    
+    // 强制清理任何现有的音频状态，避免状态不一致
+    if (this.data.currentPlayingVoice || this.data.voiceContext) {
+      console.log('清理现有音频状态')
+      this.forceResetAudioState()
+      
+      // 添加延迟确保清理完成
+      setTimeout(() => {
+        console.log('延迟后开始播放')
+        this.startVoicePlayback(transaction)
+      }, 200)
+      return
     }
+    
+    // 直接开始播放
+    this.startVoicePlayback(transaction)
+  },
+  
+  // 开始语音播放的核心逻辑
+  startVoicePlayback(transaction) {
+    const transactionId = transaction.id
+    
+    console.log('=== 创建新的音频播放 ===')
+    console.log('交易ID:', transactionId)
     
     // 检查是否有语音URL
     if (!transaction.voiceUrl || transaction.voiceUrl.startsWith('mock_voice_')) {
-      // 如果没有语音URL或者是mock语音，直接使用模拟播放
+      console.log('使用模拟语音播放')
       this.simulateVoicePlay(transaction)
       return
     }
     
-    // 创建音频上下文
+    // 强制清理任何残留的音频上下文
+    if (this.data.voiceContext) {
+      console.log('清理残留的音频上下文')
+      try {
+        this.data.voiceContext.destroy()
+      } catch (error) {
+        console.error('清理残留音频上下文时出错:', error)
+      }
+    }
+    
+    // 创建全新的音频上下文
     const voiceContext = wx.createInnerAudioContext()
+    console.log('创建新的音频上下文:', voiceContext)
     
+    // 设置音频属性
     voiceContext.src = transaction.voiceUrl
-    voiceContext.autoplay = true
+    voiceContext.autoplay = false
     voiceContext.loop = false
+    voiceContext.volume = 1.0
+    voiceContext.playbackRate = 1.0
     
-    // 更新UI状态
-    this.updateTransactionPlayingState(transactionId, true)
+    console.log('音频上下文配置完成，URL:', voiceContext.src)
     
-    voiceContext.onPlay(() => {
-      console.log('AI语音开始播放')
-    })
-    
-    voiceContext.onEnded(() => {
-      console.log('AI语音播放结束')
-      this.updateTransactionPlayingState(transactionId, false)
-      this.setData({
-        currentPlayingVoice: null,
-        voiceContext: null
-      })
-    })
-    
-    voiceContext.onError((error) => {
-      console.error('AI语音播放失败:', error)
-      wx.showToast({
-        title: '语音播放失败',
-        icon: 'none'
-      })
-      this.updateTransactionPlayingState(transactionId, false)
-      this.setData({
-        currentPlayingVoice: null,
-        voiceContext: null
-      })
-    })
-    
+    // 先更新状态，再设置事件监听
     this.setData({
       currentPlayingVoice: transactionId,
       voiceContext: voiceContext
     })
+    
+    this.updateTransactionPlayingState(transactionId, true)
+    
+    // 设置事件监听
+    voiceContext.onCanplay(() => {
+      console.log('=== 音频可以播放 ===')
+      if (this.data.currentPlayingVoice === transactionId) {
+        console.log('开始播放音频')
+        voiceContext.play()
+      } else {
+        console.log('播放状态已改变，取消播放')
+      }
+    })
+    
+    voiceContext.onPlay(() => {
+      console.log('=== AI语音开始播放 ===')
+      console.log('播放的交易ID:', transactionId)
+      wx.showToast({
+        title: '语音播放中...',
+        icon: 'none',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onEnded(() => {
+      console.log('=== AI语音播放结束 ===')
+      console.log('结束的交易ID:', transactionId)
+      this.cleanupVoiceContext(transactionId)
+      wx.showToast({
+        title: '播放完成',
+        icon: 'success',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onError((error) => {
+      console.error('=== AI语音播放失败 ===')
+      console.error('错误交易ID:', transactionId)
+      console.error('错误详情:', {
+        errMsg: error.errMsg,
+        errCode: error.errCode,
+        src: voiceContext.src
+      })
+      
+      wx.showModal({
+        title: '语音播放失败',
+        content: `错误信息: ${error.errMsg || '未知错误'}\n错误代码: ${error.errCode || 'N/A'}\n\n可能原因:\n1. 网络连接问题\n2. 音频文件损坏\n3. 音频上下文冲突\n\n建议重新点击播放`,
+        showCancel: false,
+        confirmText: '确定'
+      })
+      
+      this.cleanupVoiceContext(transactionId)
+    })
+    
+    voiceContext.onWaiting(() => {
+      console.log('音频加载中...', transactionId)
+    })
+    
+    voiceContext.onStop(() => {
+      console.log('=== 音频被停止 ===', transactionId)
+    })
+    
+    // 设置超时保护
+    const timeoutId = setTimeout(() => {
+      if (this.data.currentPlayingVoice === transactionId) {
+        console.error('音频播放超时，强制清理')
+        this.cleanupVoiceContext(transactionId)
+        wx.showToast({
+          title: '播放超时，请重试',
+          icon: 'none'
+        })
+      }
+    }, 15000) // 15秒超时
+    
+    // 将超时ID保存到音频上下文，以便清理时取消
+    voiceContext._timeoutId = timeoutId
+    
+    console.log('音频配置完成，等待加载...')
   },
   
   // 停止当前播放的语音
   stopCurrentVoice() {
+    console.log('=== 停止当前播放的语音 ===')
+    console.log('当前播放ID:', this.data.currentPlayingVoice)
+    console.log('音频上下文存在:', this.data.voiceContext ? '是' : '否')
+    
+    const currentId = this.data.currentPlayingVoice
+    
     if (this.data.voiceContext) {
-      this.data.voiceContext.stop()
-      this.data.voiceContext.destroy()
+      try {
+        // 清除超时定时器
+        if (this.data.voiceContext._timeoutId) {
+          clearTimeout(this.data.voiceContext._timeoutId)
+          console.log('清除音频超时定时器')
+        }
+        
+        // 停止并销毁音频上下文
+        this.data.voiceContext.stop()
+        this.data.voiceContext.destroy()
+        console.log('音频上下文已停止并销毁')
+      } catch (error) {
+        console.error('停止音频播放时出错:', error)
+      }
     }
     
-    if (this.data.currentPlayingVoice) {
-      this.updateTransactionPlayingState(this.data.currentPlayingVoice, false)
+    // 重置状态
+    if (currentId) {
+      this.updateTransactionPlayingState(currentId, false)
     }
     
     this.setData({
       currentPlayingVoice: null,
       voiceContext: null
     })
+    
+    console.log('音频播放状态已重置')
+  },
+  
+  // 清理音频上下文的统一方法
+  cleanupVoiceContext(transactionId) {
+    console.log('=== 清理音频上下文 ===')
+    console.log('清理交易ID:', transactionId)
+    console.log('当前播放ID:', this.data.currentPlayingVoice)
+    
+    // 只清理指定的音频上下文，避免清理错误的上下文
+    if (this.data.currentPlayingVoice === transactionId && this.data.voiceContext) {
+      try {
+        // 清除超时定时器
+        if (this.data.voiceContext._timeoutId) {
+          clearTimeout(this.data.voiceContext._timeoutId)
+          console.log('清除音频超时定时器')
+        }
+        
+        // 销毁音频上下文
+        this.data.voiceContext.destroy()
+        console.log('音频上下文已销毁')
+      } catch (error) {
+        console.error('销毁音频上下文时出错:', error)
+      }
+      
+      // 重置状态
+      this.setData({
+        currentPlayingVoice: null,
+        voiceContext: null
+      })
+    }
+    
+    // 更新UI状态
+    this.updateTransactionPlayingState(transactionId, false)
+    
+    console.log('音频上下文清理完成')
   },
   
   // 更新交易的播放状态
@@ -1589,9 +1888,16 @@ Page({
     const transactions = this.data.transactions
     const index = transactions.findIndex(t => t.id === transactionId)
     
-    if (index !== -1) {
+    if (index !== -1 && transactions[index].isPlaying !== isPlaying) {
+      // 只有状态真正改变时才更新，避免不必要的重渲染
       transactions[index].isPlaying = isPlaying
-      this.setData({ transactions })
+      
+      // 使用精确的数据路径更新，减少页面闪烁
+      this.setData({
+        [`transactions[${index}].isPlaying`]: isPlaying
+      })
+      
+      console.log(`交易 ${transactionId} 播放状态更新为:`, isPlaying)
     }
   },
   
@@ -1639,22 +1945,120 @@ Page({
 
   // 页面卸载时清理语音资源
   onUnload() {
+    console.log('页面卸载，清理音频资源')
     this.stopCurrentVoice()
   },
 
   // 页面隐藏时暂停语音
   onHide() {
-    if (this.data.voiceContext) {
-      this.data.voiceContext.pause()
+    console.log('页面隐藏，暂停音频播放')
+    if (this.data.voiceContext && this.data.currentPlayingVoice) {
+      try {
+        this.data.voiceContext.pause()
+        console.log('音频已暂停')
+      } catch (error) {
+        console.error('暂停音频时出错:', error)
+      }
     }
   },
+  
 
+  // 重置音频播放状态
+  resetAudioState() {
+    console.log('=== 重置音频播放状态 ===')
+    console.log('当前播放状态:', this.data.currentPlayingVoice)
+    console.log('音频上下文:', this.data.voiceContext ? '存在' : '不存在')
+    
+    // 如果有音频上下文，清理它
+    if (this.data.voiceContext) {
+      try {
+        // 清除超时定时器
+        if (this.data.voiceContext._timeoutId) {
+          clearTimeout(this.data.voiceContext._timeoutId)
+        }
+        this.data.voiceContext.destroy()
+        console.log('已清理残留的音频上下文')
+      } catch (error) {
+        console.error('清理音频上下文时出错:', error)
+      }
+    }
+    
+    // 重置所有交易的播放状态
+    const transactions = this.data.transactions || []
+    let hasPlayingTransaction = false
+    
+    transactions.forEach((transaction, index) => {
+      if (transaction.isPlaying) {
+        hasPlayingTransaction = true
+        this.setData({
+          [`transactions[${index}].isPlaying`]: false
+        })
+      }
+    })
+    
+    if (hasPlayingTransaction) {
+      console.log('已重置交易播放状态')
+    }
+    
+    // 重置全局状态
+    this.setData({
+      currentPlayingVoice: null,
+      voiceContext: null
+    })
+    
+    console.log('音频状态重置完成')
+  },
+  
   // 返回上一页
   goBack() {
+    // 清理音频资源
+    this.stopCurrentVoice()
+    
     wx.navigateBack({
       delta: 1
     })
   },
+  
+  
+  
+  // 强制重置音频状态
+  forceResetAudioState() {
+    console.log('🔄 强制重置音频状态')
+    
+    // 强制清理所有音频资源
+    if (this.data.voiceContext) {
+      try {
+        if (this.data.voiceContext._timeoutId) {
+          clearTimeout(this.data.voiceContext._timeoutId)
+        }
+        this.data.voiceContext.stop()
+        this.data.voiceContext.destroy()
+      } catch (error) {
+        console.error('清理音频上下文时出错:', error)
+      }
+    }
+    
+    // 重置所有状态
+    this.setData({
+      currentPlayingVoice: null,
+      voiceContext: null
+    })
+    
+    // 重置所有交易的播放状态
+    const transactions = this.data.transactions || []
+    transactions.forEach((transaction, index) => {
+      if (transaction.isPlaying) {
+        this.setData({
+          [`transactions[${index}].isPlaying`]: false
+        })
+      }
+    })
+    
+    console.log('音频状态强制重置完成')
+  },
+  
+  
+  
 
   // 返回钱包列表页面
   goBackToWalletList() {
@@ -1676,6 +2080,75 @@ Page({
         })
       }
     }
+  },
+
+  // 加载月度统计数据
+  loadMonthlyStats() {
+    const { walletId, currentYear, currentMonth } = this.data
+    
+    if (!walletId) {
+      console.log('钱包ID不存在，无法加载统计数据')
+      return
+    }
+
+    console.log(`加载统计数据: 钱包ID=${walletId}, 年份=${currentYear}, 月份=${currentMonth}`)
+
+    this.setData({ statsLoading: true })
+
+    walletAPI.getWalletMonthlyStats(walletId, currentYear, currentMonth)
+      .then(result => {
+        console.log('统计数据加载成功:', result.data)
+        
+        const stats = result.data || {}
+        
+        // 格式化数据，确保显示两位小数
+        const formattedStats = {
+          monthlyIncome: parseFloat(stats.monthlyIncome || 0).toFixed(2),
+          monthlyExpense: parseFloat(stats.monthlyExpense || 0).toFixed(2),
+          monthlyProfit: parseFloat(stats.monthlyProfit || 0).toFixed(2),
+          transactionCount: stats.transactionCount || 0
+        }
+
+        this.setData({
+          monthlyStats: formattedStats,
+          statsLoading: false
+        })
+      })
+      .catch(error => {
+        console.error('统计数据加载失败:', error)
+        this.setData({ 
+          statsLoading: false,
+          monthlyStats: {
+            monthlyIncome: '0.00',
+            monthlyExpense: '0.00',
+            monthlyProfit: '0.00',
+            transactionCount: 0
+          }
+        })
+        wx.showToast({
+          title: '统计数据加载失败',
+          icon: 'none'
+        })
+      })
+  },
+
+  // 月份选择器变化事件
+  onMonthChange(e) {
+    const selectedDate = e.detail.value // 格式: YYYY-MM
+    console.log('选择的月份:', selectedDate)
+    
+    const [year, month] = selectedDate.split('-')
+    const selectedYear = parseInt(year)
+    const selectedMonth = parseInt(month)
+
+    this.setData({
+      currentYear: selectedYear,
+      currentMonth: selectedMonth,
+      currentDate: selectedDate
+    })
+
+    // 加载新选择月份的统计数据
+    this.loadMonthlyStats()
   }
 
 })

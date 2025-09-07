@@ -49,14 +49,14 @@
       </view>
       <view class="note-content">
         <textarea class="note-textarea" 
-                  placeholder="山高水长，风景美如画。坐等仙女下凡，赐予我一片云彩，好飞到湖里泡个澡！"
+                  placeholder=""
                   value="{{transferNote}}"
                   bindinput="onNoteInput"
                   maxlength="200"></textarea>
         <view class="note-actions">
           <view class="retry-btn" bindtap="retryNote">
             <text class="retry-icon">🔄</text>
-            <text class="retry-text">再试一次</text>
+            <text class="retry-text">AI生成文案</text>
           </view>
           <text class="char-count">{{noteLength}}/200</text>
         </view>

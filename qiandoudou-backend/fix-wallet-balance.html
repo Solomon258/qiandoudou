@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钱包余额修复工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .fix-all-btn {
+            background-color: #28a745;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+        }
+        .fix-all-btn:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 钱包余额修复工具</h1>
+        
+        <div class="warning">
+            <strong>⚠️ 注意：</strong> 此工具用于修复钱包余额与交易记录不一致的问题。使用前请确保后端服务正在运行。
+        </div>
+
+        <div class="section">
+            <h2>修复单个钱包余额</h2>
+            <p>如果您知道具体的钱包ID，可以单独修复该钱包的余额：</p>
+            <div class="form-group">
+                <label for="walletId">钱包ID：</label>
+                <input type="text" id="walletId" placeholder="请输入钱包ID（例如：1964334424497856513）">
+            </div>
+            <button onclick="fixSingleWallet()">修复此钱包</button>
+            <div id="singleResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>修复所有钱包余额</h2>
+            <p>这将重新计算所有钱包的余额，基于各自的交易记录：</p>
+            <button class="fix-all-btn" onclick="fixAllWallets()">修复所有钱包余额</button>
+            <div id="allResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>使用说明</h2>
+            <ul>
+                <li>此工具会根据交易记录重新计算钱包余额</li>
+                <li>计算规则：转入(type=1) + 剧本攒钱(type=3) - 转出(type=2)</li>
+                <li>修复过程中会显示原余额和计算后余额的对比</li>
+                <li>钱包ID请输入完整的数字，支持长整型ID（如：1964334424497856513）</li>
+                <li>建议先修复单个钱包进行测试，确认无误后再修复所有钱包</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        async function makeRequest(url, data = null) {
+            try {
+                const options = {
+                    method: data ? 'POST' : 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(API_BASE + url, options);
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    return { success: true, message: result.message || '操作成功' };
+                } else {
+                    return { success: false, message: result.message || '操作失败' };
+                }
+            } catch (error) {
+                return { success: false, message: '网络错误: ' + error.message };
+            }
+        }
+
+        async function fixSingleWallet() {
+            const walletId = document.getElementById('walletId').value.trim();
+            const resultDiv = document.getElementById('singleResult');
+            
+            if (!walletId) {
+                showResult(resultDiv, false, '请输入钱包ID');
+                return;
+            }
+
+            // 验证钱包ID格式（应该是纯数字）
+            if (!/^\d+$/.test(walletId)) {
+                showResult(resultDiv, false, '钱包ID格式错误，应该是纯数字');
+                return;
+            }
+
+            console.log('发送的钱包ID:', walletId);
+            showResult(resultDiv, null, '正在修复钱包余额...');
+            
+            const result = await makeRequest('/wallet/recalculate-balance', { walletId: walletId });
+            showResult(resultDiv, result.success, result.message);
+        }
+
+        async function fixAllWallets() {
+            const resultDiv = document.getElementById('allResult');
+            
+            if (!confirm('确定要修复所有钱包余额吗？此操作可能需要一些时间。')) {
+                return;
+            }
+
+            showResult(resultDiv, null, '正在修复所有钱包余额，请稍候...');
+            
+            const result = await makeRequest('/wallet/fix-all-balances', {});
+            showResult(resultDiv, result.success, result.message);
+        }
+
+        function showResult(element, success, message) {
+            element.innerHTML = '';
+            if (message) {
+                const div = document.createElement('div');
+                div.className = 'result ' + (success === null ? '' : (success ? 'success' : 'error'));
+                div.textContent = message;
+                element.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>

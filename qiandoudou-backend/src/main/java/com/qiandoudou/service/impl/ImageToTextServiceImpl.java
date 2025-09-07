@@ -160,4 +160,78 @@ public class ImageToTextServiceImpl implements ImageToTextService {
             return responseBody.trim();
         }
     }
+
+    @Override
+    public String generateTextFromPrompt(String prompt) {
+        // 1. 优先尝试字节跳动API
+        if (byteDanceEnabled && byteDanceImageToTextService.isAvailable()) {
+            try {
+                logger.info("使用字节跳动API进行文本生成");
+                String result = byteDanceImageToTextService.generateTextFromPrompt(prompt);
+                logger.info("字节跳动API调用成功");
+                return result;
+            } catch (Exception e) {
+                logger.warn("字节跳动API调用失败，降级到原有API: {}", e.getMessage());
+                // 继续执行原有API逻辑
+            }
+        } else {
+            logger.info("字节跳动API未启用或不可用，使用原有API");
+        }
+
+        // 2. 降级到原有API（不传图片，只传文本）
+        return callOriginalApiTextOnly(prompt);
+    }
+
+    /**
+     * 调用原有的API进行纯文本生成（不需要图片）
+     */
+    private String callOriginalApiTextOnly(String prompt) {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        
+        try {
+            // 构建请求
+            HttpPost httpPost = new HttpPost(apiUrl);
+            httpPost.setHeader("Content-Type", "application/json");
+            
+            // 构建请求体（不包含图片）
+            Map<String, Object> requestData = new HashMap<>();
+            requestData.put("prompt", prompt);
+            // 不传image字段，只传文本
+            
+            String jsonRequest = objectMapper.writeValueAsString(requestData);
+            logger.info("纯文本生成API请求: {}", jsonRequest);
+            
+            StringEntity entity = new StringEntity(jsonRequest, StandardCharsets.UTF_8);
+            httpPost.setEntity(entity);
+
+            // 发送请求
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                
+                if (statusCode == 200) {
+                    String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                    
+                    // 添加日志：打印AI接口返回值
+                    logger.info("纯文本生成API返回值: {}", responseBody);
+                    
+                    // 处理响应
+                    String resultText = extractTextFromResponse(responseBody);
+                    
+                    // 去除 <think></think> 部分
+                    resultText = thinkTagPattern.matcher(resultText).replaceAll("");
+                    
+                    logger.info("处理后的文本: {}", resultText);
+                    
+                    return resultText.trim();
+                } else {
+                    String errorBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                    logger.error("纯文本生成API调用失败，状态码: {}, 响应: {}", statusCode, errorBody);
+                    throw new RuntimeException("API调用失败，状态码: " + statusCode);
+                }
+            }
+        } catch (IOException e) {
+            logger.error("纯文本生成API调用异常: {}", e.getMessage(), e);
+            throw new RuntimeException("文本生成API调用异常: " + e.getMessage(), e);
+        }
+    }
 }

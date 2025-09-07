@@ -1,5 +1,5 @@
 <!--pages/wallet-detail/wallet-detail.wxml-->
-<view class="container">
+<view class="container" bindtap="onPageTap">
   <!-- 顶部钱包背景区域 -->
   <view class="wallet-header-section">
     <!-- 背景图片和遮罩 -->
@@ -51,10 +51,11 @@
       <!-- 关注按钮（在背景图右下角） -->
       <view wx:if="{{fromSocial && !isOwnWallet}}" class="follow-button-corner">
         <image class="follow-btn-image {{isFollowing ? 'following' : ''}}" 
-               src="{{isFollowing ? 'https://8.148.206.18:443/res/image/include_images/已关注.png' : 'https://8.148.206.18:443/res/image/include_images/关注.png'}}" 
+               src="{{isFollowing ? 'https://8.148.206.18:443/res/image/usages/已关注.png' : 'https://8.148.206.18:443/res/image/usages/关注.png'}}" 
                bindtap="toggleFollow"
                mode="aspectFit" />
       </view>
+      
     </view>
     
     <!-- 总金额卡片 -->
@@ -162,17 +163,28 @@
           <text class="time-text">{{item.create_time}}</text>
         </view>
         
+        <!-- 剧本封面图片（如果是剧本攒钱交易） -->
+        <view wx:if="{{item.type === 3 && item.scriptCoverImage}}" class="script-cover-content">
+          <image class="script-cover-image" 
+                 src="{{item.scriptCoverImage}}" 
+                 mode="aspectFill"
+                 lazy-load="true"></image>
+          <text wx:if="{{item.scriptTitle}}" class="script-title-text">{{item.scriptTitle}}</text>
+        </view>
+        
         <!-- AI伴侣消息内容（如果是AI交易） -->
         <view wx:if="{{item.isAiTransaction && item.aiMessage}}" class="ai-message-content">
           <text class="ai-message-text">{{item.aiMessage}}</text>
           <!-- 语音播放按钮（AI伴侣消息总是显示语音播放按钮） -->
           <view class="voice-play-section">
+            <!-- 主播放按钮 -->
             <view class="voice-play-btn {{item.isPlaying ? 'playing' : ''}}" 
                   bindtap="playAiVoice" 
                   data-transaction="{{item}}">
               <text class="voice-icon">🎵</text>
               <text class="voice-duration">{{item.voiceDuration || '12s'}}</text>
             </view>
+            
           </view>
         </view>
         
@@ -180,6 +192,7 @@
         <view wx:if="{{!item.isAiTransaction && item.note}}" class="transaction-note">
           <text class="note-text">{{item.note}}</text>
         </view>
+        
         
         <!-- 图片（如果有） -->
         <view wx:if="{{item.imageUrl}}" class="transaction-image">
@@ -212,7 +225,48 @@
     
     <!-- 统计视图 -->
     <view wx:if="{{activeTab === 'stats'}}" class="stats-view">
-      <text class="stats-placeholder">统计功能开发中...</text>
+      <!-- 月份选择器 -->
+      <view class="month-selector">
+        <text class="current-month">{{currentYear}}年{{currentMonth}}月</text>
+        <picker mode="date" fields="month" value="{{currentDate}}" bindchange="onMonthChange" class="month-picker">
+          <view class="picker-trigger">
+            <text class="picker-icon">📅</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 统计数据展示 -->
+      <view class="stats-content">
+        <!-- 第二行：月收入和月支出 -->
+        <view class="stats-row">
+          <view class="stat-card income-card">
+            <text class="stat-label">月收入(元)</text>
+            <text class="stat-value income-value">{{monthlyStats.monthlyIncome || '0.00'}}</text>
+          </view>
+          <view class="stat-card expense-card">
+            <text class="stat-label">月支出(元)</text>
+            <text class="stat-value expense-value">{{monthlyStats.monthlyExpense || '0.00'}}</text>
+          </view>
+        </view>
+
+        <!-- 第三行：月收益 -->
+        <view class="stats-row">
+          <view class="stat-card profit-card">
+            <text class="stat-label">月收益(元)</text>
+            <text class="stat-value profit-value {{monthlyStats.monthlyProfit >= 0 ? 'positive' : 'negative'}}">{{monthlyStats.monthlyProfit || '0.00'}}</text>
+          </view>
+        </view>
+
+        <!-- 加载状态 -->
+        <view wx:if="{{statsLoading}}" class="stats-loading">
+          <text class="loading-text">加载中...</text>
+        </view>
+
+        <!-- 暂无数据提示 -->
+        <view wx:if="{{!statsLoading && monthlyStats.transactionCount === 0}}" class="no-stats">
+          <text class="no-stats-text">本月暂无交易记录</text>
+        </view>
+      </view>
     </view>
   </view>
 

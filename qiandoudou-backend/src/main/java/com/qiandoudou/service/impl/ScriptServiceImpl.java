@@ -73,10 +73,15 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
     }
 
     @Override
+    public UserScriptProgress getUserProgressByWallet(Long userId, Long walletId, Long scriptId) {
+        return userScriptProgressMapper.getProgressByUserIdWalletIdAndScriptId(userId, walletId, scriptId);
+    }
+
+    @Override
     @Transactional
     public UserScriptProgress startScript(Long userId, Long walletId, Long scriptId) {
-        // 检查是否已经开始过这个剧本
-        UserScriptProgress existingProgress = getUserProgress(userId, scriptId);
+        // 检查是否已经在这个钱包中开始过这个剧本
+        UserScriptProgress existingProgress = getUserProgressByWallet(userId, walletId, scriptId);
         if (existingProgress != null) {
             return existingProgress;
         }
@@ -98,13 +103,13 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
 
     @Override
     @Transactional
-    public Map<String, Object> makeChoiceAndUnlock(Long userId, Long scriptId, Integer currentChapter, 
+    public Map<String, Object> makeChoiceAndUnlock(Long userId, Long walletId, Long scriptId, Integer currentChapter, 
                                                   String selectedChoice, BigDecimal amount) {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // 获取用户进度
-            UserScriptProgress progress = getUserProgress(userId, scriptId);
+            // 获取用户在指定钱包的进度
+            UserScriptProgress progress = getUserProgressByWallet(userId, walletId, scriptId);
             if (progress == null) {
                 throw new RuntimeException("未找到剧本进度记录");
             }
@@ -157,16 +162,35 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
             newChoice.put("timestamp", LocalDateTime.now().toString());
             choicesMade.add(newChoice);
 
-            // 计算下一章节
-            String nextChapterId = (String) selectedChoiceObj.get("nextId");
-            Integer nextChapter = currentChapter + 1;
+            // 计算下一章节 - 根据nextId（章节号）跳转到指定视频
+            String nextIdValue = selectedChoiceObj.get("nextId") == null ? null : selectedChoiceObj.get("nextId").toString();
+            Integer nextChapter = null;
+            Long nextChapterDbId = null;
             
-            progress.setCurrentChapter(nextChapter);
+            if (nextIdValue != null) {
+                // 根据nextId（章节号）查找对应的章节
+                try {
+                    Integer nextChapterNumber = Integer.parseInt(nextIdValue);
+                    ScriptChapter nextChapterObj = scriptChapterMapper.getChapterByScriptIdAndNumber(scriptId, nextChapterNumber);
+                    if (nextChapterObj != null) {
+                        nextChapter = nextChapterObj.getChapterNumber();
+                        nextChapterDbId = nextChapterObj.getId(); // 获取章节的数据库ID
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("nextId格式错误: {}", nextIdValue);
+                }
+            }
+            
+            // 更新进度
+            if (nextChapter != null) {
+                progress.setCurrentChapter(nextChapter);
+            }
             progress.setTotalPaid(progress.getTotalPaid().add(amount));
             progress.setChoicesMade(objectMapper.writeValueAsString(choicesMade));
 
-            // 如果是最后一章，标记为完成
-            if (nextChapterId == null) {
+            // 判断是否完成剧本：只有当nextId为null时才表示剧本结束
+            boolean isCompleted = (nextIdValue == null);
+            if (isCompleted) {
                 progress.setStatus(2); // 已完成
                 progress.setCompleteTime(LocalDateTime.now());
             }
@@ -174,9 +198,10 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
             userScriptProgressMapper.updateById(progress);
 
             result.put("success", true);
-            result.put("message", "选择成功，已解锁下一集");
+            result.put("message", isCompleted ? "恭喜完成剧本！" : "选择成功，已解锁下一集");
             result.put("nextChapter", nextChapter);
-            result.put("isCompleted", nextChapterId == null);
+            result.put("nextChapterId", nextChapterDbId != null ? nextChapterDbId.toString() : null);
+            result.put("isCompleted", isCompleted);
             result.put("totalPaid", progress.getTotalPaid());
 
         } catch (Exception e) {

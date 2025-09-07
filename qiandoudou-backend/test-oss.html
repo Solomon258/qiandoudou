@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSS 连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #666;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #fileInput {
+            margin: 10px 0;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 OSS 连接测试工具</h1>
+        
+        <div class="test-section">
+            <h3>1. OSS 连接状态测试</h3>
+            <p>测试后端 OSS 服务是否正常初始化和连接</p>
+            <button onclick="testOssConnection()" id="testConnBtn">测试 OSS 连接</button>
+            <div id="connectionResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 图片上传测试</h3>
+            <p>测试钱包背景图片上传功能</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <input type="number" id="walletId" placeholder="钱包ID (如: 1)" value="1" min="1">
+            <button onclick="testImageUpload()" id="uploadBtn">测试图片上传</button>
+            <div id="uploadResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 服务状态检查</h3>
+            <p>检查后端服务是否正常运行</p>
+            <button onclick="checkServiceStatus()" id="statusBtn">检查服务状态</button>
+            <div id="statusResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080/api';
+
+        // 测试 OSS 连接
+        async function testOssConnection() {
+            const btn = document.getElementById('testConnBtn');
+            const result = document.getElementById('connectionResult');
+            
+            btn.disabled = true;
+            btn.textContent = '测试中...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '正在测试 OSS 连接...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/wallet/test-oss`);
+                const data = await response.json();
+                
+                result.className = `result ${data.code === 200 ? 'success' : 'error'}`;
+                result.textContent = `状态: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `连接失败: ${error.message}\n请检查后端服务是否启动 (http://localhost:8080)`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '测试 OSS 连接';
+            }
+        }
+
+        // 测试图片上传
+        async function testImageUpload() {
+            const btn = document.getElementById('uploadBtn');
+            const result = document.getElementById('uploadResult');
+            const fileInput = document.getElementById('fileInput');
+            const walletIdInput = document.getElementById('walletId');
+            
+            if (!fileInput.files[0]) {
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.textContent = '请先选择一个图片文件';
+                return;
+            }
+
+            const walletId = walletIdInput.value || '1';
+            
+            btn.disabled = true;
+            btn.textContent = '上传中...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '正在上传图片...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('walletId', walletId);
+
+                const response = await fetch(`${BASE_URL}/wallet/upload-background`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                result.className = `result ${data.code === 200 ? 'success' : 'error'}`;
+                result.textContent = `状态: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `上传失败: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '测试图片上传';
+            }
+        }
+
+        // 检查服务状态
+        async function checkServiceStatus() {
+            const btn = document.getElementById('statusBtn');
+            const result = document.getElementById('statusResult');
+            
+            btn.disabled = true;
+            btn.textContent = '检查中...';
+            result.style.display = 'block';
+            result.className = 'result loading';
+            result.textContent = '正在检查服务状态...';
+
+            try {
+                const response = await fetch(`${BASE_URL}/wallet/list`);
+                const data = await response.json();
+                
+                result.className = 'result success';
+                result.textContent = `✅ 后端服务正常运行\n响应状态: ${response.status}\n服务可用: ${data.code === 200 ? '是' : '否'}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 后端服务连接失败\n错误: ${error.message}\n\n请确保:\n1. 后端服务已启动\n2. 端口 8080 可访问\n3. 没有防火墙阻拦`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '检查服务状态';
+            }
+        }
+
+        // 页面加载时自动检查服务状态
+        window.onload = function() {
+            checkServiceStatus();
+        };
+    </script>
+</body>
+</html>

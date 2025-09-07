@@ -213,6 +213,8 @@
   opacity: 0.8;
 }
 
+
+
 /* 兼容旧样式 */
 .follow-btn-text {
   padding: 6px 16px;
@@ -388,14 +390,16 @@
 }
 
 .action-btn-promo {
-  padding: 6px 16px;
+  padding: 0px 16px;
   background: #FF6B35;
   border-radius: 14px;
+  line-height: 60rpx;
+  text-align: center;
+  color: #ffffff;
 }
 
 .action-text {
-  font-size: 12px;
-  color: #ffffff;
+  font-size: 24rpx;
   font-weight: 600;
 }
 
@@ -585,6 +589,31 @@
   line-height: 1.6;
 }
 
+/* 剧本封面内容 */
+.script-cover-content {
+  margin-left: 52px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e4e4e4;
+}
+
+.script-cover-image {
+  width: 100%;
+  height: 120px;
+  display: block;
+  border-radius: 12px 12px 0 0;
+}
+
+.script-title-text {
+  display: block;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
 /* AI伴侣消息内容 */
 .ai-message-content {
   margin-left: 52px;
@@ -606,6 +635,9 @@
 /* 语音播放区域 */
 .voice-play-section {
   margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .voice-play-btn {
@@ -649,6 +681,8 @@
 .voice-play-btn.playing .voice-duration {
   color: #ffffff;
 }
+
+
 
 /* 语音播放动画 */
 @keyframes pulse {
@@ -727,8 +761,9 @@
 }
 
 .action-text {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #666;
+  color: #ffffff;
 }
 
 .action-btn.liked .action-text {
@@ -769,11 +804,153 @@
 
 /* 统计视图 */
 .stats-view {
-  padding: 40px 20px;
-  text-align: center;
+  padding: 20px;
 }
 
 .stats-placeholder {
+  font-size: 14px;
+  color: #999;
+}
+
+/* 月份选择器 */
+.month-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.current-month {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.month-picker {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.picker-icon {
+  font-size: 18px;
+}
+
+/* 统计内容区域 */
+.stats-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 统计行 */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stats-row:last-child {
+  margin-bottom: 0;
+}
+
+/* 统计卡片 */
+.stat-card {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 2px solid transparent;
+}
+
+/* 收入卡片 */
+.income-card {
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  border-color: #4CAF50;
+}
+
+/* 支出卡片 */
+.expense-card {
+  background: linear-gradient(135deg, #ffeaea 0%, #fff0f0 100%);
+  border-color: #f44336;
+}
+
+/* 收益卡片 */
+.profit-card {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+  border-color: #2196f3;
+  flex: none;
+  width: 100%;
+}
+
+/* 统计标签 */
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* 统计数值 */
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* 收入数值 */
+.income-value {
+  color: #4CAF50;
+}
+
+/* 支出数值 */
+.expense-value {
+  color: #f44336;
+}
+
+/* 收益数值 */
+.profit-value.positive {
+  color: #4CAF50;
+}
+
+.profit-value.negative {
+  color: #f44336;
+}
+
+/* 加载状态 */
+.stats-loading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999;
+}
+
+/* 暂无数据提示 */
+.no-stats {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-stats-text {
   font-size: 14px;
   color: #999;
 }

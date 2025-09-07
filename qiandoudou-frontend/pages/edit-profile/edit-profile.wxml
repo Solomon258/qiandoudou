@@ -3,7 +3,6 @@
   <!-- 顶部导航栏 -->
   <view class="top-nav">
     <view class="nav-left" bindtap="goBack">
-      <view class="back-icon"></view>
     </view>
     <view class="nav-title">编辑账号信息</view>
     <view class="nav-right"></view>

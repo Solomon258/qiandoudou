@@ -3,9 +3,10 @@ const app = getApp()
 
 // 后端API基础地址
 const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-//  const BASE_URL = 'https://8.148.206.18:443/api'  // IP访问（微信小程序不支持）
+  // const BASE_URL = 'http://8.148.206.18/api'  // IP访问（微信小程序不支持）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
-
+// const BASE_URL = 'https://ai-where.com/api'
+// const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
 
 
@@ -123,6 +124,27 @@ const authAPI = {
       url: '/auth/phone-login',
       method: 'POST',
       data: { phone, code }
+    })
+  },
+
+  // 获取当前用户信息
+  getCurrentUser(userId) {
+    return request({
+      url: '/auth/current-user',
+      method: 'GET',
+      data: userId ? { userId } : {}
+    })
+  },
+
+  // 更新用户头像
+  updateAvatar(avatarUrl, userId) {
+    return request({
+      url: '/auth/update-avatar',
+      method: 'POST',
+      data: { 
+        avatarUrl: avatarUrl,
+        userId: userId
+      }
     })
   }
 }
@@ -466,6 +488,15 @@ const walletAPI = {
       method: 'POST',
       data: { imageBase64, prompt }
     })
+  },
+
+  // 获取钱包月度统计数据
+  getWalletMonthlyStats(walletId, year, month) {
+    return request({
+      url: '/wallet/monthly-stats',
+      method: 'GET',
+      data: { walletId, year, month }
+    })
   }
 }
 
@@ -508,6 +539,16 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
   })
 }
 
+/**
+ * 通用用户图片上传函数
+ * @param {string} filePath 图片文件路径
+ * @param {string} type 图片类型 (avatar, transfer, wallet_bg, etc.)
+ * @returns {Promise} 返回包含图片URL的Promise
+ */
+function uploadUserImage(filePath, type = 'general') {
+  return uploadFile(filePath, '/wallet/upload-user-image', { type })
+}
+
 // 剧本相关API
 const scriptAPI = {
   // 获取剧本列表
@@ -544,9 +585,13 @@ const scriptAPI = {
   },
 
   // 获取用户剧本进度
-  getUserProgress: (userId, scriptId) => {
+  getUserProgress: (userId, scriptId, walletId = null) => {
+    let url = `/scripts/progress?userId=${userId}&scriptId=${scriptId}`
+    if (walletId) {
+      url += `&walletId=${walletId}`
+    }
     return request({
-      url: `/scripts/progress?userId=${userId}&scriptId=${scriptId}`,
+      url: url,
       method: 'GET'
     })
   },
@@ -565,12 +610,13 @@ const scriptAPI = {
   },
 
   // 用户做出选择
-  makeChoice: (userId, scriptId, currentChapter, selectedChoice, amount) => {
+  makeChoice: (userId, walletId, scriptId, currentChapter, selectedChoice, amount) => {
     return request({
       url: '/scripts/choice',
       method: 'POST',
       data: {
         userId,
+        walletId,
         scriptId,
         currentChapter,
         selectedChoice,
@@ -665,6 +711,7 @@ module.exports = {
   authAPI,
   walletAPI,
   uploadFile,
+  uploadUserImage,
   scriptAPI,
   testAPI
 }

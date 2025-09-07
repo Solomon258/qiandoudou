@@ -104,15 +104,23 @@ public class ScriptController {
     }
 
     /**
-     * 获取用户剧本进度
+     * 获取用户剧本进度（支持钱包维度）
      */
     @GetMapping("/progress")
     public ResponseEntity<Map<String, Object>> getUserProgress(
             @RequestParam Long userId, 
-            @RequestParam Long scriptId) {
+            @RequestParam Long scriptId,
+            @RequestParam(required = false) Long walletId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            UserScriptProgress progress = scriptService.getUserProgress(userId, scriptId);
+            UserScriptProgress progress;
+            if (walletId != null) {
+                // 获取指定钱包的进度
+                progress = scriptService.getUserProgressByWallet(userId, walletId, scriptId);
+            } else {
+                // 兼容旧版本，不考虑钱包
+                progress = scriptService.getUserProgress(userId, scriptId);
+            }
             response.put("code", 200);
             response.put("data", progress);
             response.put("message", "获取成功");
@@ -155,12 +163,13 @@ public class ScriptController {
         Map<String, Object> response = new HashMap<>();
         try {
             Long userId = Long.valueOf(params.get("userId").toString());
+            Long walletId = Long.valueOf(params.get("walletId").toString());
             Long scriptId = Long.valueOf(params.get("scriptId").toString());
             Integer currentChapter = Integer.valueOf(params.get("currentChapter").toString());
             String selectedChoice = params.get("selectedChoice").toString();
             BigDecimal amount = new BigDecimal(params.get("amount").toString());
 
-            Map<String, Object> result = scriptService.makeChoiceAndUnlock(userId, scriptId, currentChapter, selectedChoice, amount);
+            Map<String, Object> result = scriptService.makeChoiceAndUnlock(userId, walletId, scriptId, currentChapter, selectedChoice, amount);
             response.put("code", result.get("success").equals(true) ? 200 : 500);
             response.putAll(result);
         } catch (Exception e) {

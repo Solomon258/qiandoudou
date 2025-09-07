@@ -2,6 +2,7 @@ package com.qiandoudou.service.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.http.*;
@@ -41,7 +42,8 @@ public class ByteDanceImageToTextService {
     @Value("${ai.bytedance.enabled:true}")
     private boolean enabled;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * 验证和转换图片格式
@@ -217,6 +219,84 @@ public class ByteDanceImageToTextService {
         } catch (Exception e) {
             logger.error("字节跳动API调用失败: {}", e.getMessage(), e);
             throw new RuntimeException("字节跳动API调用失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 根据文本生成AI文案（不需要图片）
+     * @param prompt 提示词
+     * @return 生成的文字描述
+     */
+    public String generateTextFromPrompt(String prompt) {
+        if (!enabled) {
+            logger.warn("字节跳动API未启用，enabled={}", enabled);
+            throw new RuntimeException("字节跳动API未启用");
+        }
+
+        logger.info("字节跳动API配置检查 - enabled: {}, apiKey存在: {}, model: {}", 
+                   enabled, (apiKey != null && !apiKey.trim().isEmpty()), model);
+
+        try {
+            logger.info("开始调用字节跳动纯文本生成API，输入prompt: {}", prompt);
+
+            // 构建请求头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            // 构建消息内容（只有文本，没有图片）
+            List<Map<String, Object>> contentParts = new ArrayList<>();
+            
+            // 文本部分
+            String finalPrompt = prompt != null ? prompt : "生成一段优美的文案";
+            Map<String, Object> textContent = new HashMap<>();
+            textContent.put("type", "text");
+            textContent.put("text", finalPrompt);
+            contentParts.add(textContent);
+
+            // 构建消息
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", contentParts);
+
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", Arrays.asList(message));
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            // 调用API
+            String apiUrl = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
+            logger.info("正在调用字节跳动API: {}", apiUrl);
+            logger.info("请求体: {}", requestBody);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, entity, Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> responseBody = response.getBody();
+                
+                // 解析响应
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> choice = choices.get(0);
+                    Map<String, Object> message_response = (Map<String, Object>) choice.get("message");
+                    String content = (String) message_response.get("content");
+                    
+                    logger.info("字节跳动纯文本生成API调用成功，生成内容: {}", content);
+                    return content.trim();
+                }
+                
+                logger.warn("字节跳动API返回的choices为空");
+                throw new RuntimeException("API返回数据格式异常");
+            } else {
+                logger.error("字节跳动纯文本生成API调用失败，状态码: {}", response.getStatusCode());
+                throw new RuntimeException("字节跳动API调用失败，状态码: " + response.getStatusCode());
+            }
+
+        } catch (Exception e) {
+            logger.error("字节跳动纯文本生成API调用异常: {}", e.getMessage(), e);
+            throw new RuntimeException("字节跳动纯文本生成API调用异常: " + e.getMessage(), e);
         }
     }
 

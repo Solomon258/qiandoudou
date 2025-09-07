@@ -44,10 +44,6 @@
   <view wx:else class="script-detail-page">
     <!-- 头部导航 -->
     <view class="detail-header">
-      <view class="back-button" bindtap="goBack">
-        <text class="back-icon">‹</text>
-        <text class="back-text">剧本攒</text>
-      </view>
       <text class="page-title">{{selectedScript.title}}</text>
     </view>
 
@@ -75,6 +71,7 @@
                  controls
                  show-fullscreen-btn="{{false}}"
                  object-fit="contain"
+                 autoplay="true"
                  initial-time="0"
                  binderror="onVideoError"
                  bindloadeddata="onVideoLoaded"
@@ -141,18 +138,10 @@
       </view>
     </view>
 
-    <!-- 章节选择器 -->
-    <view class="chapter-selector">
-      <view wx:for="{{availableChapters}}" wx:key="number"
-            class="chapter-number {{item.current ? 'current' : ''}} {{!item.unlocked ? 'locked' : ''}}"
-            bindtap="selectChapter"
-            data-chapter="{{item.number}}">
-        {{item.number}}
-      </view>
-    </view>
+    <!-- 章节选择器已移除 - 改为基于选择跳转 -->
 
     <!-- 底部转入按钮 -->
-    <view class="bottom-transfer">
+    <view wx:if="{{chapterContent && chapterContent.choices && showTransferButton}}" class="bottom-transfer">
       <button class="transfer-button {{transferButtonEnabled ? 'enabled' : 'disabled'}}"
               bindtap="transferToWallet"
               disabled="{{!transferButtonEnabled}}">

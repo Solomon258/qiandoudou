@@ -89,6 +89,18 @@ public class Transaction implements Serializable {
     private String aiPartnerName;
 
     /**
+     * 剧本封面图片URL（剧本攒钱专用，非数据库字段）
+     */
+    @TableField(exist = false)
+    private String scriptCoverImage;
+
+    /**
+     * 剧本标题（剧本攒钱专用，非数据库字段）
+     */
+    @TableField(exist = false)
+    private String scriptTitle;
+
+    /**
      * AI伴侣头像
      */
     @TableField("ai_partner_avatar")

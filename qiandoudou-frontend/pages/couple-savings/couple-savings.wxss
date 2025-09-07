@@ -36,7 +36,8 @@
 .partner-info-center {
   position: absolute;
   left: 50%;
-  top: calc(60% - 150px);
+  /* top: calc(60% - 150px); */
+  bottom: 0;
   transform: translateX(-50%);
   text-align: center;
   z-index: 15;
@@ -44,41 +45,39 @@
 }
 
 .partner-name-large {
-  font-size: 80rpx;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.5);
-  display: block;
-  margin-bottom: 30rpx;
-  letter-spacing: 4rpx;
+  height:168rpx;
+  line-height:168rpx;
+  font-family:Songti SC;
+  font-weight:900;
+  color:rgba(255, 255, 255, 0.9);
+  font-size:120rpx;
+  text-align:center;
 }
 
 .partner-tags-center {
   display: flex;
   justify-content: center;
-  gap: 20rpx;
-  margin-bottom: 30rpx;
+  margin: 60rpx 0 30rpx 0;
 }
 
 .tag-pill {
-  padding: 12rpx 32rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 40rpx;
-  font-size: 28rpx;
-  color: #333;
-  font-weight: 500;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+  font-family:PingFang SC;
+  color:rgba(255, 255, 255, 0.9);
+  padding: 8rpx 28rpx;
+  font-size:24rpx;
+  height:48rpx;
+  line-height: 48rpx;
+  background:rgba(255, 255, 255, 0.2);
+  border:1px solid;
+  border-color:#ffffff;
+  border-radius:16rpx;
 }
 
 .partner-desc-center {
-  font-size: 32rpx;
-  color: white;
-  line-height: 1.5;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
-  font-weight: 400;
-  margin-bottom: 50rpx;
-  transform: translateY(-10rpx);
+  font-family:PingFang SC;
+  font-size:36rpx;
+  text-align:center;
+  color: #ffffff;
 }
 
 
@@ -103,17 +102,21 @@
 
 /* 修复后的邀请按钮 - 确保层级正确 */
 .invite-btn-center-fixed {
-  width: 336rpx;
-  height: 80rpx;
-  background: linear-gradient(135deg, #fee085 0%, #fff2c2 100%);
-  border-radius: 40rpx;
+  margin-top: 36rpx;
+  width:444rpx;
+  height:96rpx;
+  background:linear-gradient(180deg,#fee085 0%,#fff2c2 100%);
+  border-radius:44rpx;
+  /* width: 336rpx;
+  height: 80rpx; */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+  /* box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2); */
   transition: all 0.3s ease;
-  margin: 10rpx auto 0;
-  position: relative;
+  margin: 0 auto;
+  margin-top: 36rpx;
+  /* position: relative; */
   z-index: 50;
   pointer-events: auto;
 }
@@ -132,18 +135,18 @@
 
 /* 头像轮播区域（无背景框，更底部位置，下移105px） */
 .avatar-section-overlay {
-  position: fixed;
-  bottom: -175rpx;
+  /* position: fixed;
+  bottom: -175rpx; */
   left: 0;
   right: 0;
-  padding: 60rpx 0 80rpx;
-  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+  /* padding-bottom: calc(74rpx + env(safe-area-inset-bottom)); */
   z-index: 10;
+  height: 426rpx;
 }
 
 /* 头像轮播 */
 .avatar-swiper {
-  height: 500rpx;
+  height: 426rpx;
   margin-bottom: 40rpx;
 }
 
@@ -166,8 +169,8 @@
 }
 
 .avatar-image {
-  width: 244rpx;
-  height: 365rpx;
+  width: 218rpx;
+  height: 292rpx;
   border-radius: 40rpx;
   border: none;
   transition: all 0.3s ease;
@@ -175,8 +178,8 @@
 }
 
 .avatar-container.active .avatar-image {
-  width: 254rpx;
-  height: 380rpx;
+  width: 218rpx;
+  height: 292rpx;
   border-radius: 40rpx;
   border: none;
   box-shadow: 0 15rpx 40rpx rgba(0, 0, 0, 0.5);

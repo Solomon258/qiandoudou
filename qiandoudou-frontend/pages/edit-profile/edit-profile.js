@@ -128,59 +128,123 @@ Page({
     })
   },
 
-  // 保存头像
+  // 保存头像到OSS
   saveAvatar(imagePath) {
     this.setData({ isUploadingAvatar: true })
 
-    // 保存到本地相册目录
-    wx.saveFile({
-      tempFilePath: imagePath,
-      success: (res) => {
-        const savedFilePath = res.savedFilePath
-        console.log('头像保存成功:', savedFilePath)
-        
-        // 更新用户信息
-        const userInfo = { ...this.data.userInfo }
-        userInfo.avatar = savedFilePath
-        userInfo.hasCustomAvatar = true
+    // 上传到OSS
+    const { uploadUserImage } = require('../../utils/api.js')
+    uploadUserImage(imagePath, 'avatar')
+      .then(response => {
+        if (response.data && response.data.imageUrl) {
+          const ossUrl = response.data.imageUrl
+          console.log('头像上传OSS成功:', ossUrl)
+          
+          // 更新用户信息
+          const userInfo = { ...this.data.userInfo }
+          userInfo.avatar = ossUrl
+          userInfo.hasCustomAvatar = true
 
-        this.setData({ 
-          userInfo,
-          isUploadingAvatar: false
-        })
+          this.setData({ 
+            userInfo,
+            isUploadingAvatar: false
+          })
 
-        // 保存到本地存储
-        const storedUserInfo = wx.getStorageSync('userInfo') || {}
-        storedUserInfo.avatar = savedFilePath
-        storedUserInfo.hasCustomAvatar = true
-        wx.setStorageSync('userInfo', storedUserInfo)
+          // 保存到本地存储
+          const storedUserInfo = wx.getStorageSync('userInfo') || {
+            id: 1,
+            nickname: '钱兜兜用户',
+            description: '这个人很懒，什么都没留下'
+          }
+          storedUserInfo.avatar = ossUrl
+          storedUserInfo.hasCustomAvatar = true
+          wx.setStorageSync('userInfo', storedUserInfo)
 
-        // 更新全局数据
-        if (app.globalData.userInfo) {
-          app.globalData.userInfo.avatar = savedFilePath
+          // 更新全局数据
+          app.globalData.userInfo = app.globalData.userInfo || {}
+          app.globalData.userInfo.avatar = ossUrl
           app.globalData.userInfo.hasCustomAvatar = true
+          app.globalData.userInfo.nickname = app.globalData.userInfo.nickname || storedUserInfo.nickname
+          app.globalData.userInfo.id = app.globalData.userInfo.id || storedUserInfo.id
+          
+          console.log('头像上传后更新的用户信息:', app.globalData.userInfo)
+
+          // 同时更新后端数据库中的头像URL
+          this.updateAvatarToServer(ossUrl)
+
+          wx.showToast({
+            title: '头像更新成功',
+            icon: 'success'
+          })
         }
-
-        // 上传到服务器（可选）
-        this.uploadAvatarToServer(savedFilePath)
-
-        wx.showToast({
-          title: '头像更新成功',
-          icon: 'success'
-        })
-      },
-      fail: (error) => {
-        console.error('保存头像失败:', error)
+      })
+      .catch(error => {
+        console.error('头像上传失败:', error)
         this.setData({ isUploadingAvatar: false })
-        wx.showToast({
-          title: '保存头像失败',
-          icon: 'none'
+        
+        // 上传失败时，尝试使用本地保存作为备用方案
+        wx.saveFile({
+          tempFilePath: imagePath,
+          success: (res) => {
+            const savedFilePath = res.savedFilePath
+            console.log('头像本地保存成功:', savedFilePath)
+            
+            // 更新用户信息
+            const userInfo = { ...this.data.userInfo }
+            userInfo.avatar = savedFilePath
+            userInfo.hasCustomAvatar = true
+
+            this.setData({ 
+              userInfo,
+              isUploadingAvatar: false
+            })
+
+            // 保存到本地存储
+            const storedUserInfo = wx.getStorageSync('userInfo') || {}
+            storedUserInfo.avatar = savedFilePath
+            storedUserInfo.hasCustomAvatar = true
+            wx.setStorageSync('userInfo', storedUserInfo)
+
+            // 更新全局数据
+            if (app.globalData.userInfo) {
+              app.globalData.userInfo.avatar = savedFilePath
+              app.globalData.userInfo.hasCustomAvatar = true
+            }
+
+            wx.showToast({
+              title: '头像已保存到本地',
+              icon: 'success'
+            })
+          },
+          fail: () => {
+            wx.showToast({
+              title: '头像保存失败',
+              icon: 'error'
+            })
+          }
         })
-      }
-    })
+      })
   },
 
-  // 上传头像到服务器
+  // 更新头像URL到服务器
+  updateAvatarToServer(avatarUrl) {
+    const { authAPI } = require('../../utils/api.js')
+    
+    // 获取当前用户ID
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+    console.log('准备更新头像到服务器 - 用户ID:', userId, '头像URL:', avatarUrl)
+    
+    authAPI.updateAvatar(avatarUrl, userId)
+      .then(result => {
+        console.log('头像URL已同步到服务器:', avatarUrl)
+      })
+      .catch(error => {
+        console.error('同步头像URL到服务器失败:', error)
+        // 不影响用户体验，静默失败
+      })
+  },
+
+  // 上传头像到服务器（旧方法，保留兼容性）
   uploadAvatarToServer(filePath) {
     const userId = app.globalData.userInfo?.id
     if (!userId) {

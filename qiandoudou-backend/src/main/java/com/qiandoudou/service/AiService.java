@@ -34,4 +34,9 @@ public interface AiService {
      * 根据图片base64生成文字描述
      */
     String generateTextFromImageBase64(String imageBase64, String prompt);
+    
+    /**
+     * 生成AI文案（不需要图片）
+     */
+    String generateAiText(String prompt);
 }

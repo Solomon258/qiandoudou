@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量图片上传 - 千豆豆OSS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8fbff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #00f2fe;
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.drag-over {
+            border-color: #00f2fe;
+            background: #e6f7ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #4facfe;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 1em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b 0%, #ffa726 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #4facfe;
+        }
+
+        .file-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-status {
+            margin-left: 15px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-uploading {
+            background: #cce7ff;
+            color: #0066cc;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .remove-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .upload-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .results-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #28a745;
+        }
+
+        .result-item.error {
+            border-left-color: #dc3545;
+        }
+
+        .result-url {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .url-summary {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            border: 2px solid #28a745;
+        }
+
+        .url-summary-title {
+            font-size: 1.3em;
+            color: #28a745;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .url-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .url-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .url-filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .url-filename::before {
+            content: "🖼️";
+            margin-right: 8px;
+        }
+
+        .url-link {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 5px;
+            word-break: break-all;
+            font-size: 0.85em;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .url-link .url-text {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .url-copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .url-copy-btn:hover {
+            background: #218838;
+        }
+
+        .url-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .url-actions .btn {
+            background: linear-gradient(45deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .url-actions .btn:hover {
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .upload-area {
+                padding: 40px 20px;
+            }
+            
+            .upload-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .file-preview {
+                margin: 0 0 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 批量图片上传</h1>
+            <p>将图片上传到阿里云OSS的 /res/image/ 目录</p>
+        </div>
+
+        <div class="main-content">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalFiles">0</div>
+                    <div class="stat-label">总文件数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="successCount">0</div>
+                    <div class="stat-label">上传成功</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="errorCount">0</div>
+                    <div class="stat-label">上传失败</div>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-text">点击选择图片或拖拽到此处</div>
+                    <div class="upload-hint">支持 JPG、PNG、GIF 格式，单文件最大5MB</div>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*">
+                
+                <div class="upload-controls">
+                    <button class="btn" onclick="selectFiles()">选择文件</button>
+                    <button class="btn" id="uploadBtn" onclick="startUpload()" disabled>开始上传</button>
+                    <button class="btn btn-danger" onclick="clearAll()">清空列表</button>
+                </div>
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3 class="results-title">上传结果</h3>
+                <div id="resultsList"></div>
+                
+                <!-- 成功文件的访问地址汇总 -->
+                <div class="url-summary" id="urlSummary" style="display: none;">
+                    <h4 class="url-summary-title">📋 文件访问地址汇总</h4>
+                    <div class="url-list" id="urlList"></div>
+                    <div class="url-actions">
+                        <button class="btn" onclick="copyAllUrls()">复制所有链接</button>
+                        <button class="btn" onclick="downloadUrlList()">下载链接列表</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let uploadResults = [];
+        const API_BASE_URL = 'http://localhost:8080/api/wallet';
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // 点击上传区域选择文件
+            uploadArea.addEventListener('click', selectFiles);
+
+            // 文件选择事件
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 拖拽事件
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+        }
+
+        function selectFiles() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            addFiles(files);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.remove('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.remove('drag-over');
+            const files = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            files.forEach(file => {
+                // 检查文件大小
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`文件 ${file.name} 超过5MB限制，已跳过`, 'error');
+                    return;
+                }
+
+                // 检查是否已存在
+                if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    showNotification(`文件 ${file.name} 已存在，已跳过`, 'error');
+                    return;
+                }
+
+                const fileObj = {
+                    id: Date.now() + Math.random(),
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    status: 'waiting',
+                    progress: 0,
+                    preview: null
+                };
+
+                // 生成预览图
+                generatePreview(fileObj);
+                selectedFiles.push(fileObj);
+            });
+
+            updateFileList();
+            updateStats();
+            updateUploadButton();
+        }
+
+        function generatePreview(fileObj) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileObj.preview = e.target.result;
+                updateFileList();
+            };
+            reader.readAsDataURL(fileObj.file);
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+
+            fileList.innerHTML = selectedFiles.map(fileObj => `
+                <div class="file-item" id="file-${fileObj.id}">
+                    ${fileObj.preview ? `<img src="${fileObj.preview}" class="file-preview" alt="预览">` : '<div class="file-preview" style="background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #666;">📷</div>'}
+                    <div class="file-info">
+                        <div class="file-name">${fileObj.name}</div>
+                        <div class="file-size">${formatFileSize(fileObj.size)}</div>
+                        ${fileObj.status === 'uploading' ? `<div class="progress-bar"><div class="progress-fill" style="width: ${fileObj.progress}%"></div></div>` : ''}
+                    </div>
+                    <div class="file-status status-${fileObj.status}">
+                        ${getStatusText(fileObj.status)}
+                    </div>
+                    <button class="remove-btn" onclick="removeFile('${fileObj.id}')" ${fileObj.status === 'uploading' ? 'disabled' : ''}>×</button>
+                </div>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'waiting': '等待上传',
+                'uploading': '上传中...',
+                'success': '上传成功',
+                'error': '上传失败'
+            };
+            return statusMap[status] || status;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeFile(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.id != fileId);
+            updateFileList();
+            updateStats();
+            updateUploadButton();
+        }
+
+        function clearAll() {
+            selectedFiles = [];
+            uploadResults = [];
+            updateFileList();
+            updateStats();
+            updateUploadButton();
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('urlSummary').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function updateStats() {
+            document.getElementById('totalFiles').textContent = selectedFiles.length;
+            document.getElementById('successCount').textContent = selectedFiles.filter(f => f.status === 'success').length;
+            document.getElementById('errorCount').textContent = selectedFiles.filter(f => f.status === 'error').length;
+        }
+
+        function updateUploadButton() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const waitingFiles = selectedFiles.filter(f => f.status === 'waiting');
+            uploadBtn.disabled = waitingFiles.length === 0;
+            
+            if (selectedFiles.some(f => f.status === 'uploading')) {
+                uploadBtn.textContent = '上传中...';
+                uploadBtn.disabled = true;
+            } else {
+                uploadBtn.textContent = '开始上传';
+            }
+        }
+
+        async function startUpload() {
+            const waitingFiles = selectedFiles.filter(f => f.status === 'waiting');
+            
+            if (waitingFiles.length === 0) {
+                showNotification('没有需要上传的文件', 'error');
+                return;
+            }
+
+            updateUploadButton();
+            uploadResults = [];
+
+            // 并发上传，但限制并发数量为3
+            const concurrentLimit = 3;
+            const uploadPromises = [];
+            
+            for (let i = 0; i < waitingFiles.length; i += concurrentLimit) {
+                const batch = waitingFiles.slice(i, i + concurrentLimit);
+                const batchPromises = batch.map(fileObj => uploadFile(fileObj));
+                uploadPromises.push(...batchPromises);
+                
+                // 等待当前批次完成再继续下一批次
+                await Promise.allSettled(batchPromises);
+            }
+
+            // 等待所有上传完成
+            await Promise.allSettled(uploadPromises);
+            
+            updateUploadButton();
+            updateStats();
+            showResults();
+            
+            const successCount = selectedFiles.filter(f => f.status === 'success').length;
+            const totalCount = selectedFiles.length;
+            
+            if (successCount === totalCount) {
+                showNotification(`所有文件上传成功！(${successCount}/${totalCount})`, 'success');
+            } else {
+                showNotification(`上传完成：${successCount}/${totalCount} 成功`, 'error');
+            }
+        }
+
+        async function uploadFile(fileObj) {
+            try {
+                fileObj.status = 'uploading';
+                fileObj.progress = 0;
+                updateFileList();
+
+                const formData = new FormData();
+                formData.append('file', fileObj.file);
+
+                const response = await fetch(`${API_BASE_URL}/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                fileObj.progress = 100;
+                updateFileList();
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        fileObj.status = 'success';
+                        uploadResults.push({
+                            fileName: fileObj.name,
+                            success: true,
+                            url: result.data.imageUrl,
+                            message: '上传成功'
+                        });
+                    } else {
+                        throw new Error(result.message || '上传失败');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                fileObj.status = 'error';
+                uploadResults.push({
+                    fileName: fileObj.name,
+                    success: false,
+                    message: error.message
+                });
+                console.error(`文件 ${fileObj.name} 上传失败:`, error);
+            }
+
+            updateFileList();
+        }
+
+        function showResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsList = document.getElementById('resultsList');
+            const urlSummary = document.getElementById('urlSummary');
+            const urlList = document.getElementById('urlList');
+            
+            if (uploadResults.length === 0) {
+                resultsSection.style.display = 'none';
+                return;
+            }
+
+            resultsSection.style.display = 'block';
+            
+            // 显示详细结果
+            resultsList.innerHTML = uploadResults.map(result => `
+                <div class="result-item ${result.success ? '' : 'error'}">
+                    <strong>${result.fileName}</strong>
+                    <div style="margin-top: 5px;">
+                        ${result.success ? 
+                            `<span style="color: #28a745;">✅ ${result.message}</span>` : 
+                            `<span style="color: #dc3545;">❌ ${result.message}</span>`
+                        }
+                    </div>
+                    ${result.success ? `
+                        <div class="result-url">
+                            ${result.url}
+                            <button class="copy-btn" onclick="copyToClipboard('${result.url}')">复制</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // 显示成功上传的文件URL汇总
+            const successResults = uploadResults.filter(result => result.success);
+            if (successResults.length > 0) {
+                urlSummary.style.display = 'block';
+                urlList.innerHTML = successResults.map(result => `
+                    <div class="url-item">
+                        <div class="url-filename">${result.fileName}</div>
+                        <div class="url-link">
+                            <span class="url-text">${result.url}</span>
+                            <button class="url-copy-btn" onclick="copyToClipboard('${result.url}')">复制</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                urlSummary.style.display = 'none';
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('URL已复制到剪贴板', 'success');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                showNotification('复制失败', 'error');
+            });
+        }
+
+        function copyAllUrls() {
+            const successResults = uploadResults.filter(result => result.success);
+            if (successResults.length === 0) {
+                showNotification('没有可复制的链接', 'error');
+                return;
+            }
+
+            const urlText = successResults.map(result => `${result.fileName}: ${result.url}`).join('\n');
+            
+            navigator.clipboard.writeText(urlText).then(() => {
+                showNotification(`已复制 ${successResults.length} 个文件链接到剪贴板`, 'success');
+            }).catch(err => {
+                console.error('批量复制失败:', err);
+                showNotification('批量复制失败', 'error');
+            });
+        }
+
+        function downloadUrlList() {
+            const successResults = uploadResults.filter(result => result.success);
+            if (successResults.length === 0) {
+                showNotification('没有可下载的链接', 'error');
+                return;
+            }
+
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+            const content = [
+                '# 图片上传结果',
+                `上传时间: ${new Date().toLocaleString()}`,
+                `成功文件数: ${successResults.length}`,
+                '',
+                '## 文件访问链接',
+                ...successResults.map((result, index) => 
+                    `${index + 1}. **${result.fileName}**\n   ${result.url}`
+                ),
+                '',
+                '---',
+                '由千豆豆批量图片上传工具生成'
+            ].join('\n');
+
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `图片链接列表_${timestamp}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showNotification(`链接列表已下载 (${successResults.length} 个文件)`, 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -19,7 +19,11 @@
       <!-- 用户信息 -->
       <view class="user-info" catchtap="stopPropagation">
         <view class="user-avatar">
-          <text class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
+          <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}" 
+                 class="user-avatar-image" 
+                 src="{{userInfo.avatar}}" 
+                 mode="aspectFill"/>
+          <text wx:else class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
         </view>
         <view class="user-details">
           <text class="user-title">{{wallet.name || '07年小女生攒钱'}}💗</text>
@@ -54,7 +58,7 @@
         
         <view class="follow-buttons">
           <image class="follow-btn-image {{isFollowing ? 'followed' : ''}}" 
-                 src="{{isFollowing ? 'https://8.148.206.18:443/res/image/include_images/已关注.png' : 'https://8.148.206.18:443/res/image/include_images/关注.png'}}" 
+                 src="{{isFollowing ? 'https://8.148.206.18:443/res/image/usages/已关注.png' : 'https://8.148.206.18:443/res/image/usages/关注.png'}}" 
                  bindtap="toggleFollow"
                  mode="aspectFit" />
         </view>

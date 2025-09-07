@@ -35,6 +35,13 @@
 
 .back-arrow {
   font-size: 48px;
+  line-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: block;
+  width: 48px;
+  height: 48px;
   color: #000000e6;
   font-weight: 300;
 }

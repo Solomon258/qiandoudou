@@ -30,4 +30,10 @@ public interface UserScriptProgressMapper extends BaseMapper<UserScriptProgress>
      */
     @Select("SELECT * FROM user_script_progress WHERE user_id = #{userId} AND wallet_id = #{walletId} AND deleted = 0")
     List<UserScriptProgress> getProgressByUserIdAndWalletId(Long userId, Long walletId);
+
+    /**
+     * 根据用户ID、钱包ID和剧本ID获取进度
+     */
+    @Select("SELECT * FROM user_script_progress WHERE user_id = #{userId} AND wallet_id = #{walletId} AND script_id = #{scriptId} AND deleted = 0")
+    UserScriptProgress getProgressByUserIdWalletIdAndScriptId(Long userId, Long walletId, Long scriptId);
 }

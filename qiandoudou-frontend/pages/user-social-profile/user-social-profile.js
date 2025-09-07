@@ -6,7 +6,7 @@ Page({
   data: {
     userInfo: {
       nickname: '昆虫记',
-      avatar: 'https://8.148.206.18:443/res/image/include_images/user-avatar.png',
+      avatar: 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
       description: '每100个粉丝，打卡一个5A级景区'
     },
     socialStats: {
@@ -37,19 +37,88 @@ Page({
     this.loadUserInfo()
   },
 
+  onShow() {
+    // 页面显示时重新加载用户信息，确保头像等信息是最新的
+    this.loadUserInfo()
+  },
+
   // 加载用户信息
   loadUserInfo() {
     const userInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
+    
     if (userInfo) {
+      // 有本地用户信息，直接使用
+      const displayUserInfo = {
+        nickname: userInfo.nickname || '钱兜兜用户',
+        avatar: userInfo.avatar || 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+        description: userInfo.description || '这个人很懒，什么都没留下',
+        hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
+      }
+      
+      console.log('从本地加载用户信息:', displayUserInfo)
+      console.log('头像URL:', displayUserInfo.avatar)
+      console.log('是否自定义头像:', displayUserInfo.hasCustomAvatar)
+      
       this.setData({
-        userInfo: {
-          nickname: userInfo.nickname || '用户',
-          avatar: userInfo.avatar || 'https://8.148.206.18:443/res/image/include_images/user-avatar.png',
-          description: userInfo.description || '这个人很懒，什么都没留下',
-          hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
-        }
+        userInfo: displayUserInfo
       })
+    } else {
+      // 本地用户信息为空，尝试从后端获取
+      console.log('本地用户信息为空，尝试从后端获取...')
+      this.loadUserInfoFromServer()
     }
+  },
+
+  // 从服务器加载用户信息
+  loadUserInfoFromServer() {
+    const { authAPI } = require('../../utils/api.js')
+    
+    // 获取当前用户ID，如果没有则使用默认的test1用户ID
+    const userId = app.globalData.userInfo?.id || 1961688416014127106
+    console.log('从服务器获取用户信息，用户ID:', userId)
+    
+    authAPI.getCurrentUser(userId)
+      .then(result => {
+        const serverUserInfo = result.data
+        console.log('从服务器获取用户信息:', serverUserInfo)
+        
+        // 设置用户信息
+        const displayUserInfo = {
+          id: serverUserInfo.id || 1,
+          nickname: serverUserInfo.nickname || '钱兜兜用户',
+          avatar: serverUserInfo.avatar || 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+          description: serverUserInfo.description || '这个人很懒，什么都没留下',
+          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
+        }
+        
+        this.setData({
+          userInfo: displayUserInfo
+        })
+        
+        // 同步到本地存储和全局数据
+        wx.setStorageSync('userInfo', displayUserInfo)
+        app.globalData.userInfo = displayUserInfo
+        
+        console.log('用户信息已同步到本地:', displayUserInfo)
+      })
+      .catch(error => {
+        console.error('从服务器获取用户信息失败:', error)
+        
+        // 使用默认用户信息
+        const defaultUserInfo = {
+          id: 1,
+          nickname: '钱兜兜用户',
+          avatar: 'https://8.148.206.18:443/res/image/usages/user-avatar.png',
+          description: '这个人很懒，什么都没留下',
+          hasCustomAvatar: false
+        }
+        
+        this.setData({
+          userInfo: defaultUserInfo
+        })
+        
+        console.log('使用默认用户信息:', defaultUserInfo)
+      })
   },
 
   // 加载用户数据

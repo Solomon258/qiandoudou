@@ -23,10 +23,9 @@ Page({
     userProgress: null,
     selectedChoice: null,
     transferButtonEnabled: false,
+    showTransferButton: true,
     
-    // 章节选择器
-    availableChapters: [],
-    maxUnlockedChapter: 1,
+    // 章节选择器已移除 - 改为基于选择跳转
     
     // 视频相关
     videoLoadError: false,
@@ -185,7 +184,7 @@ Page({
       }
 
       // 获取或创建用户进度
-      let progressResponse = await scriptAPI.getUserProgress(this.data.userId, scriptId)
+      let progressResponse = await scriptAPI.getUserProgress(this.data.userId, scriptId, this.data.walletId)
       if (progressResponse.code !== 200 || !progressResponse.data) {
         // 开始新剧本
         const startResponse = await scriptAPI.startScript(this.data.userId, this.data.walletId, scriptId)
@@ -197,22 +196,10 @@ Page({
       const script = scriptResponse.data
       const progress = progressResponse.data
 
-      // 生成可用章节列表
-      const availableChapters = []
-      for (let i = 1; i <= script.totalChapters; i++) {
-        availableChapters.push({
-          number: i,
-          unlocked: i <= progress.currentChapter,
-          current: i === progress.currentChapter
-        })
-      }
-
       this.setData({
         selectedScript: script,
         userProgress: progress,
-        currentChapter: progress.currentChapter,
-        availableChapters: availableChapters,
-        maxUnlockedChapter: progress.currentChapter
+        currentChapter: progress.currentChapter
       })
 
       // 加载当前章节内容
@@ -262,11 +249,16 @@ Page({
         chapterData.choicesList = choicesList
         console.log('章节数据处理完成:', chapterData)
         
+        // 检查是否为最后一集（没有选项或所有选项的nextId都为null）
+        const isLastChapter = !choicesList || choicesList.length === 0 || 
+                            choicesList.every(choice => choice.nextId === null || choice.nextId === undefined)
+        
         this.setData({
           chapterContent: chapterData,
           selectedChoice: null,
           transferButtonEnabled: false,
-          videoLoadError: false
+          videoLoadError: false,
+          showTransferButton: !isLastChapter
         })
 
         // 处理视频URL
@@ -316,46 +308,20 @@ Page({
   // 选择剧本
   selectScript(e) {
     const script = e.currentTarget.dataset.script
-    this.loadScriptDetail(script.id)
-  },
-
-  // 选择章节
-  selectChapter(e) {
-    const chapterNumber = parseInt(e.currentTarget.dataset.chapter)
-    const { availableChapters, currentChapter } = this.data
     
-    console.log('尝试切换到章节:', chapterNumber, '当前章节:', currentChapter)
-    
-    // 检查章节是否已解锁
-    const chapter = availableChapters.find(c => c.number === chapterNumber)
-    if (!chapter || !chapter.unlocked) {
-      wx.showToast({
-        title: '章节未解锁',
-        icon: 'error'
+    // 根据剧本类型跳转到不同页面
+    if (script.id === 3) {
+      // 图文类型剧本，跳转到新页面
+      wx.navigateTo({
+        url: '/pages/script-image-detail/script-image-detail?walletId=' + this.data.walletId
       })
-      return
+    } else {
+      // 视频类型剧本，继续使用当前页面
+      this.loadScriptDetail(script.id)
     }
-
-    // 如果是当前章节，不需要重新加载
-    if (chapterNumber === currentChapter) {
-      console.log('已经是当前章节，无需切换')
-      return
-    }
-
-    // 更新章节选择器状态
-    const updatedChapters = availableChapters.map(ch => ({
-      ...ch,
-      current: ch.number === chapterNumber
-    }))
-
-    this.setData({
-      currentChapter: chapterNumber,
-      availableChapters: updatedChapters
-    })
-    
-    console.log('开始加载章节', chapterNumber, '的内容')
-    this.loadChapterContent(this.data.selectedScript.id, chapterNumber)
   },
+
+  // 章节选择功能已移除 - 改为基于选择跳转
 
   // 选择剧情选项
   selectChoice(e) {
@@ -417,6 +383,7 @@ Page({
 
       const response = await scriptAPI.makeChoice(
         this.data.userId,
+        this.data.walletId,
         this.data.selectedScript.id,
         this.data.currentChapter,
         selectedChoice,
@@ -429,30 +396,29 @@ Page({
           icon: 'success'
         })
 
-        // 更新进度和可用章节
+        // 处理基于nextId的跳转逻辑
         if (response.isCompleted) {
           wx.showModal({
             title: '恭喜',
             content: '您已完成整个剧本！',
             showCancel: false
           })
-        } else {
-          // 更新章节状态
-          const { availableChapters } = this.data
-          const updatedChapters = availableChapters.map(chapter => ({
-            ...chapter,
-            unlocked: chapter.number <= response.nextChapter,
-            current: chapter.number === response.nextChapter
-          }))
-
+        } else if (response.nextChapter) {
+          // 直接使用后端返回的章节号跳转
+          const nextChapterNumber = response.nextChapter
+          
           this.setData({
-            availableChapters: updatedChapters,
-            maxUnlockedChapter: response.nextChapter,
-            currentChapter: response.nextChapter
+            currentChapter: nextChapterNumber,
+            transferButtonEnabled: false
           })
-
-          // 加载下一集内容
-          this.loadChapterContent(this.data.selectedScript.id, response.nextChapter)
+          
+          // 加载指定的章节内容
+          this.loadChapterContent(this.data.selectedScript.id, nextChapterNumber)
+          
+          wx.showToast({
+            title: `跳转到第${nextChapterNumber}集`,
+            icon: 'success'
+          })
         }
 
         // 刷新用户进度
@@ -476,7 +442,7 @@ Page({
   // 刷新用户进度
   async refreshUserProgress() {
     try {
-      const response = await scriptAPI.getUserProgress(this.data.userId, this.data.selectedScript.id)
+      const response = await scriptAPI.getUserProgress(this.data.userId, this.data.selectedScript.id, this.data.walletId)
       if (response.code === 200) {
         this.setData({
           userProgress: response.data

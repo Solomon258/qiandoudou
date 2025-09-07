@@ -35,9 +35,14 @@ public interface ScriptService extends IService<Script> {
     ScriptChapter getChapterContent(Long scriptId, Integer chapterNumber);
 
     /**
-     * 获取用户剧本进度
+     * 获取用户剧本进度（不考虑钱包，兼容性方法）
      */
     UserScriptProgress getUserProgress(Long userId, Long scriptId);
+
+    /**
+     * 获取用户在指定钱包的剧本进度
+     */
+    UserScriptProgress getUserProgressByWallet(Long userId, Long walletId, Long scriptId);
 
     /**
      * 开始剧本
@@ -47,7 +52,7 @@ public interface ScriptService extends IService<Script> {
     /**
      * 用户做出选择并解锁下一集
      */
-    Map<String, Object> makeChoiceAndUnlock(Long userId, Long scriptId, Integer currentChapter, 
+    Map<String, Object> makeChoiceAndUnlock(Long userId, Long walletId, Long scriptId, Integer currentChapter, 
                                            String selectedChoice, BigDecimal amount);
 
     /**

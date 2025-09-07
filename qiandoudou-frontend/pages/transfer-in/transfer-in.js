@@ -10,7 +10,8 @@ Page({
     transferAmount: '',
     transferNote: '',
     noteLength: 0,
-    uploadedImage: '',
+    uploadedImage: '', // OSS图片URL（用于显示）
+    uploadedImageLocal: '', // 本地图片路径（用于AI分析）
     amountFocus: false,
     transferLoading: false,
     // 自动攒设置
@@ -110,10 +111,7 @@ Page({
     } else {
       // 如果没有图片，使用默认的随机文案
       const notes = [
-        '山高水长，风景美如画。坐等仙女下凡，赐予我一片云彩，好飞到湖里泡个澡！',
-        '今天天气真好，适合存钱。阳光明媚，心情也跟着好起来了。',
-        '又是美好的一天，为了梦想继续努力攒钱！',
-        '小小的积累，大大的梦想。每一分钱都是未来的希望。'
+        ''
       ]
       const randomNote = notes[Math.floor(Math.random() * notes.length)]
       this.setData({
@@ -125,7 +123,7 @@ Page({
 
   // 根据图片生成文案
   generateNoteFromImage() {
-    if (!this.data.uploadedImage) {
+    if (!this.data.uploadedImageLocal && !this.data.uploadedImage) {
       wx.showToast({
         title: '请先上传图片',
         icon: 'none'
@@ -138,8 +136,11 @@ Page({
       mask: true
     })
 
+    // 优先使用本地路径，如果没有则尝试使用显示路径
+    const imagePath = this.data.uploadedImageLocal || this.data.uploadedImage
+    
     // 将图片转换为base64
-    this.convertImageToBase64(this.data.uploadedImage)
+    this.convertImageToBase64(imagePath)
       .then(imageBase64 => {
         return walletAPI.generateTextFromImage(imageBase64, '你是一个朋友圈文案助手，根据图片生成朋友圈的文案，少于100字，不要生成其他内容,不要思考太久')
       })
@@ -163,7 +164,7 @@ Page({
           icon: 'none'
         })
         // 失败时使用默认文案
-        const defaultNote = '山高水长，风景美如画。坐等仙女下凡，赐予我一片云彩，好飞到湖里泡个澡！'
+        const defaultNote = ''
         this.setData({
           transferNote: defaultNote,
           noteLength: defaultNote.length
@@ -187,7 +188,7 @@ Page({
     })
   },
 
-  // 上传图片
+  // 上传图片到OSS
   uploadImage() {
     wx.chooseImage({
       count: 1,
@@ -195,9 +196,44 @@ Page({
       sourceType: ['album', 'camera'],
       success: (res) => {
         const tempFilePath = res.tempFilePaths[0]
-        this.setData({
-          uploadedImage: tempFilePath
+        
+        // 显示上传进度
+        wx.showLoading({
+          title: '上传图片中...'
         })
+        
+        // 先保存本地路径（用于AI分析）
+        this.setData({
+          uploadedImageLocal: tempFilePath
+        })
+        
+        // 上传到OSS
+        const { uploadUserImage } = require('../../utils/api.js')
+        uploadUserImage(tempFilePath, 'transfer_in')
+          .then(response => {
+            wx.hideLoading()
+            if (response.data && response.data.imageUrl) {
+              this.setData({
+                uploadedImage: response.data.imageUrl // OSS URL用于显示
+              })
+              wx.showToast({
+                title: '图片上传成功',
+                icon: 'success'
+              })
+            }
+          })
+          .catch(error => {
+            wx.hideLoading()
+            console.error('图片上传失败:', error)
+            wx.showToast({
+              title: error.message || '图片上传失败',
+              icon: 'error'
+            })
+            // 失败时使用本地路径作为显示备用
+            this.setData({
+              uploadedImage: tempFilePath
+            })
+          })
       },
       fail: () => {
         wx.showToast({

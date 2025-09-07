@@ -4,6 +4,7 @@ import com.qiandoudou.common.Result;
 import com.qiandoudou.entity.Transaction;
 import com.qiandoudou.entity.Wallet;
 import com.qiandoudou.service.AiService;
+import com.qiandoudou.service.OssService;
 import com.qiandoudou.service.TransactionService;
 import com.qiandoudou.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * 钱包控制器
@@ -35,6 +31,9 @@ public class WalletController {
     
     @Autowired
     private AiService aiService;
+    
+    @Autowired
+    private OssService ossService;
     
     @Autowired
     private com.qiandoudou.mapper.WalletMapper walletMapper;
@@ -189,7 +188,141 @@ public class WalletController {
     }
 
     /**
-     * 上传钱包背景图片
+     * 测试OSS连接状态
+     */
+    @GetMapping("/test-oss")
+    public Result<Map<String, Object>> testOssConnection() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            if (ossService == null) {
+                result.put("status", "error");
+                result.put("message", "OSS服务未注入");
+                Result<Map<String, Object>> errorResult = Result.error("OSS服务未注入");
+                errorResult.setData(result);
+                return errorResult;
+            }
+            
+            // 尝试上传一个小的测试文件到用户图片目录
+            byte[] testData = "test".getBytes();
+            String testUrl = ossService.uploadFile(testData, "test.txt", "user_image");
+            
+            result.put("status", "success");
+            result.put("message", "OSS连接正常");
+            result.put("testUrl", testUrl);
+            return Result.success("OSS连接测试成功", result);
+        } catch (Exception e) {
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+            result.put("error", e.getClass().getSimpleName());
+            Result<Map<String, Object>> errorResult = Result.error("OSS连接测试失败: " + e.getMessage());
+            errorResult.setData(result);
+            return errorResult;
+        }
+    }
+
+    /**
+     * 通用用户图片上传接口
+     */
+    @PostMapping("/upload-user-image")
+    public Result<Map<String, String>> uploadUserImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "type", required = false, defaultValue = "general") String type) {
+        try {
+            if (file.isEmpty()) {
+                return Result.error("请选择图片文件");
+            }
+
+            // 检查文件类型
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return Result.error("只支持图片格式");
+            }
+
+            // 检查文件大小（限制为5MB）
+            if (file.getSize() > 5 * 1024 * 1024) {
+                return Result.error("图片大小不能超过5MB");
+            }
+
+            // 生成文件名
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String filename = type + "_" + System.currentTimeMillis() + extension;
+            
+            // 检查OSS服务是否可用
+            if (ossService == null) {
+                return Result.error("OSS服务未初始化");
+            }
+            
+            // 上传到OSS用户图片目录
+            String ossUrl = ossService.uploadUserImageData(file.getBytes(), filename);
+            
+            // 返回OSS文件URL
+            Map<String, String> result = new HashMap<>();
+            result.put("imageUrl", ossUrl);
+
+            return Result.success("图片上传成功", result);
+        } catch (Exception e) {
+            // 记录详细错误信息
+            System.err.println("用户图片上传失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("图片上传失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 通用图片上传接口 - 上传到/res/image路径，保持原文件名
+     */
+    @PostMapping("/upload-image")
+    public Result<Map<String, String>> uploadImage(
+            @RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return Result.error("请选择图片文件");
+            }
+
+            // 检查文件类型
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return Result.error("只支持图片格式");
+            }
+
+            // 检查文件大小（限制为5MB）
+            if (file.getSize() > 5 * 1024 * 1024) {
+                return Result.error("图片大小不能超过5MB");
+            }
+
+            // 使用原文件名
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.trim().isEmpty()) {
+                return Result.error("文件名不能为空");
+            }
+            
+            // 检查OSS服务是否可用
+            if (ossService == null) {
+                return Result.error("OSS服务未初始化");
+            }
+            
+            // 上传到OSS image目录（/res/image）
+            String ossUrl = ossService.uploadFile(file.getBytes(), originalFilename, "image");
+            
+            // 返回OSS文件URL
+            Map<String, String> result = new HashMap<>();
+            result.put("imageUrl", ossUrl);
+
+            return Result.success("图片上传成功", result);
+        } catch (Exception e) {
+            // 记录详细错误信息
+            System.err.println("图片上传失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("图片上传失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 上传钱包背景图片到OSS
      */
     @PostMapping("/upload-background")
     public Result<Map<String, String>> uploadBackgroundImage(
@@ -206,37 +339,43 @@ public class WalletController {
                 return Result.error("只支持图片格式");
             }
 
-            // 创建上传目录
-            String uploadDir = "./uploads/backgrounds/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
+            // 检查文件大小（限制为5MB）
+            if (file.getSize() > 5 * 1024 * 1024) {
+                return Result.error("图片大小不能超过5MB");
             }
 
             // 生成文件名
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = "wallet_" + walletId + "_" + System.currentTimeMillis() + extension;
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String filename = "wallet_bg_" + walletId + "_" + System.currentTimeMillis() + extension;
             
-            // 保存文件
-            Path filePath = Paths.get(uploadDir + filename);
-            Files.write(filePath, file.getBytes());
-
-            // 返回文件URL
-            String imageUrl = "/uploads/backgrounds/" + filename;
+            // 检查OSS服务是否可用
+            if (ossService == null) {
+                return Result.error("OSS服务未初始化");
+            }
+            
+            // 上传到OSS用户图片目录
+            String ossUrl = ossService.uploadUserImageData(file.getBytes(), filename);
+            
+            // 返回OSS文件URL
             Map<String, String> result = new HashMap<>();
-            result.put("imageUrl", imageUrl);
+            result.put("imageUrl", ossUrl);
 
             return Result.success("图片上传成功", result);
-        } catch (IOException e) {
-            return Result.error("图片上传失败: " + e.getMessage());
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            // 记录详细错误信息
+            System.err.println("钱包背景图片上传失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("图片上传失败: " + e.getMessage());
         }
     }
 
     /**
      * 更新钱包背景
+     * 支持预设渐变背景和OSS图片URL
      */
     @PutMapping("/update-background")
     public Result<String> updateWalletBackground(@RequestBody Map<String, Object> request) {
@@ -244,25 +383,38 @@ public class WalletController {
             String walletIdStr = request.get("walletId").toString();
             String backgroundImage = request.get("backgroundImage").toString();
             
-            System.out.println("收到更换背景请求 - 钱包ID字符串: " + walletIdStr);
-            System.out.println("背景图片长度: " + backgroundImage.length());
-            
             Long walletId = Long.valueOf(walletIdStr);
-            System.out.println("转换后的钱包ID: " + walletId);
-
-            Wallet wallet = walletService.getById(walletId);
-            System.out.println("查找到的钱包: " + (wallet != null ? wallet.getName() : "null"));
             
+            // 验证钱包是否存在
+            Wallet wallet = walletService.getById(walletId);
             if (wallet == null) {
                 return Result.error("钱包不存在，ID: " + walletId);
             }
+            
+            // 验证背景图片参数
+            if (backgroundImage == null || backgroundImage.trim().isEmpty()) {
+                return Result.error("背景图片参数不能为空");
+            }
+            
+            // 判断背景类型并记录日志
+            if (backgroundImage.startsWith("http")) {
+                System.out.println("更新钱包背景为OSS图片 - 钱包ID: " + walletId + ", URL: " + backgroundImage);
+            } else if (backgroundImage.startsWith("data:")) {
+                System.out.println("更新钱包背景为base64图片 - 钱包ID: " + walletId + ", 数据长度: " + backgroundImage.length());
+            } else {
+                System.out.println("更新钱包背景为预设渐变 - 钱包ID: " + walletId + ", 背景: " + backgroundImage);
+            }
 
+            // 更新钱包背景
             wallet.setBackgroundImage(backgroundImage);
             walletService.updateById(wallet);
 
             return Result.success("背景更换成功");
+        } catch (NumberFormatException e) {
+            return Result.error("钱包ID格式错误");
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            System.err.println("更新钱包背景失败: " + e.getMessage());
+            return Result.error("背景更换失败: " + e.getMessage());
         }
     }
 
@@ -344,6 +496,72 @@ public class WalletController {
             return Result.success(generatedText);
         } catch (Exception e) {
             return Result.error("图生文生成失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取钱包月度统计数据
+     */
+    @GetMapping("/monthly-stats")
+    public Result<Map<String, Object>> getWalletMonthlyStats(
+            @RequestParam Long walletId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        try {
+            // 验证参数
+            if (month < 1 || month > 12) {
+                return Result.error("月份参数无效，应在1-12之间");
+            }
+            if (year < 2020 || year > 2030) {
+                return Result.error("年份参数无效，应在2020-2030之间");
+            }
+
+            // 验证钱包是否存在
+            Wallet wallet = walletService.getById(walletId);
+            if (wallet == null) {
+                return Result.error("钱包不存在");
+            }
+
+            // 获取统计数据
+            Map<String, Object> stats = transactionService.getWalletMonthlyStats(walletId, year, month);
+            return Result.success("获取统计数据成功", stats);
+        } catch (Exception e) {
+            return Result.error("获取统计数据失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 重新计算钱包余额（基于交易记录）
+     */
+    @PostMapping("/recalculate-balance")
+    public Result<String> recalculateWalletBalance(@RequestBody Map<String, Object> request) {
+        try {
+            // 处理JavaScript数字精度问题，直接从字符串解析Long
+            String walletIdStr = request.get("walletId").toString();
+            Long walletId = Long.valueOf(walletIdStr);
+            
+            System.out.println("接收到的钱包ID字符串: " + walletIdStr);
+            System.out.println("解析后的钱包ID: " + walletId);
+            
+            walletService.recalculateWalletBalance(walletId);
+            return Result.success("钱包余额重新计算成功");
+        } catch (NumberFormatException e) {
+            return Result.error("钱包ID格式错误: " + e.getMessage());
+        } catch (Exception e) {
+            return Result.error("钱包余额重新计算失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 修复所有钱包余额
+     */
+    @PostMapping("/fix-all-balances")
+    public Result<String> fixAllWalletBalances() {
+        try {
+            walletService.fixAllWalletBalances();
+            return Result.success("所有钱包余额修复成功");
+        } catch (Exception e) {
+            return Result.error("钱包余额修复失败: " + e.getMessage());
         }
     }
 }

@@ -1,0 +1,74 @@
+<!--pages/script-image-detail/script-image-detail.wxml-->
+<view class="container">
+  <!-- 剧本信息头部 -->
+  <view class="script-header">
+    <view class="script-info">
+      <!-- 左侧图标 -->
+      <view class="script-cover">
+        <image src="{{selectedScript.coverImage}}" class="cover-image" mode="aspectFill"></image>
+        <view class="follower-count">超{{selectedScript.followerCount}}人跟</view>
+      </view>
+      
+      <!-- 右侧信息 -->
+      <view class="script-details">
+        <view class="script-title">{{selectedScript.title}}</view>
+        <view class="script-meta">{{selectedScript.totalChapters}}集 | 已攒{{userProgress.totalAmount || 0}}元</view>
+        <view class="script-empty"></view>
+        <view class="chapter-selector">
+          <view wx:for="{{selectedScript.totalChapters}}" wx:key="index" 
+                class="chapter-item {{currentChapter == (index + 1) ? 'active' : ''}}"
+                data-chapter="{{index + 1}}" bindtap="selectChapter">
+            {{index + 1}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 章节内容 -->
+  <view class="chapter-content" wx:if="{{chapterContent}}">
+    <!-- 章节标题和状态 -->
+    <view class="chapter-header">
+      <view class="chapter-title">第{{currentChapter}}集 {{chapterContent.title}}</view>
+      <view class="chapter-status {{userProgress.completedChapters && userProgress.completedChapters.includes(currentChapter) ? 'completed' : 'pending'}}">
+        {{userProgress.completedChapters && userProgress.completedChapters.includes(currentChapter) ? '已完成' : '未完成'}}
+      </view>
+    </view>
+
+    <!-- 图片内容 -->
+    <view class="chapter-image" wx:if="{{chapterContent.imageUrl}}">
+      <image src="{{chapterContent.imageUrl}}" class="content-image" mode="aspectFit"></image>
+    </view>
+
+    <!-- 文案内容 -->
+    <view class="chapter-text">
+      {{chapterContent.content}}
+    </view>
+
+    <!-- 选项区域 -->
+    <view class="choices-section" wx:if="{{chapterContent.choicesList && chapterContent.choicesList.length > 0}}">
+      <view class="choices-title">给小时候的自己买零食吧，你选择：</view>
+      <view class="choices-list">
+        <view wx:for="{{chapterContent.choicesList}}" wx:key="selection" 
+              class="choice-item {{selectedChoice == item.selection ? 'selected' : ''}}"
+              data-choice="{{item.selection}}" bindtap="selectChoice">
+          <view class="choice-text">{{item.selection}}</view>
+          <view class="choice-price">¥{{item.cost}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 转入按钮 -->
+    <view class="transfer-section" wx:if="{{showTransferButton}}">
+      <button class="transfer-button {{transferButtonEnabled ? 'enabled' : 'disabled'}}" 
+              bindtap="transferToWallet" disabled="{{!transferButtonEnabled}}">
+        向钱兜兜转入
+      </button>
+    </view>
+  </view>
+
+  <!-- 返回按钮 -->
+  <view class="back-button" bindtap="goBackToWallet">
+    <text>返回钱包</text>
+  </view>
+</view>

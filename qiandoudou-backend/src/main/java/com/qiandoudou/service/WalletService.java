@@ -51,4 +51,14 @@ public interface WalletService extends IService<Wallet> {
      * AI伴侣自动转账
      */
     void aiPartnerTransfer(Long walletId, Long aiPartnerId, BigDecimal amount, String message, String aiPartnerName, String aiPartnerAvatar);
+
+    /**
+     * 重新计算钱包余额（基于交易记录）
+     */
+    void recalculateWalletBalance(Long walletId);
+
+    /**
+     * 修复所有钱包余额
+     */
+    void fixAllWalletBalances();
 }

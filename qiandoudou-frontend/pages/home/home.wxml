@@ -145,21 +145,13 @@
   <view class="bottom-nav">
     <view class="nav-item {{currentTab === 'wallet' ? 'active' : ''}}" bindtap="switchTab" data-tab="wallet">
       <view class="nav-icon-container">
-        <view class="wallet-icon-new">
-          <view class="money-bag-body"></view>
-          <view class="money-bag-top"></view>
-          <view class="coin-center"></view>
-        </view>
+        <image class="notification-icon-img2" src="https://8.148.206.18:443/res/image/icon2.png" mode="aspectFit"/>
       </view>
       <text class="nav-text">钱兜兜</text>
     </view>
     <view class="nav-item {{currentTab === 'social' ? 'active' : ''}}" bindtap="switchTab" data-tab="social">
       <view class="nav-icon-container">
-        <view class="social-icon-new">
-          <view class="circle-outer"></view>
-          <view class="circle-inner"></view>
-          <view class="coin-center"></view>
-        </view>
+        <image class="notification-icon-img2" src="https://8.148.206.18:443/res/image/icon1.png" mode="aspectFit"/>
       </view>
       <text class="nav-text">兜圈圈</text>
     </view>
@@ -209,6 +201,21 @@
           <view class="option-radio">
             <view class="radio-circle {{selectedWalletType === 'couple' ? 'selected' : ''}}">
               <text wx:if="{{selectedWalletType === 'couple'}}" class="check-mark">✓</text>
+            </view>
+          </view>
+        </view>
+        <!-- 情侣攒钱 -->
+        <view class="wallet-type-option {{selectedWalletType === 'couple2' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="couple2">
+          <view class="option-icon couple">
+            <image class="couple-avatar-image" src="https://8.148.206.18:443/res/image/brother.png" mode="aspectFill"></image>
+          </view>
+          <view class="option-content">
+            <text class="option-title">搭子攒钱</text>
+            <text class="option-desc">和搭子一起攒钱</text>
+          </view>
+          <view class="option-radio">
+            <view class="radio-circle {{selectedWalletType === 'couple2' ? 'selected' : ''}}">
+              <text wx:if="{{selectedWalletType === 'couple2'}}" class="check-mark">✓</text>
             </view>
           </view>
         </view>
