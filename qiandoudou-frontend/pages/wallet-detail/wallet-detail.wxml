@@ -252,12 +252,15 @@
 
 
         <!-- 第三行：月收益 -->
-        <view class="stats-row">
-          <view class="stat-card profit-card">
-            <text class="stat-label">月收益(元)</text>
-            <text class="stat-value profit-value {{monthlyStats.monthlyProfit >= 0 ? 'positive' : 'negative'}}">{{monthlyStats.monthlyProfit || '0.00'}}</text>
+        <view class="profit-view">
+          <view class="stats-row">
+            <view class="stat-card profit-card">
+              <text class="stat-label">月收益(元)</text>
+              <text class="stat-value profit-value {{monthlyStats.monthlyProfit >= 0 ? 'positive' : 'negative'}}">{{monthlyStats.monthlyProfit || '0.00'}}</text>
+            </view>
           </view>
         </view>
+     
 
         <!-- 加载状态 -->
         <view wx:if="{{statsLoading}}" class="stats-loading">
