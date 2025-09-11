@@ -168,7 +168,7 @@ Page({
         this.setData({
           wallets: wallets
         })
-        #fa6402
+        
         // 加载钱包数据后，更新动态的背景样式
         this.updatePostsWithWalletBackgrounds()
       })
@@ -199,7 +199,7 @@ Page({
         if (imagePath) {
           return `background-image: url('${imagePath}'); background-size: cover; background-position: center;`
         }
-      } else if (backgroundOptions[currentB#fa6402nd]) {
+      } else if (backgroundOptions[currentBackground]) {
         // 预设渐变背景
         return backgroundOptions[currentBackground]
       } else if (currentBackground.startsWith('http') || currentBackground.startsWith('/')) {
@@ -365,7 +365,7 @@ Page({
       .then(response => {
 
         if (response.success && response.data) {
-          const publicWallets = response.data#fa6402
+          const publicWallets = response.data
           
           // 将后端数据转换为前端需要的格式
           const posts = publicWallets.map((wallet, index) => {

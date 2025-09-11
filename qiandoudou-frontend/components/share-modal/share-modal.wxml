@@ -41,7 +41,7 @@
     <view class="share-actions">
       <!-- 分享到朋友圈按钮 -->
       <view class="primary-share-btn" bindtap="onShareToFriends">
-        <image class="primary-share-icon" ="/static/icon/share_friend_circle.png" mode="aspectFit"/>
+        <image class="primary-share-icon" src="/static/icon/share_friend_circle.png" mode="aspectFit"/>
         <text class="primary-share-text">分享到朋友圈</text>
       </view>
       
