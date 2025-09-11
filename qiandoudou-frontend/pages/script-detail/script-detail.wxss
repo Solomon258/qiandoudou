@@ -167,15 +167,16 @@
   background: #333;
   min-height: 100vh;
   color: white;
-  padding-bottom: 80px;
+  padding-bottom: 120px;
 }
 
 .detail-header {
-  background: transparent;
+  background: #000;
   padding: 15px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
+  padding-left: 50px;
 }
 
 .page-title {
@@ -222,11 +223,12 @@
 
 /* 章节内容 */
 .chapter-content {
-  background: rgba(255, 255, 255, 0.1);
-  margin: 20px;
-  border-radius: 12px;
-  padding: 20px;
-  min-height: 500px; /* 增加高度以容纳更大的视频 */
+  /* background: rgba(255, 255, 255, 0.1); */
+  /* margin: 20px; */
+  /* border-radius: 12px; */
+  /* padding: 20px; */
+  /*min-height: 500px; /* 增加高度以容纳更大的视频 */
+  background: #000;
   overflow: visible; /* 允许内容溢出 */
 }
 
@@ -240,7 +242,6 @@
 
 /* 内容显示区域 */
 .content-display {
-  margin-bottom: 30px;
   position: relative;
 }
 
@@ -347,7 +348,7 @@
 
 /* 选择选项 */
 .choices-section {
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .choice-prompt {
@@ -376,8 +377,8 @@
 }
 
 .choice-button.selected {
-  border-color: #409EFF;
-  background: rgba(64, 158, 255, 0.2);
+  border-color: #fa6402;
+  background: rgba(250, 100, 2, 0.1);
 }
 
 .choice-text {
@@ -390,7 +391,7 @@
 .choice-cost {
   font-size: 16px;
   font-weight: bold;
-  color: #FFD700;
+  color: #FA6402;
   min-width: 120rpx;
 }
 
@@ -416,13 +417,17 @@
 }
 
 .transfer-button.enabled {
-  background: #409EFF;
+  background:#fa6402;
+  border-radius:22px;
   color: white;
+  width: 100% !important;
 }
 
 .transfer-button.disabled {
-  background: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.5);
+  background:rgba(250, 100, 2, 0.5) !important;
+  border-radius:22px;
+  color: rgba(255, 255, 255, 1) !important;
+  width: 100% !important;
 }
 
 /* 视频错误显示 */

@@ -24,7 +24,7 @@ Page({
     isFollowing: false,
     walletOwnerId: null, // 钱包所有者ID
     backgroundOptions: [
-      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' },
+      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);' },
       { value: 'gradient2', name: '粉红渐变', gradient: 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' },
       { value: 'gradient3', name: '绿色渐变', gradient: 'background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);' },
       { value: 'gradient4', name: '橙色渐变', gradient: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);' },
@@ -63,7 +63,8 @@ Page({
 
   // 加载用户资料
   loadUserProfile() {
-    const userId = parseInt(this.data.userId)
+    const userId = parseInt(this.data.userId)
+
     
     // 首先尝试从本地存储获取用户信息（包括头像）
     const localUserInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
@@ -77,7 +78,8 @@ Page({
         description: localUserInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(localUserInfo.avatar && localUserInfo.hasCustomAvatar),
         tags: ['成长', '生活']
-      }
+      }
+
       this.setData({ userInfo })
       return
     }
@@ -114,15 +116,18 @@ Page({
       description: '07年小女生从2025.2.1开始存钱 目标…',
       hasCustomAvatar: false,
       tags: ['成长', '生活']
-    }
+    }
+
     this.setData({ userInfo })
   },
 
   // 加载钱包详情
   loadWalletDetail() {
-    if (!this.data.walletId) {
+    if (!this.data.walletId) {
+
       return
-    }
+    }
+
 
     // 根据walletId使用不同的模拟数据
     const mockWallets = {
@@ -160,7 +165,8 @@ Page({
       type: 1,
       backgroundImage: 'gradient1',
       description: '07年小女生从2025.2.1开始存钱 目标…'
-    }
+    }
+
     
     this.setData({ wallet: mockWallet })
     this.updateWalletBackgroundStyle()
@@ -209,12 +215,14 @@ Page({
 
   // 加载社交统计数据
   loadSocialStats() {
-    const walletId = parseInt(this.data.walletId)
+    const walletId = parseInt(this.data.walletId)
+
     
     // 根据钱包ID生成固定的社交数据（与social页面保持一致）
     // 移除硬编码的测试数据，统一使用真实的0值
     const defaultStats = { fansCount: 0, likesCount: 0, viewsCount: 0 }
-    const socialStats = defaultStats
+    const socialStats = defaultStats
+
     
     this.setData({ 
       socialStats: socialStats,
@@ -226,7 +234,7 @@ Page({
   updateWalletBackgroundStyle() {
     const wallet = this.data.wallet
     if (!wallet) return
-
+#fa6402
     let backgroundStyle = this.getWalletBackground(wallet)
     this.setData({ walletBackgroundStyle: backgroundStyle })
   },
@@ -257,7 +265,7 @@ Page({
         // 预设渐变背景
         return backgroundOptions[currentBackground]
       } else if (currentBackground.startsWith('http') || currentBackground.startsWith('/')) {
-        // 网络图片或本地路径
+        // 网络图片或本地路径#fa6402
         return `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
       }
     }
@@ -292,7 +300,8 @@ Page({
         icon: 'none'
       })
       return
-    }
+    }
+
     
     // 先获取钱包所有者ID，然后进行关注操作
     walletAPI.getWalletOwnerId(walletId)
@@ -317,7 +326,8 @@ Page({
         
         return apiCall
       })
-      .then(result => {
+      .then(result => {
+
         
         // 重新加载社交统计数据
         this.loadSocialStats()
@@ -329,7 +339,8 @@ Page({
           duration: 1500
         })
       })
-      .catch(error => {
+      .catch(error => {
+
         
         // 恢复之前的状态
         this.setData({ isFollowing: currentFollowing })
@@ -383,10 +394,12 @@ Page({
       .then(result => {
         if (result) {
           const isFollowing = result.data || false
-          this.setData({ isFollowing })
+          this.setData({ isFollowing })
+
         }
       })
-      .catch(error => {
+      .catch(error => {
+
         this.setData({ isFollowing: false })
       })
   },

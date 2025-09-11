@@ -52,7 +52,7 @@ Page({
     },
     statsLoading: false, // 统计数据加载状态
     backgroundOptions: [
-      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' },
+      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);' },
       { value: 'gradient2', name: '粉红渐变', gradient: 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' },
       { value: 'gradient3', name: '绿色渐变', gradient: 'background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);' },
       { value: 'gradient4', name: '橙色渐变', gradient: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);' },
@@ -528,7 +528,7 @@ Page({
       // 没有背景设置，使用默认背景
       backgroundStyle = wallet.type === 2 ? 
         'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-        'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+        'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
     } else if (currentBackground.startsWith('http')) {
       // OSS图片URL背景
       backgroundStyle = `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
@@ -549,7 +549,7 @@ Page({
 
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
       }
     } else {
       // 预设渐变背景
@@ -562,7 +562,7 @@ Page({
 
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
       }
     }
     

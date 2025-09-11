@@ -361,7 +361,7 @@
 .choice-cost {
   font-size: 16px;
   font-weight: bold;
-  color: #FFD700;
+  color: #FA6402;
   flex-shrink: 0;
 }
 

@@ -55,7 +55,6 @@
                   maxlength="200"></textarea>
         <view class="note-actions">
           <view class="retry-btn" bindtap="retryNote">
-            <text class="retry-icon">🔄</text>
             <text class="retry-text">AI生成文案</text>
           </view>
           <text class="char-count">{{noteLength}}/200</text>
@@ -64,7 +63,8 @@
         <!-- 图片上传区域 -->
         <view class="image-upload-section">
           <view wx:if="{{!uploadedImage}}" class="upload-placeholder" bindtap="uploadImage">
-            <text class="upload-icon">📷</text>
+            <!-- <text class="upload-icon">📷</text> -->
+            <image class="upload-icon" src="/static/icon/remark.svg"/>
           </view>
           <view wx:else class="uploaded-image">
             <image class="note-image" src="{{uploadedImage}}" mode="aspectFill"></image>
@@ -85,10 +85,7 @@
           <text class="arrow-icon">›</text>
         </view>
       </view>
-    </view>
-
-    <!-- 金额设置 -->
-    <view class="setting-card">
+      <!-- 金额设置 -->
       <view class="setting-row" bindtap="showAmountOptions">
         <text class="setting-label">金额</text>
         <view class="setting-value">
@@ -96,10 +93,7 @@
           <text class="arrow-icon">›</text>
         </view>
       </view>
-    </view>
-
-    <!-- 攒多久 -->
-    <view class="setting-card">
+      <!-- 攒多久 -->
       <view class="setting-row" bindtap="showDurationOptions">
         <text class="setting-label">攒多久</text>
         <view class="setting-value">
@@ -107,20 +101,15 @@
           <text class="arrow-icon">›</text>
         </view>
       </view>
-    </view>
-
-    <!-- 攒钱方式说明 -->
-    <view class="setting-card">
-      <view class="setting-row-static">
+      <!-- 攒钱方式说明 -->
+      <view class="setting-row">
         <text class="setting-label">攒钱方式</text>
         <view class="setting-value">
           <text class="value-text gray">{{autoSaveSettings.startTime}}</text>
         </view>
       </view>
-    </view>
-
+      
     <!-- 扣款方式 -->
-    <view class="setting-card">
       <view class="setting-row" bindtap="showPaymentOptions">
         <text class="setting-label">扣款方式</text>
         <view class="setting-value">
@@ -128,11 +117,10 @@
           <text class="arrow-icon">›</text>
         </view>
       </view>
-    </view>
-
-    <!-- 收益预估 -->
-    <view class="estimate-card">
-      <text class="estimate-text">每日攒<text class="highlight">{{autoSaveSettings.amount}}元</text> 一年后大约可攒<text class="highlight orange">{{estimatedAmount}}元</text></text>
+      <!-- 收益预估 -->
+      <view class="estimate-card">
+        <text class="estimate-text">每日攒<text class="highlight">{{autoSaveSettings.amount}}元</text> 一年后大约可攒<text class="highlight orange">{{estimatedAmount}}元</text></text>
+      </view>
     </view>
 
     <!-- 计划备注 -->
@@ -152,10 +140,9 @@
           <text class="theme-text">加油主题</text>
         </view>
       </view>
-
-      <view class="agreement-section">
-        <text class="agreement-text">查看《平安银行钱兜兜自动攒协议》</text>
-      </view>
+    </view>
+    <view class="agreement-section">
+      <text class="agreement-text">查看《平安银行钱兜兜自动攒协议》</text>
     </view>
   </view>
 

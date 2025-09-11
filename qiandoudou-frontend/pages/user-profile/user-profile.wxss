@@ -12,7 +12,7 @@
 .wallet-background {
   position: relative;
   height: 254px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -247,7 +247,7 @@
 
 .tab-text {
   font-size: 14px;
-  color: #f6721e;
+  color: #fa6402;
   font-weight: 600;
   line-height: 20px;
 }
@@ -258,7 +258,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #f6721e;
+  background: #fa6402;
   border-radius: 1px;
 }
 

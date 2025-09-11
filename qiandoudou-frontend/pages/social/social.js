@@ -85,13 +85,17 @@ Page({
         avatar: userInfo.avatar || '',
         description: userInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
-      }
+      }
+
+
+
       
       this.setData({
         userInfo: displayUserInfo
       });
     } else {
-      // 本地用户信息为空，尝试从后端获取
+      // 本地用户信息为空，尝试从后端获取
+
       this.loadUserInfoFromServer()
     }
   },
@@ -102,13 +106,16 @@ Page({
     
     // 获取当前用户ID，如果没有用户ID则不加载
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
-    }
+    }
+
     
     authAPI.getCurrentUser(userId)
       .then(result => {
-        const serverUserInfo = result.data
+        const serverUserInfo = result.data
+
         
         // 设置用户信息
         const displayUserInfo = {
@@ -125,9 +132,11 @@ Page({
         
         // 同步到本地存储和全局数据
         wx.setStorageSync('userInfo', displayUserInfo)
-        app.globalData.userInfo = displayUserInfo
+        app.globalData.userInfo = displayUserInfo
+
       })
-      .catch(error => {
+      .catch(error => {
+
         
         // 使用默认用户信息
         const defaultUserInfo = {
@@ -140,14 +149,16 @@ Page({
         
         this.setData({
           userInfo: defaultUserInfo
-        })
+        })
+
       })
   },
 
   // 加载钱包数据
   loadWallets() {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
     }
 
@@ -157,11 +168,12 @@ Page({
         this.setData({
           wallets: wallets
         })
-        
+        #fa6402
         // 加载钱包数据后，更新动态的背景样式
         this.updatePostsWithWalletBackgrounds()
       })
-      .catch(error => {
+      .catch(error => {
+
       })
   },
 
@@ -187,7 +199,7 @@ Page({
         if (imagePath) {
           return `background-image: url('${imagePath}'); background-size: cover; background-position: center;`
         }
-      } else if (backgroundOptions[currentBackground]) {
+      } else if (backgroundOptions[currentB#fa6402nd]) {
         // 预设渐变背景
         return backgroundOptions[currentBackground]
       } else if (currentBackground.startsWith('http') || currentBackground.startsWith('/')) {
@@ -227,7 +239,8 @@ Page({
 
   // 加载动态列表
   loadPosts() {
-    // 这里可以调用API获取真实数据
+    // 这里可以调用API获取真实数据
+
     
     // 如果钱包数据已经加载，立即更新背景样式
     if (this.data.wallets.length > 0) {
@@ -244,7 +257,8 @@ Page({
   },
 
   // 跳转到用户个人社交圈主页
-  navigateToUserSocialProfile() {
+  navigateToUserSocialProfile() {
+
     wx.showModal({
       title: '测试',
       content: '你点击了正确的头像！即将跳转到个人社交圈主页',
@@ -263,9 +277,11 @@ Page({
       itemList: ['个人信息', '设置'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          // 跳转到个人信息页面
+          // 跳转到个人信息页面
+
         } else if (res.tapIndex === 1) {
-          // 跳转到设置页面
+          // 跳转到设置页面
+
         }
       }
     });
@@ -290,7 +306,8 @@ Page({
   },
 
   // 加载更多
-  loadMore() {
+  loadMore() {
+
   },
 
   // 点击动态卡片跳转到用户详情页面
@@ -313,12 +330,14 @@ Page({
   // 点击钱包卡片跳转到用户详情页（别人的钱包）
   navigateToWalletDetail(e) {
     const walletId = e.currentTarget.dataset.walletId;
-    const postId = e.currentTarget.dataset.postId;
+    const postId = e.currentTarget.dataset.postId;
+
     
     // 根据postId获取对应的用户信息
     const post = this.data.posts.find(p => p.id == postId);
     if (post && walletId) {
-      const userId = post.userId || 1;
+      const userId = post.userId || 1;
+
       
       wx.navigateTo({
         url: `/pages/user-profile/user-profile?userId=${userId}&walletId=${walletId}`
@@ -339,12 +358,14 @@ Page({
   },
 
   // 从后端加载真实的公开钱包数据
-  loadPublicWallets() {
+  loadPublicWallets() {
+
     
     walletAPI.getPublicWallets()
-      .then(response => {
+      .then(response => {
+
         if (response.success && response.data) {
-          const publicWallets = response.data
+          const publicWallets = response.data#fa6402
           
           // 将后端数据转换为前端需要的格式
           const posts = publicWallets.map((wallet, index) => {
@@ -355,7 +376,8 @@ Page({
                 recentTransactions = typeof wallet.recent_transactions === 'string' 
                   ? JSON.parse(wallet.recent_transactions) 
                   : wallet.recent_transactions
-              } catch (e) {
+              } catch (e) {
+
                 recentTransactions = []
               }
             }
@@ -390,25 +412,29 @@ Page({
                 amount: tx.type === 1 ? `+¥${tx.amount}` : undefined
               }))
             }
-          })
+          })
+
           
           this.setData({ posts })
           
           // 为每个钱包获取真实的社交统计数据
           this.loadSocialStatsForPosts(posts)
-        } else {
+        } else {
+
           // 如果API失败，保留原有的模拟数据
           this.updatePostsWithSocialStats()
         }
       })
-      .catch(error => {
+      .catch(error => {
+
         // 如果网络错误，保留原有的模拟数据
         this.updatePostsWithSocialStats()
       })
   },
 
   // 为钱包列表加载真实的社交统计数据
-  loadSocialStatsForPosts(posts) {
+  loadSocialStatsForPosts(posts) {
+
     
     // 为每个钱包并行获取社交统计数据
     const socialStatsPromises = posts.map(post => {
@@ -422,7 +448,8 @@ Page({
           }
           return null
         })
-        .catch(error => {
+        .catch(error => {
+
           return null
         })
     })
@@ -437,7 +464,8 @@ Page({
             updatedPosts[index].fansCount = result.socialStats.fansCount || 0
           }
         }
-      })
+      })
+
       
       this.setData({ posts: updatedPosts })
     })
@@ -457,7 +485,8 @@ Page({
         ...post,
         fansCount: socialStats.fansCount
       }
-    })
+    })
+
     
     this.setData({ posts })
   }

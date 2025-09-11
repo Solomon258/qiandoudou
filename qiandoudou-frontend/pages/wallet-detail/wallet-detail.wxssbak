@@ -12,7 +12,7 @@
 .wallet-background {
   position: relative;
   height: 254px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -302,7 +302,7 @@
 .script-btn {
   width: 100%;
   height: 48px;
-  background: #4A90E2;
+  background: #FA6402;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -389,7 +389,7 @@
 
 .action-btn-promo {
   padding: 6px 16px;
-  background: #FF6B35;
+  background: #FA6402;
   border-radius: 14px;
 }
 
@@ -422,7 +422,7 @@
 }
 
 .tab-item.active {
-  color: #f6721e;
+  color: #fa6402;
 }
 
 .tab-item.active::after {
@@ -432,7 +432,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #f6721e;
+  background: #fa6402;
   border-radius: 1px;
 }
 
@@ -541,7 +541,7 @@
 }
 
 .amount-display.income {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 .amount-display.expense {
@@ -719,7 +719,7 @@
 }
 
 .action-btn.liked {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 .action-icon {
@@ -732,7 +732,7 @@
 }
 
 .action-btn.liked .action-text {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 /* 交易流水下的评论显示 */
@@ -938,7 +938,7 @@
 }
 
 .follow-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   color: white;
   padding: 24rpx 80rpx;
   border-radius: 50rpx;

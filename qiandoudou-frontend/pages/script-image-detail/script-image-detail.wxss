@@ -1,7 +1,7 @@
 /* pages/script-image-detail/script-image-detail.wxss */
 .container {
   padding: 20rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   min-height: 100vh;
   color: white;
 }
@@ -204,7 +204,7 @@
 }
 
 .choice-item.selected {
-  border-color: #667eea;
+  border-color: #fa6402;
   background: rgba(102, 126, 234, 0.05);
   box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.2);
 }
@@ -217,18 +217,19 @@
 
 .choice-price {
   font-size: 30rpx;
-  color: #667eea;
+  color: #fa6402;
   font-weight: bold;
 }
 
 .choice-item.selected .choice-text {
-  color: #667eea;
+  color: #fa6402;
 }
 
 /* 转入按钮 */
 .transfer-section {
   text-align: center;
   margin-top: 40rpx;
+  border-radius:22px;
 }
 
 .transfer-button {
@@ -242,13 +243,17 @@
 }
 
 .transfer-button.enabled {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background:#fa6402;
+  border-radius:22px;
   color: white;
+  width: 100% !important;
 }
 
 .transfer-button.disabled {
-  background: #ccc;
-  color: #999;
+  background:rgba(250, 100, 2, 0.4) !important;
+  border-radius:22px;
+  color: rgba(255, 255, 255, 1) !important;
+  width: 100% !important;
 }
 
 /* 返回按钮 */
@@ -269,6 +274,6 @@
 
 .back-button text {
   font-size: 24rpx;
-  color: #667eea;
+  color: #fa6402;
   font-weight: bold;
 }

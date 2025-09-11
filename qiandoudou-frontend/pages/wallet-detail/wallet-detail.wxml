@@ -58,30 +58,30 @@
       </view>
       
     </view>
-    
-    <!-- 总金额卡片 -->
-    <view class="total-amount-card" catchtap="stopPropagation">
-      <text class="amount-label">总金额（元）</text>
-      <text class="amount-value">{{wallet.balance !== undefined ? wallet.balance : '0.00'}}</text>
-    </view>
-  </view>
-
-  <!-- 操作按钮区域 -->
-  <view wx:if="{{isOwnWallet}}" class="operation-section" catchtap="stopPropagation">
-    <!-- 第一行：转入和转出 -->
-    <view class="operation-buttons">
-      <view class="operation-btn" bindtap="goToTransferIn">
-        <text class="btn-text">转入</text>
+    <view class="count_view">
+        <!-- 总金额卡片 -->
+        <view class="total-amount-card" catchtap="stopPropagation">
+        <text class="amount-label">总金额（元）</text>
+        <text class="amount-value">{{wallet.balance !== undefined ? wallet.balance : '0.00'}}</text>
       </view>
-      <view class="operation-btn" bindtap="goToTransferOut">
-        <text class="btn-text">转出</text>
-      </view>
-    </view>
-    
-    <!-- 第二行：剧本攒 -->
-    <view class="script-button-row">
-      <view class="script-btn-full" bindtap="goToScripts">
-        <text class="script-btn-text">剧本攒</text>
+        <!-- 操作按钮区域 -->
+      <view wx:if="{{isOwnWallet}}" class="operation-section" catchtap="stopPropagation">
+        <!-- 第一行：转入和转出 -->
+        <view class="operation-buttons">
+          <view class="operation-btn" bindtap="goToTransferIn">
+            <text class="btn-text">转入</text>
+          </view>
+          <view class="operation-btn" bindtap="goToTransferOut">
+            <text class="btn-text">转出</text>
+          </view>
+        </view>
+        
+        <!-- 第二行：剧本攒 -->
+        <view class="script-button-row">
+          <view class="script-btn-full" bindtap="goToScripts">
+            <text class="script-btn-text">剧本攒</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -181,7 +181,8 @@
             <view class="voice-play-btn {{item.isPlaying ? 'playing' : ''}}" 
                   bindtap="playAiVoice" 
                   data-transaction="{{item}}">
-              <text class="voice-icon">🎵</text>
+              <!-- <text class="voice-icon">🎵</text> -->
+              <image class="action-icon" src="/static/icon/voice.svg"/>
               <text class="voice-duration">{{item.voiceDuration || '12s'}}</text>
             </view>
             
@@ -202,11 +203,12 @@
         <!-- 社交互动按钮（在所有钱包详情页显示） -->
         <view class="social-actions">
           <view class="action-btn {{item.isLiked ? 'liked' : ''}}" bindtap="toggleLike" data-transaction="{{item}}">
-            <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
+            <image wx:if="{{item.isLiked}}" class="action-icon" src="/static/icon/like_active.svg"/>
+            <image wx:else class="action-icon" src="/static/icon/like.svg"/>
             <text class="action-text">{{item.likeCount === null ? '...' : (item.likeCount || 0)}}</text>
           </view>
           <view class="action-btn" bindtap="showComments" data-transaction="{{item}}">
-            <text class="action-icon">💬</text>
+            <image class="action-icon" src="/static/icon/comment.svg"/>
             <text class="action-text">{{item.commentCount === null ? '...' : (item.commentCount || 0)}}</text>
           </view>
         </view>
@@ -223,7 +225,8 @@
               <view class="voice-play-btn-small {{comment.isPlayingVoice ? 'playing' : ''}}" 
                     bindtap="playCommentVoice" 
                     data-comment="{{comment}}">
-                <text class="voice-icon-small">🎵</text>
+                <!-- <text class="voice-icon-small">🎵</text> -->
+                <image class="action-icon" src="/static/icon/voice.svg"/>
               </view>
             </view>
           </view>

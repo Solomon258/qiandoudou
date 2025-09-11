@@ -116,7 +116,7 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,7 +422,7 @@
 .social-icon {
   width: 25px;
   height: 25px;
-  background: #FF6B35;
+  background: #FA6402;
   border-radius: 50%;
   position: relative;
 }

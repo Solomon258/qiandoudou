@@ -30,7 +30,11 @@
         <view class="wallet-info">
           <view class="wallet-header">
             <text class="wallet-title">{{item.name || '钱兜兜'}}</text>
-            <text class="wallet-type">{{item.type === 1 ? '个人钱兜兜' : '情侣钱兜兜'}}</text>
+            <text class="wallet-type">{{item.type === 1 ? '个人' : '情侣'}}</text>
+          </view>
+          <!-- 分享按钮 -->
+          <view class="share-btn" catchtap="onWalletShare" data-wallet="{{item}}">
+            <image class="share-icon" src="/static/icon/share.svg" mode="aspectFit"/>
           </view>
           <view class="wallet-amount">
             <text class="amount-text">¥ {{item.balance || '0.00'}}</text>
@@ -41,11 +45,6 @@
             <text class="partner-label">AI伴侣：</text>
             <text class="partner-name">{{item.ai_partner_name}}</text>
           </view>
-        </view>
-        
-        <!-- 分享按钮 -->
-        <view class="share-btn" catchtap="onWalletShare" data-wallet="{{item}}">
-          <image class="share-icon" src="/static/icon/share.png" mode="aspectFit"/>
         </view>
       </view>
     </view>
@@ -114,7 +113,11 @@
         <view class="post-content-area">
           <!-- 钱兜兜信息和总金额 -->
           <view class="post-main-header">
-            <view class="post-title">{{item.title}}</view>
+            <view class="post_title_view">
+              <view class="post-title">{{item.title}}</view>
+              <!-- 参与人数 -->
+              <view class="participants">{{item.participantCount}}人</view>
+            </view>
             <view class="post-amount">¥{{item.total_amount}}</view>
           </view>
           
@@ -137,9 +140,6 @@
             </view>
           </view>
         </view>
-        
-        <!-- 参与人数 -->
-        <view class="participants">{{item.participantCount}}人</view>
       </view>
     </scroll-view>
   </view>
@@ -148,13 +148,15 @@
   <view class="bottom-nav">
     <view class="nav-item {{currentTab === 'wallet' ? 'active' : ''}}" bindtap="switchTab" data-tab="wallet">
       <view class="nav-icon-container">
-        <image class="notification-icon-img2" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon2.png" mode="aspectFit"/>
+        <image class="notification-icon-img2" wx:if="{{currentTab === 'wallet'}}" src="/static/icon/qiandoudou.svg" mode="aspectFit"/>
+        <image class="notification-icon-img2"  wx:else src="/static/icon/qian_active.svg" mode="aspectFit"/>
       </view>
       <text class="nav-text">钱兜兜</text>
     </view>
     <view class="nav-item {{currentTab === 'social' ? 'active' : ''}}" bindtap="switchTab" data-tab="social">
       <view class="nav-icon-container">
-        <image class="notification-icon-img2" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon1.png" mode="aspectFit"/>
+        <image wx:if="{{currentTab === 'social'}}" class="notification-icon-img2" src="/static/icon/douquanquan.svg" mode="aspectFit"/>
+        <image wx:else class="notification-icon-img2" src="/static/icon/douquan_active.svg" mode="aspectFit"/>
       </view>
       <text class="nav-text">兜圈圈</text>
     </view>
@@ -176,10 +178,8 @@
       <view class="wallet-type-options">
         <!-- 自己攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'personal' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="personal">
-          <view class="option-icon personal">
-            <view class="person-avatar">
-              <text class="avatar-icon">👤</text>
-            </view>
+          <view class="option-icon couple">
+            <image class="couple-avatar-image" src="/static/icon/gerenzan.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">自己攒钱</text>
@@ -195,7 +195,7 @@
         <!-- 情侣攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'couple' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="couple">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/情侣攒头像2.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="/static/icon/qinglv.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">情侣攒钱</text>
@@ -210,7 +210,7 @@
         <!-- 情侣攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'couple2' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="couple2">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/brother.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="/static/icon/dazi.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">搭子攒钱</text>

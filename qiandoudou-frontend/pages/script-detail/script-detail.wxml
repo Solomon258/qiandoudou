@@ -124,7 +124,21 @@
       </view>
 
       <!-- 选择选项 -->
-      <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
+      <!-- <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
+        <text class="choice-prompt">打算怎么做，你选择：</text>
+        <view class="choices-container">
+          <block wx:for="{{chapterContent.choicesList}}" wx:key="selection">
+            <view class="choice-button {{selectedChoice === item.selection ? 'selected' : ''}}"
+                  bindtap="selectChoice"
+                  data-choice="{{item.selection}}">
+              <text class="choice-cost">¥ {{item.cost}}.00</text>
+              <text class="choice-text">{{item.selection}}</text>
+            </view>
+          </block>
+        </view>
+      </view> -->
+    </view>
+    <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
         <text class="choice-prompt">打算怎么做，你选择：</text>
         <view class="choices-container">
           <block wx:for="{{chapterContent.choicesList}}" wx:key="selection">
@@ -137,7 +151,6 @@
           </block>
         </view>
       </view>
-    </view>
 
     <!-- 章节选择器已移除 - 改为基于选择跳转 -->
 

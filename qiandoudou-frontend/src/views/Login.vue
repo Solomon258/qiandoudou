@@ -278,7 +278,7 @@ export default {
 /* 移动端登录样式 - 微信小程序风格 */
 .mobile-login-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(180deg, #fa6402 0%, #764ba2 100%);
   display: flex;
   flex-direction: column;
   position: relative;

@@ -14,27 +14,27 @@
   padding: 0 16px;
   position: relative;
   z-index: 100;
-  margin-top: 44px;
+  margin-top: 100rpx;
 }
 
 .nav-left {
-  display: flex;
+  /* display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
-  height: 32px;
+  height: 32px; */
 }
 
 .back-btn {
-  width: 48px;
-  height: 48px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .back-arrow {
-  font-size: 48px;
+  font-size: 36px;
   line-height: 38px;
   display: flex;
   align-items: center;
@@ -42,7 +42,7 @@
   display: block;
   width: 48px;
   height: 48px;
-  color: #000000e6;
+  color: rgba(0, 0, 0, 0.9);
   font-weight: 300;
 }
 
@@ -55,16 +55,15 @@
 }
 
 .nav-center {
-  flex: 1;
+  /* flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
 }
 
 .nav-title {
   font-size: 18px;
-  font-weight: 600;
-  color: #000;
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .back-icon {
@@ -75,13 +74,15 @@
 
 /* 转出至区域 */
 .transfer-to-section {
-  padding: 20px 16px;
+  margin: 20px 16px 0 16px;
+  background: #fff;
+  padding: 16px 16px 0;
+  border-radius: 12px;
 }
 
 .section-title {
   font-size: 16px;
-  font-weight: 600;
-  color: #000;
+  color: rgba(0, 0, 0, 0.9);
   margin-bottom: 16px;
   display: block;
 }
@@ -91,14 +92,13 @@
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .bank-card-item.active {
-  border: 2px solid #4A90E2;
+  border: 2px solid #FA6402;
 }
 
 .bank-info {
@@ -118,11 +118,11 @@
 }
 
 .bank-logo.pingan {
-  background: #FF6B35;
+  background: #FA6402;
 }
 
 .bank-logo.other {
-  background: #4A90E2;
+  background: #FA6402;
 }
 
 .bank-text {
@@ -150,7 +150,7 @@
 
 .bank-action {
   font-size: 14px;
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 .expand-icon {
@@ -159,7 +159,7 @@
 
 .arrow-down {
   font-size: 16px;
-  color: #FF6B35;
+  color: #FA6402;
   transform: rotate(90deg);
 }
 
@@ -173,7 +173,6 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .amount-title {
@@ -210,20 +209,9 @@
   font-size: 14px;
 }
 
-.transfer-all-btn {
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid #FF6B35;
-  border-radius: 16px;
-}
-
-.transfer-all-btn:active {
-  background: #fff5f0;
-}
-
 .all-text {
   font-size: 12px;
-  color: #FF6B35;
+  color: #FA6402;
   font-weight: 500;
 }
 
@@ -236,13 +224,11 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .note-title {
   font-size: 16px;
-  font-weight: 600;
-  color: #000;
+  color: rgba(0, 0, 0, 0.9);
   margin-bottom: 16px;
   display: block;
 }
@@ -276,7 +262,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border: 1px solid #FF6B35;
+  border: 1px solid #FA6402;
   border-radius: 16px;
   background: transparent;
 }
@@ -291,7 +277,7 @@
 
 .retry-text {
   font-size: 14px;
-  color: #FF6B35;
+  color: #FA6402;
   font-weight: 500;
 }
 
@@ -307,19 +293,19 @@
 }
 
 .image-placeholder {
-  width: 120px;
-  height: 120px;
-  background: #f5f5f5;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width:82px;
+  height:78px;
+  border-radius:4px;
+  background:rgba(0, 0, 0, 0.05);
+  border-radius:4px;
 }
 
 .camera-icon {
-  font-size: 32px;
-  color: #999;
+  width: 24px;
+  height: 24px;
 }
 
 .uploaded-image-container {
@@ -366,9 +352,9 @@
 }
 
 .confirm-btn {
-  width: 100%;
+  width: 100% !important;
   height: 52px;
-  background: #4A90E2;
+  background: #FA6402;
   border: none;
   border-radius: 26px;
   display: flex;
