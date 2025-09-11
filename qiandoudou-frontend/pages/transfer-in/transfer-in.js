@@ -27,11 +27,8 @@ Page({
     selectedTheme: 'custom'
   },
 
-  onLoad(options) {
-    console.log('转入页面 - onLoad参数:', options)
-    const walletId = options.id || options.walletId
-    console.log('转入页面 - 解析的钱包ID:', walletId)
-    console.log('转入页面 - 当前token:', app.globalData.token)
+  onLoad(options) {
+    const walletId = options.id || options.walletId
     
     this.setData({
       walletId: walletId
@@ -43,8 +40,7 @@ Page({
   // 加载钱包信息
   loadWalletInfo() {
     const walletId = this.data.walletId
-    if (!walletId) {
-      console.error('钱包ID不存在')
+    if (!walletId) {
       return
     }
 
@@ -60,23 +56,18 @@ Page({
             wx.navigateBack()
           }, 1500)
           return
-        }
-        
-        console.log('转入页面 - 从后端加载的钱包数据:', wallet)
+        }
         this.setData({
           wallet: wallet
         })
       })
-      .catch(error => {
-        console.error('加载钱包信息失败:', error)
+      .catch(error => {
         wx.showToast({
           title: error.message || '加载钱包信息失败',
           icon: 'none'
         })
       })
   },
-
-
 
   // 切换页签
   switchTab(e) {
@@ -157,8 +148,7 @@ Page({
         })
       })
       .catch(error => {
-        wx.hideLoading()
-        console.error('生成文案失败:', error)
+        wx.hideLoading()
         wx.showToast({
           title: error.message || '生成文案失败',
           icon: 'none'
@@ -223,8 +213,7 @@ Page({
             }
           })
           .catch(error => {
-            wx.hideLoading()
-            console.error('图片上传失败:', error)
+            wx.hideLoading()
             wx.showToast({
               title: error.message || '图片上传失败',
               icon: 'error'
@@ -419,8 +408,7 @@ Page({
 
         this.setData({ transferLoading: false })
       })
-      .catch(error => {
-        console.error('转入失败:', error)
+      .catch(error => {
         wx.showToast({
           title: error.message || '转入失败',
           icon: 'none'

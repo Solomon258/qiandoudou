@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "share-modal": "/components/share-modal/share-modal"
+  },
   "navigationBarTitleText": "钱兜兜"
 }

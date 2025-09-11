@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -44,9 +45,19 @@ public class WalletController {
     @GetMapping("/list")
     public Result<List<Map<String, Object>>> getUserWallets(@RequestParam Long userId) {
         try {
+            System.out.println("查询用户钱包列表，用户ID: " + userId);
             List<Map<String, Object>> wallets = walletService.getUserWallets(userId);
+            System.out.println("找到 " + wallets.size() + " 个钱包");
+            
+            // 如果没有钱包，输出调试信息
+            if (wallets.isEmpty()) {
+                System.out.println("用户 " + userId + " 没有钱包，检查用户是否存在");
+                // 这里可以添加更多调试逻辑
+            }
+            
             return Result.success(wallets);
         } catch (Exception e) {
+            System.err.println("获取用户钱包列表失败: " + e.getMessage());
             return Result.error(e.getMessage());
         }
     }
@@ -121,8 +132,11 @@ public class WalletController {
             String message = request.get("message").toString();
             String aiPartnerName = request.get("aiPartnerName").toString();
             String aiPartnerAvatar = request.get("aiPartnerAvatar").toString();
+            // 新增：人物名称参数，用于TTS声音选择
+            String characterName = request.get("characterName") != null ? 
+                request.get("characterName").toString() : aiPartnerName;
 
-            walletService.aiPartnerTransfer(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar);
+            walletService.aiPartnerTransfer(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar, characterName);
             return Result.success("AI伴侣转账成功");
         } catch (Exception e) {
             return Result.error(e.getMessage());
@@ -624,6 +638,58 @@ public class WalletController {
             return Result.success("钱包统计信息获取成功", stats);
         } catch (Exception e) {
             return Result.error("获取钱包统计信息失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 调试接口：检查用户和钱包关联关系
+     */
+    @GetMapping("/debug/user-wallets")
+    public Result<Map<String, Object>> debugUserWallets(@RequestParam Long userId) {
+        try {
+            System.out.println("=== 调试用户钱包关联关系 ===");
+            System.out.println("查询用户ID: " + userId);
+            
+            Map<String, Object> debugInfo = new HashMap<>();
+            debugInfo.put("queryUserId", userId);
+            
+            // 1. 查询用户的钱包
+            List<Map<String, Object>> wallets = walletService.getUserWallets(userId);
+            debugInfo.put("walletCount", wallets.size());
+            debugInfo.put("wallets", wallets);
+            
+            System.out.println("用户 " + userId + " 的钱包数量: " + wallets.size());
+            for (Map<String, Object> wallet : wallets) {
+                System.out.println("钱包: " + wallet.get("name") + ", ID: " + wallet.get("id") + 
+                    ", 用户ID: " + wallet.get("user_id"));
+            }
+            
+            // 2. 检查最近创建的钱包
+            List<Wallet> recentWallets = walletService.lambdaQuery()
+                    .orderByDesc(Wallet::getCreateTime)
+                    .last("LIMIT 10")
+                    .list();
+            
+            List<Map<String, Object>> recentWalletInfo = new ArrayList<>();
+            for (Wallet wallet : recentWallets) {
+                Map<String, Object> walletInfo = new HashMap<>();
+                walletInfo.put("id", wallet.getId());
+                walletInfo.put("name", wallet.getName());
+                walletInfo.put("userId", wallet.getUserId());
+                walletInfo.put("createTime", wallet.getCreateTime().toString());
+                recentWalletInfo.add(walletInfo);
+                System.out.println("最近钱包: " + wallet.getName() + ", 用户ID: " + wallet.getUserId() + 
+                    ", 创建时间: " + wallet.getCreateTime());
+            }
+            debugInfo.put("recentWallets", recentWalletInfo);
+            
+            System.out.println("=== 调试信息收集完成 ===");
+            return Result.success(debugInfo);
+            
+        } catch (Exception e) {
+            System.err.println("调试用户钱包关联失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("调试失败: " + e.getMessage());
         }
     }
 }

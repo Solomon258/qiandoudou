@@ -4,9 +4,7 @@ App({
     // 展示本地存储能力
     const logs = wx.getStorageSync('logs') || []
     logs.unshift(Date.now())
-    wx.setStorageSync('logs', logs)
-
-    console.log('小程序启动')
+    wx.setStorageSync('logs', logs)
 
     // 检查登录状态
     this.checkLoginStatus()
@@ -28,10 +26,8 @@ App({
     
     if (token && userInfo) {
       this.globalData.token = token
-      this.globalData.userInfo = userInfo
-      console.log('已登录用户:', userInfo)
-    } else {
-      console.log('未登录')
+      this.globalData.userInfo = userInfo
+    } else {
     }
   },
 
@@ -60,8 +56,7 @@ App({
       const now = Date.now()
       const expireTime = tokenTime + 24 * 60 * 60 * 1000 // 24小时
       
-      if (now > expireTime) {
-        console.log('Token已过期，清除登录信息')
+      if (now > expireTime) {
         this.clearLoginInfo()
       }
     }
@@ -76,7 +71,6 @@ App({
     wx.setStorageSync('tokenTime', Date.now()) // 记录token获取时间
     
     // 安全地获取用户名称
-    const userName = userInfo && (userInfo.nickname || userInfo.username) || '未知用户'
-    console.log('登录信息已保存:', userName)
+    const userName = userInfo && (userInfo.nickname || userInfo.username) || '未知用户'
   }
 })

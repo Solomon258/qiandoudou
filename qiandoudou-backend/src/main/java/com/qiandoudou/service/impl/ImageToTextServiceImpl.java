@@ -53,7 +53,7 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                 logger.info("字节跳动API调用成功");
                 return result;
             } catch (Exception e) {
-                logger.warn("字节跳动API调用失败，降级到原有API: {}", e.getMessage());
+                logger.warn("字节跳动API失败，降级到原有API");
                 // 继续执行原有API逻辑
             }
         } else {
@@ -89,26 +89,22 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                 if (statusCode == 200) {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     
-                    // 添加日志：打印AI接口返回值
-                    logger.info("原有图生文API返回值: {}", responseBody);
-                    
                     // 处理响应
                     String resultText = extractTextFromResponse(responseBody);
                     
                     // 去除 <think></think> 部分
                     resultText = thinkTagPattern.matcher(resultText).replaceAll("");
                     
-                    logger.info("处理后的文本: {}", resultText);
+                    logger.info("图生文API调用成功");
                     
                     return resultText.trim();
                 } else {
-                    String errorBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                    logger.error("原有图生文API调用失败，状态码: {}, 响应: {}", statusCode, errorBody);
+                    logger.error("图生文API调用失败，状态码: {}", statusCode);
                     throw new RuntimeException("API调用失败，状态码: " + statusCode);
                 }
             }
         } catch (IOException e) {
-            logger.error("原有图生文API调用异常: {}", e.getMessage(), e);
+            logger.error("图生文API调用异常: {}", e.getMessage());
             throw new RuntimeException("图生文API调用异常: " + e.getMessage(), e);
         }
     }
@@ -171,7 +167,7 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                 logger.info("字节跳动API调用成功");
                 return result;
             } catch (Exception e) {
-                logger.warn("字节跳动API调用失败，降级到原有API: {}", e.getMessage());
+                logger.warn("字节跳动API失败，降级到原有API");
                 // 继续执行原有API逻辑
             }
         } else {
@@ -199,7 +195,6 @@ public class ImageToTextServiceImpl implements ImageToTextService {
             // 不传image字段，只传文本
             
             String jsonRequest = objectMapper.writeValueAsString(requestData);
-            logger.info("纯文本生成API请求: {}", jsonRequest);
             
             StringEntity entity = new StringEntity(jsonRequest, StandardCharsets.UTF_8);
             httpPost.setEntity(entity);
@@ -211,26 +206,22 @@ public class ImageToTextServiceImpl implements ImageToTextService {
                 if (statusCode == 200) {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     
-                    // 添加日志：打印AI接口返回值
-                    logger.info("纯文本生成API返回值: {}", responseBody);
-                    
                     // 处理响应
                     String resultText = extractTextFromResponse(responseBody);
                     
                     // 去除 <think></think> 部分
                     resultText = thinkTagPattern.matcher(resultText).replaceAll("");
                     
-                    logger.info("处理后的文本: {}", resultText);
+                    logger.info("文本生成API调用成功");
                     
                     return resultText.trim();
                 } else {
-                    String errorBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                    logger.error("纯文本生成API调用失败，状态码: {}, 响应: {}", statusCode, errorBody);
+                    logger.error("文本生成API调用失败，状态码: {}", statusCode);
                     throw new RuntimeException("API调用失败，状态码: " + statusCode);
                 }
             }
         } catch (IOException e) {
-            logger.error("纯文本生成API调用异常: {}", e.getMessage(), e);
+            logger.error("文本生成API调用异常: {}", e.getMessage());
             throw new RuntimeException("文本生成API调用异常: " + e.getMessage(), e);
         }
     }

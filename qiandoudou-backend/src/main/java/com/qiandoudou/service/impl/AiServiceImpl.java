@@ -109,16 +109,15 @@ public class AiServiceImpl implements AiService {
             String prompt = buildPromptForPartnerComment(name, personality, postContent);
             
             // 使用AI生成文案
-            logger.info("开始调用AI生成文案，提示词: {}", prompt);
+            logger.info("调用AI生成文案，伴侣: {}", name);
             String aiGeneratedText = generateAiText(prompt);
-            logger.info("AI生成的原始文案: {}", aiGeneratedText);
             
             // 确保文案以伴侣名字开头
             if (!aiGeneratedText.startsWith(name + "：") && !aiGeneratedText.startsWith(name + ":")) {
                 aiGeneratedText = name + "：" + aiGeneratedText;
             }
             
-            logger.info("最终生成的文案: {}", aiGeneratedText);
+            logger.info("AI文案生成完成");
             return aiGeneratedText;
             
         } catch (Exception e) {
@@ -223,14 +222,13 @@ public class AiServiceImpl implements AiService {
     @Override
     public String generatePartnerVoice(Long partnerId, String text) {
         try {
-            logger.info("开始生成AI伴侣语音，伴侣ID: {}, 文本: {}", partnerId, text);
+            logger.info("生成AI伴侣语音，伴侣ID: {}", partnerId);
             
             // 获取AI伴侣信息，确定声音类型
             AiPartner partner = aiPartnerService.getById(partnerId);
             String voiceType = "奇妙栩"; // 默认声音类型
             
             if (partner != null) {
-                logger.info("找到AI伴侣信息: {}, 性格: {}", partner.getName(), partner.getPersonality());
                 // 根据AI伴侣的性格选择合适的声音类型
                 String personality = partner.getPersonality();
                 if (personality != null) {
@@ -244,9 +242,8 @@ public class AiServiceImpl implements AiService {
                         voiceType = "阳光男声";
                     }
                 }
-                logger.info("选择的声音类型: {}", voiceType);
             } else {
-                logger.warn("未找到AI伴侣信息，伴侣ID: {}, 使用默认声音类型", partnerId);
+                logger.warn("未找到AI伴侣信息，伴侣ID: {}", partnerId);
             }
             
             // 清理文本，去掉名字前缀
@@ -260,28 +257,17 @@ public class AiServiceImpl implements AiService {
                 }
             }
             
-            logger.info("清理后的文本: {}", cleanText);
-            
             // 调用TTS服务生成语音并上传
             String voiceUrl = ttsService.generateVoiceAndUpload(cleanText, voiceType);
             if (voiceUrl != null) {
-                logger.info("语音生成成功，URL: {}", voiceUrl);
+                logger.info("语音生成成功");
             } else {
-                logger.warn("语音生成返回null");
+                logger.warn("语音生成失败");
             }
             return voiceUrl;
             
         } catch (Exception e) {
-            logger.error("AI伴侣语音生成失败，伴侣ID: {}, 错误: {}", partnerId, e.getMessage(), e);
-            
-            // 详细记录错误类型
-            if (e.getMessage().contains("No such file or directory")) {
-                logger.error("TTS服务音频文件缺失，请检查TTS服务器配置");
-            } else if (e.getMessage().contains("TTS API调用失败")) {
-                logger.error("TTS API服务异常，请检查TTS服务状态");
-            } else {
-                logger.error("未知的语音生成错误");
-            }
+            logger.error("AI伴侣语音生成失败，伴侣ID: {}, 错误: {}", partnerId, e.getMessage());
             
             // 如果TTS生成失败，返回null，表示没有语音，前端会降级到模拟播放
             return null;
@@ -334,5 +320,38 @@ public class AiServiceImpl implements AiService {
     @Override
     public String generateAiText(String prompt) {
         return imageToTextService.generateTextFromPrompt(prompt);
+    }
+
+    @Override
+    public String generatePartnerVoiceByCharacterName(String characterName, String text) {
+        try {
+            logger.info("生成AI伴侣语音，人物: {}", characterName);
+            
+            // 清理文本，去掉可能的名字前缀
+            String cleanText = text;
+            if (characterName != null && !characterName.trim().isEmpty()) {
+                String name = characterName.trim();
+                if (cleanText.startsWith(name + "：")) {
+                    cleanText = cleanText.substring((name + "：").length()).trim();
+                } else if (cleanText.startsWith(name + ":")) {
+                    cleanText = cleanText.substring((name + ":").length()).trim();
+                }
+            }
+            
+            // 调用TTS服务根据人物名称生成语音并上传
+            String voiceUrl = ttsService.generateVoiceByCharacterName(cleanText, characterName);
+            if (voiceUrl != null) {
+                logger.info("语音生成成功");
+            } else {
+                logger.warn("语音生成失败");
+            }
+            return voiceUrl;
+            
+        } catch (Exception e) {
+            logger.error("AI伴侣语音生成失败，人物: {}, 错误: {}", characterName, e.getMessage());
+            
+            // 如果TTS生成失败，返回null，表示没有语音，前端会降级到模拟播放
+            return null;
+        }
     }
 }

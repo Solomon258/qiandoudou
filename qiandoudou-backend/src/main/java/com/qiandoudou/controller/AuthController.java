@@ -91,16 +91,18 @@ public class AuthController {
     @GetMapping("/current-user")
     public Result<User> getCurrentUser(@RequestParam(required = false) Long userId) {
         try {
-            // 如果没有提供userId参数，使用默认的test1用户ID
-            Long targetUserId = userId != null ? userId : 1961688416014127106L;
+            if (userId == null) {
+                System.out.println("获取用户信息失败：未提供用户ID");
+                return Result.error("用户ID不能为空");
+            }
             
-            System.out.println("获取用户信息，用户ID: " + targetUserId);
+            System.out.println("获取用户信息，用户ID: " + userId);
             
             // 从数据库获取真实用户信息
-            User user = userService.getById(targetUserId);
+            User user = userService.getById(userId);
             
             if (user == null) {
-                System.out.println("用户不存在，ID: " + targetUserId);
+                System.out.println("用户不存在，ID: " + userId);
                 return Result.error("用户不存在");
             }
             

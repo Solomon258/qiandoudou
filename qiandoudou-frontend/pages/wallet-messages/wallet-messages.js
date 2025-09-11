@@ -30,8 +30,7 @@ Page({
   // 加载互动消息
   loadMessages() {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.error('用户ID不存在')
+    if (!userId) {
       this.setData({ loading: false })
       return
     }
@@ -47,12 +46,9 @@ Page({
           messages: this.data.currentPage === 1 ? processedMessages : [...this.data.messages, ...processedMessages],
           loading: false,
           hasMore: messages.length >= 20 // 假设每页20条
-        })
-        
-        console.log('互动消息加载完成:', processedMessages)
+        })
       })
-      .catch(error => {
-        console.log('加载互动消息失败:', error.message)
+      .catch(error => {
         
         this.setData({
           messages: [],
@@ -109,8 +105,6 @@ Page({
     }
   },
 
-
-
   // 刷新消息
   refreshMessages() {
     this.setData({
@@ -134,8 +128,7 @@ Page({
 
   // 点击消息项
   onMessageTap(e) {
-    const message = e.currentTarget.dataset.message
-    console.log('点击消息:', message)
+    const message = e.currentTarget.dataset.message
     
     if (message.walletId) {
       // 跳转到对应的钱包详情页
@@ -169,11 +162,9 @@ Page({
     }
 
     walletAPI.markMessagesAsRead(userId)
-      .then(result => {
-        console.log('消息标记为已读成功')
+      .then(result => {
       })
-      .catch(error => {
-        console.log('标记消息已读失败:', error.message)
+      .catch(error => {
       })
   }
 })

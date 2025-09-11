@@ -2,12 +2,6 @@
 <view class="container">
   <!-- 剧本列表模式 -->
   <view wx:if="{{!selectedScript}}" class="script-list-page">
-    <view class="page-header">
-      <view class="back-button" bindtap="goBackToWallet">
-        <text class="back-icon">‹</text>
-        <text class="back-text">剧本攒</text>
-      </view>
-    </view>
 
     <view class="current-script" wx:if="{{userProgress}}">
       <text class="section-title">正在追</text>
@@ -30,6 +24,13 @@
           <view class="script-cover-container">
             <image class="script-cover" src="{{item.coverImage}}" mode="aspectFill" />
             <view class="follower-tag">超{{item.followerCount}}万跟</view>
+            <!-- 分享按钮 -->
+            <view wx:if="{{item.id == 2 || item.id == 3}}" 
+                  class="script-share-btn" 
+                  catchtap="onScriptShare" 
+                  data-script="{{item}}">
+              <image class="script-share-icon" src="/static/icon/share.png" mode="aspectFit"/>
+            </view>
           </view>
           <view class="script-info">
             <text class="script-title">{{item.title}}</text>
@@ -149,4 +150,12 @@
       </button>
     </view>
   </view>
+
+  <!-- 分享弹窗 -->
+  <share-modal 
+    show="{{showShareModal}}" 
+    shareImageUrl="{{shareImageUrl}}"
+    bind:close="onShareModalClose"
+    bind:save="onShareImageSave">
+  </share-modal>
 </view>

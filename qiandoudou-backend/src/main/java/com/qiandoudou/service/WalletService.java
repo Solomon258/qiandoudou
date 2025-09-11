@@ -50,7 +50,7 @@ public interface WalletService extends IService<Wallet> {
     /**
      * AI伴侣自动转账
      */
-    void aiPartnerTransfer(Long walletId, Long aiPartnerId, BigDecimal amount, String message, String aiPartnerName, String aiPartnerAvatar);
+    void aiPartnerTransfer(Long walletId, Long aiPartnerId, BigDecimal amount, String message, String aiPartnerName, String aiPartnerAvatar, String characterName);
 
     /**
      * 重新计算钱包余额（基于交易记录）

@@ -36,6 +36,7 @@
       display-multiple-items="3"
       previous-margin="60rpx"
       next-margin="60rpx"
+      circular="{{true}}"
     >
       <swiper-item wx:for="{{partners}}" wx:key="id" class="avatar-item">
         <view 

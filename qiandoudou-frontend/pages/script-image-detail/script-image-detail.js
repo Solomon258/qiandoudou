@@ -29,6 +29,11 @@ Page({
     this.loadScriptDetail(3)
   },
 
+  // 处理系统回退按钮
+  onUnload() {
+    // 页面卸载时不需要特殊处理，使用默认行为
+  },
+
   // 加载剧本详情
   async loadScriptDetail(scriptId) {
     try {
@@ -42,6 +47,7 @@ Page({
 
       // 获取或创建用户进度
       let progressResponse = await scriptAPI.getUserProgress(this.data.userId, scriptId, this.data.walletId)
+
       if (progressResponse.code !== 200 || !progressResponse.data) {
         // 开始新剧本
         const startResponse = await scriptAPI.startScript(this.data.userId, this.data.walletId, scriptId)
@@ -63,7 +69,7 @@ Page({
       this.loadChapterContent(scriptId, progress.currentChapter)
 
     } catch (error) {
-      console.error('加载剧本详情失败:', error)
+
       wx.showToast({
         title: '加载失败',
         icon: 'error'
@@ -76,15 +82,33 @@ Page({
   // 加载章节内容
   async loadChapterContent(scriptId, chapterNumber) {
     try {
-      const response = await scriptAPI.getChapterContent(scriptId, chapterNumber)
-      console.log('章节内容API响应:', response)
+      const response = await scriptAPI.getChapterContent(scriptId, chapterNumber, this.data.userId, this.data.walletId)
+
       
       if (response.code === 200) {
-        const chapterData = response.data
+        const responseData = response.data
+        let chapterData = null
+        
+        // 处理新的数据结构：可能是直接的章节数据，也可能是包含chapter和userProgress的对象
+        if (responseData.chapter) {
+          // 新的数据结构
+          chapterData = responseData.chapter
+          
+          // 如果有用户进度数据，更新状态
+          if (responseData.userProgress) {
+            this.setData({
+              userProgress: responseData.userProgress
+            })
+
+          }
+        } else {
+          // 兼容旧的数据结构
+          chapterData = responseData
+        }
         
         // 检查章节数据是否存在
         if (!chapterData) {
-          console.error('章节数据为空，章节可能不存在:', scriptId, chapterNumber)
+
           wx.showToast({
             title: '章节数据不存在',
             icon: 'error'
@@ -98,13 +122,13 @@ Page({
           try {
             choicesList = JSON.parse(chapterData.choices)
           } catch (e) {
-            console.error('解析choices失败:', e)
+
             choicesList = []
           }
         }
         
         chapterData.choicesList = choicesList
-        console.log('章节数据处理完成:', chapterData)
+
         
         // 检查是否为最后一集（没有选项或所有选项的nextId都为null）
         const isLastChapter = !choicesList || choicesList.length === 0 || 
@@ -118,14 +142,14 @@ Page({
         })
 
       } else {
-        console.error('获取章节内容失败，完整响应:', response)
+
         wx.showToast({
           title: response.message || '获取章节内容失败',
           icon: 'error'
         })
       }
     } catch (error) {
-      console.error('加载章节内容失败:', error)
+
       wx.showToast({
         title: '加载章节失败',
         icon: 'error'
@@ -136,6 +160,18 @@ Page({
   // 选择章节
   selectChapter(e) {
     const chapterNumber = parseInt(e.currentTarget.dataset.chapter)
+    const currentProgress = this.data.userProgress?.currentChapter || 1
+    
+    // 检查是否尝试访问未解锁的章节
+    if (chapterNumber > currentProgress) {
+      wx.showToast({
+        title: '待解锁，请先完成当前剧情',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+    
     if (chapterNumber !== this.data.currentChapter) {
       this.setData({
         currentChapter: chapterNumber
@@ -189,7 +225,7 @@ Page({
       })
 
     } catch (error) {
-      console.error('转入处理失败:', error)
+
       wx.showToast({
         title: '处理失败',
         icon: 'error'
@@ -250,7 +286,7 @@ Page({
       }
 
     } catch (error) {
-      console.error('处理选择失败:', error)
+
       wx.showToast({
         title: error.message || '处理失败',
         icon: 'error'
@@ -270,12 +306,32 @@ Page({
         })
       }
     } catch (error) {
-      console.error('刷新进度失败:', error)
+
     }
   },
 
-  // 返回钱包
+  // 返回剧本列表页面
   goBackToWallet() {
-    wx.navigateBack()
+    // 获取页面栈
+    const pages = getCurrentPages()
+    
+    // 检查页面栈中是否有剧本列表页面
+    let hasScriptListPage = false
+    for (let i = pages.length - 2; i >= 0; i--) {
+      if (pages[i].route === 'pages/script-detail/script-detail') {
+        hasScriptListPage = true
+        break
+      }
+    }
+    
+    if (hasScriptListPage) {
+      // 如果页面栈中有剧本列表页面，直接返回
+      wx.navigateBack()
+    } else {
+      // 如果没有剧本列表页面，跳转到剧本列表页面
+      wx.redirectTo({
+        url: `/pages/script-detail/script-detail?walletId=${this.data.walletId}`
+      })
+    }
   }
 })

@@ -85,18 +85,13 @@ Page({
         avatar: userInfo.avatar || '',
         description: userInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
-      }
-      
-      console.log('社交页面从本地加载用户信息:', displayUserInfo)
-      console.log('头像URL:', displayUserInfo.avatar)
-      console.log('是否自定义头像:', displayUserInfo.hasCustomAvatar)
+      }
       
       this.setData({
         userInfo: displayUserInfo
       });
     } else {
-      // 本地用户信息为空，尝试从后端获取
-      console.log('社交页面本地用户信息为空，尝试从后端获取...')
+      // 本地用户信息为空，尝试从后端获取
       this.loadUserInfoFromServer()
     }
   },
@@ -105,14 +100,15 @@ Page({
   loadUserInfoFromServer() {
     const { authAPI } = require('../../utils/api.js')
     
-    // 获取当前用户ID，如果没有则使用默认的test1用户ID
-    const userId = app.globalData.userInfo?.id || 1961688416014127106
-    console.log('社交页面从服务器获取用户信息，用户ID:', userId)
+    // 获取当前用户ID，如果没有用户ID则不加载
+    const userId = app.globalData.userInfo?.id
+    if (!userId) {
+      return
+    }
     
     authAPI.getCurrentUser(userId)
       .then(result => {
-        const serverUserInfo = result.data
-        console.log('社交页面从服务器获取用户信息:', serverUserInfo)
+        const serverUserInfo = result.data
         
         // 设置用户信息
         const displayUserInfo = {
@@ -129,12 +125,9 @@ Page({
         
         // 同步到本地存储和全局数据
         wx.setStorageSync('userInfo', displayUserInfo)
-        app.globalData.userInfo = displayUserInfo
-        
-        console.log('社交页面用户信息已同步到本地:', displayUserInfo)
+        app.globalData.userInfo = displayUserInfo
       })
-      .catch(error => {
-        console.error('社交页面从服务器获取用户信息失败:', error)
+      .catch(error => {
         
         // 使用默认用户信息
         const defaultUserInfo = {
@@ -147,17 +140,14 @@ Page({
         
         this.setData({
           userInfo: defaultUserInfo
-        })
-        
-        console.log('社交页面使用默认用户信息:', defaultUserInfo)
+        })
       })
   },
 
   // 加载钱包数据
   loadWallets() {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.error('用户ID不存在')
+    if (!userId) {
       return
     }
 
@@ -171,8 +161,7 @@ Page({
         // 加载钱包数据后，更新动态的背景样式
         this.updatePostsWithWalletBackgrounds()
       })
-      .catch(error => {
-        console.error('加载钱包失败:', error)
+      .catch(error => {
       })
   },
 
@@ -238,8 +227,7 @@ Page({
 
   // 加载动态列表
   loadPosts() {
-    // 这里可以调用API获取真实数据
-    console.log('加载动态列表');
+    // 这里可以调用API获取真实数据
     
     // 如果钱包数据已经加载，立即更新背景样式
     if (this.data.wallets.length > 0) {
@@ -256,8 +244,7 @@ Page({
   },
 
   // 跳转到用户个人社交圈主页
-  navigateToUserSocialProfile() {
-    console.log('🔥 点击了顶部导航栏用户头像！！！');
+  navigateToUserSocialProfile() {
     wx.showModal({
       title: '测试',
       content: '你点击了正确的头像！即将跳转到个人社交圈主页',
@@ -276,11 +263,9 @@ Page({
       itemList: ['个人信息', '设置'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          // 跳转到个人信息页面
-          console.log('跳转到个人信息');
+          // 跳转到个人信息页面
         } else if (res.tapIndex === 1) {
-          // 跳转到设置页面
-          console.log('跳转到设置');
+          // 跳转到设置页面
         }
       }
     });
@@ -305,8 +290,7 @@ Page({
   },
 
   // 加载更多
-  loadMore() {
-    console.log('加载更多动态');
+  loadMore() {
   },
 
   // 点击动态卡片跳转到用户详情页面
@@ -329,16 +313,12 @@ Page({
   // 点击钱包卡片跳转到用户详情页（别人的钱包）
   navigateToWalletDetail(e) {
     const walletId = e.currentTarget.dataset.walletId;
-    const postId = e.currentTarget.dataset.postId;
-    
-    console.log('社交圈点击钱包卡片，walletId:', walletId, 'postId:', postId);
+    const postId = e.currentTarget.dataset.postId;
     
     // 根据postId获取对应的用户信息
     const post = this.data.posts.find(p => p.id == postId);
     if (post && walletId) {
-      const userId = post.userId || 1;
-      
-      console.log('跳转到用户详情页，userId:', userId, 'walletId:', walletId);
+      const userId = post.userId || 1;
       
       wx.navigateTo({
         url: `/pages/user-profile/user-profile?userId=${userId}&walletId=${walletId}`
@@ -359,12 +339,10 @@ Page({
   },
 
   // 从后端加载真实的公开钱包数据
-  loadPublicWallets() {
-    console.log('开始加载公开钱包数据...')
+  loadPublicWallets() {
     
     walletAPI.getPublicWallets()
-      .then(response => {
-        console.log('获取公开钱包数据成功:', response)
+      .then(response => {
         if (response.success && response.data) {
           const publicWallets = response.data
           
@@ -377,8 +355,7 @@ Page({
                 recentTransactions = typeof wallet.recent_transactions === 'string' 
                   ? JSON.parse(wallet.recent_transactions) 
                   : wallet.recent_transactions
-              } catch (e) {
-                console.error('解析交易记录失败:', e)
+              } catch (e) {
                 recentTransactions = []
               }
             }
@@ -413,30 +390,25 @@ Page({
                 amount: tx.type === 1 ? `+¥${tx.amount}` : undefined
               }))
             }
-          })
-          
-          console.log('转换后的钱包数据:', posts)
+          })
           
           this.setData({ posts })
           
           // 为每个钱包获取真实的社交统计数据
           this.loadSocialStatsForPosts(posts)
-        } else {
-          console.error('获取公开钱包数据失败:', response.message)
+        } else {
           // 如果API失败，保留原有的模拟数据
           this.updatePostsWithSocialStats()
         }
       })
-      .catch(error => {
-        console.error('加载公开钱包数据出错:', error)
+      .catch(error => {
         // 如果网络错误，保留原有的模拟数据
         this.updatePostsWithSocialStats()
       })
   },
 
   // 为钱包列表加载真实的社交统计数据
-  loadSocialStatsForPosts(posts) {
-    console.log('开始为钱包加载社交统计数据...')
+  loadSocialStatsForPosts(posts) {
     
     // 为每个钱包并行获取社交统计数据
     const socialStatsPromises = posts.map(post => {
@@ -450,8 +422,7 @@ Page({
           }
           return null
         })
-        .catch(error => {
-          console.error(`获取钱包${post.walletId}社交数据失败:`, error)
+        .catch(error => {
           return null
         })
     })
@@ -466,13 +437,7 @@ Page({
             updatedPosts[index].fansCount = result.socialStats.fansCount || 0
           }
         }
-      })
-      
-      console.log('更新后的钱包粉丝数据:', updatedPosts.map(p => ({
-        id: p.id,
-        walletId: p.walletId,
-        fansCount: p.fansCount
-      })))
+      })
       
       this.setData({ posts: updatedPosts })
     })
@@ -492,9 +457,7 @@ Page({
         ...post,
         fansCount: socialStats.fansCount
       }
-    })
-    
-    console.log('更新动态列表的粉丝数据:', posts.map(p => ({ id: p.id, walletId: p.walletId, fansCount: p.fansCount })))
+    })
     
     this.setData({ posts })
   }

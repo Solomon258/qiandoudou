@@ -3,12 +3,10 @@ const app = getApp()
 
 // 后端API基础地址
 // const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  const BASE_URL = 'http://8.148.206.18/api'  // IP访问（微信小程序不支持）
+  const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
-// const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
-
 
 /**
  * 通用网络请求函数
@@ -37,15 +35,15 @@ function request(options) {
       success: (res) => {
         // 只在开发模式下输出详细日志
         if (options.debug !== false) {
-          console.log('API请求成功:', options.url, '状态码:', res.statusCode)
-          console.log('响应数据:', res.data)
+
+
         }
         
         if (res.statusCode === 200) {
           if (res.data.code === 200) {
             resolve(res.data)
           } else {
-            console.error('业务错误:', res.data.message, '完整响应:', res.data)
+
             reject(new Error(res.data.message || '请求失败'))
           }
         } else if (res.statusCode === 401) {
@@ -67,14 +65,14 @@ function request(options) {
       },
       fail: (error) => {
         // 只在网络真正失败时输出错误
-        console.error('=== API请求失败详细信息 ===')
-        console.error('请求URL:', `${BASE_URL}${options.url}`)
-        console.error('请求方法:', options.method || 'GET')
-        console.error('请求数据:', options.data)
-        console.error('错误详情:', error)
-        console.error('错误类型:', typeof error)
-        console.error('错误属性:', Object.keys(error || {}))
-        console.error('=== 请求失败信息结束 ===')
+
+
+
+
+
+
+
+
         
         // 根据错误类型提供更具体的错误信息
         let errorMessage = '网络连接失败'
@@ -227,8 +225,8 @@ const walletAPI = {
 
   // 获取公开钱包列表（用于兜圈圈）
   getPublicWallets() {
-    console.log('调用getPublicWallets API')
-    console.log('当前token状态:', app.globalData.token ? '有token' : '无token')
+
+
     
     return request({
       url: '/wallet/public',
@@ -287,32 +285,32 @@ const walletAPI = {
 
   // 检查关注状态
   checkFollowStatus(currentUserId, targetUserId) {
-    console.log('API调用: checkFollowStatus', { currentUserId, targetUserId })
+
     return request({
       url: '/social/user/check-follow',
       method: 'GET',
       data: { currentUserId, targetUserId }
     }).then(result => {
-      console.log('checkFollowStatus API响应:', result)
+
       return result
     }).catch(error => {
-      console.error('checkFollowStatus API错误:', error)
+
       throw error
     })
   },
 
   // 获取钱包所有者ID
   getWalletOwnerId(walletId) {
-    console.log('API调用: getWalletOwnerId', { walletId })
+
     return request({
       url: '/wallet/owner',
       method: 'GET',
       data: { walletId }
     }).then(result => {
-      console.log('getWalletOwnerId API响应:', result)
+
       return result
     }).catch(error => {
-      console.error('getWalletOwnerId API错误:', error)
+
       throw error
     })
   },
@@ -335,7 +333,7 @@ const walletAPI = {
     }).catch(error => {
       // 如果是404错误，说明接口未实现，返回一个成功的模拟响应
       if (error.message && error.message.includes('404')) {
-        console.log('用户信息更新接口未实现，使用本地存储')
+
         return { success: true, message: '本地保存成功', data: userInfo }
       }
       throw error
@@ -351,7 +349,7 @@ const walletAPI = {
     }).catch(error => {
       // 如果是404错误，说明接口未实现，返回一个成功的模拟响应
       if (error.message && error.message.includes('404')) {
-        console.log('用户设置更新接口未实现，使用本地存储')
+
         return { success: true, message: '本地保存成功', data: settings }
       }
       throw error
@@ -422,7 +420,7 @@ const walletAPI = {
   },
 
   // AI伴侣自动转入资金
-  aiPartnerTransferIn(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar) {
+  aiPartnerTransferIn(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar, characterName) {
     return request({
       url: '/wallet/ai-partner-transfer',
       method: 'POST',
@@ -432,7 +430,8 @@ const walletAPI = {
         amount, 
         message, 
         aiPartnerName, 
-        aiPartnerAvatar 
+        aiPartnerAvatar,
+        characterName  // 新增人物名称参数
       }
     })
   },
@@ -528,6 +527,39 @@ const walletAPI = {
 }
 
 /**
+ * 分享图片相关API
+ */
+const shareImageAPI = {
+  // 获取钱兜兜分享图片
+  getWalletShareImage() {
+    return request({
+      url: '/share/wallet',
+      method: 'GET'
+    })
+  },
+
+  // 获取剧本分享图片
+  getScriptShareImage(scriptId) {
+    return request({
+      url: `/share/script/${scriptId}`,
+      method: 'GET'
+    })
+  },
+
+  // 根据类型获取分享图片
+  getShareImage(type, targetId = null) {
+    let url = `/share/${type}`
+    if (targetId) {
+      url += `?targetId=${targetId}`
+    }
+    return request({
+      url: url,
+      method: 'GET'
+    })
+  }
+}
+
+/**
  * 文件上传函数
  */
 function uploadFile(filePath, uploadUrl, formData = {}) {
@@ -546,7 +578,7 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
       formData: formData,
       header: header,
       success: (res) => {
-        console.log('文件上传成功:', res)
+
         try {
           const data = JSON.parse(res.data)
           if (data.code === 200) {
@@ -559,7 +591,7 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
         }
       },
       fail: (error) => {
-        console.error('文件上传失败:', error)
+
         reject(new Error('文件上传失败'))
       }
     })
@@ -589,9 +621,9 @@ const scriptAPI = {
 
   // 获取剧本详情
   getScriptDetail: (scriptId) => {
-    console.log('API调用 getScriptDetail，scriptId:', scriptId, '类型:', typeof scriptId)
+
     if (!scriptId || scriptId === 'undefined' || scriptId === 'null') {
-      console.error('无效的scriptId:', scriptId)
+
       return Promise.reject(new Error('无效的剧本ID'))
     }
     return request({
@@ -609,9 +641,17 @@ const scriptAPI = {
   },
 
   // 获取指定章节内容
-  getChapterContent: (scriptId, chapterNumber) => {
+  getChapterContent: (scriptId, chapterNumber, userId = null, walletId = null) => {
+    let url = `/scripts/${scriptId}/chapters/${chapterNumber}`
+    const params = []
+    if (userId) params.push(`userId=${userId}`)
+    if (walletId) params.push(`walletId=${walletId}`)
+    if (params.length > 0) {
+      url += '?' + params.join('&')
+    }
+    
     return request({
-      url: `/scripts/${scriptId}/chapters/${chapterNumber}`,
+      url: url,
       method: 'GET'
     })
   },
@@ -670,8 +710,8 @@ const scriptAPI = {
 const testAPI = {
   // 测试网络连接
   testConnection() {
-    console.log('开始测试网络连接...')
-    console.log('测试URL:', BASE_URL)
+
+
     
     return new Promise((resolve, reject) => {
       wx.request({
@@ -681,17 +721,17 @@ const testAPI = {
           'Content-Type': 'application/json'
         },
         success: (res) => {
-          console.log('✅ 网络测试成功!')
-          console.log('状态码:', res.statusCode)
-          console.log('响应头:', res.header)
-          console.log('响应数据:', res.data)
+
+
+
+
           resolve(res)
         },
         fail: (error) => {
-          console.error('❌ 网络测试失败!')
-          console.error('错误信息:', error)
-          console.error('错误码:', error.errno)
-          console.error('错误描述:', error.errMsg)
+
+
+
+
           reject(error)
         }
       })
@@ -710,17 +750,17 @@ const testAPI = {
   
   // 测试域名连通性
   testDomainConnectivity() {
-    console.log('🔍 开始测试域名连通性...')
+
     
     // 测试1: 直接访问域名根路径
     wx.request({
       url: 'https://heartllo.cn/',
       method: 'GET',
       success: (res) => {
-        console.log('✅ 域名根路径访问成功:', res.statusCode)
+
       },
       fail: (err) => {
-        console.error('❌ 域名根路径访问失败:', err)
+
       }
     })
     
@@ -729,10 +769,10 @@ const testAPI = {
       url: 'https://heartllo.cn/api/',
       method: 'GET', 
       success: (res) => {
-        console.log('✅ API路径访问成功:', res.statusCode)
+
       },
       fail: (err) => {
-        console.error('❌ API路径访问失败:', err)
+
       }
     })
   }
@@ -742,6 +782,7 @@ module.exports = {
   request,
   authAPI,
   walletAPI,
+  shareImageAPI,
   uploadFile,
   uploadUserImage,
   scriptAPI,

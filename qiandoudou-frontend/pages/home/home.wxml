@@ -1,6 +1,6 @@
 <!--pages/home/home.wxml-->
 <view class="container">
-  <!-- 钱包页面 -->
+  <!-- 钱兜兜页面 -->
   <view wx:if="{{currentTab === 'wallet'}}" class="wallet-page">
     <!-- 顶部导航栏 -->
     <view class="top-nav">
@@ -20,34 +20,37 @@
       </view>
     </view>
 
-    <!-- 钱包列表 -->
+    <!-- 钱兜兜列表 -->
     <view wx:if="{{wallets.length > 0}}" class="wallet-list-section">
       <view wx:for="{{wallets}}" wx:key="id" class="wallet-card" 
             style="{{item.backgroundStyle}}" 
             bindtap="handleWalletTap" 
             data-id="{{item.id}}">
-        <!-- 钱包信息 -->
+        <!-- 钱兜兜信息 -->
         <view class="wallet-info">
           <view class="wallet-header">
             <text class="wallet-title">{{item.name || '钱兜兜'}}</text>
-            <text class="wallet-type">{{item.type === 1 ? '个人钱包' : '情侣钱包'}}</text>
+            <text class="wallet-type">{{item.type === 1 ? '个人钱兜兜' : '情侣钱兜兜'}}</text>
           </view>
           <view class="wallet-amount">
             <text class="amount-text">¥ {{item.balance || '0.00'}}</text>
           </view>
           
-          <!-- AI伴侣信息（情侣钱包） -->
+          <!-- AI伴侣信息（情侣钱兜兜） -->
           <view wx:if="{{item.type === 2 && item.ai_partner_name}}" class="ai-partner-info">
             <text class="partner-label">AI伴侣：</text>
             <text class="partner-name">{{item.ai_partner_name}}</text>
           </view>
         </view>
         
-        <!-- 右上角头像已移除 -->
+        <!-- 分享按钮 -->
+        <view class="share-btn" catchtap="onWalletShare" data-wallet="{{item}}">
+          <image class="share-icon" src="/static/icon/share.png" mode="aspectFit"/>
+        </view>
       </view>
     </view>
     
-    <!-- 没有钱包时显示欢迎信息 -->
+    <!-- 没有钱兜兜时显示欢迎信息 -->
     <view wx:if="{{wallets.length === 0 && !showWalletTypeModal}}" class="welcome-section">
       <view class="welcome-card">
         <text class="welcome-title">欢迎来到钱兜兜！</text>
@@ -109,7 +112,7 @@
         
         <!-- 动态内容区域 -->
         <view class="post-content-area">
-          <!-- 钱包信息和总金额 -->
+          <!-- 钱兜兜信息和总金额 -->
           <view class="post-main-header">
             <view class="post-title">{{item.title}}</view>
             <view class="post-amount">¥{{item.total_amount}}</view>
@@ -157,7 +160,7 @@
     </view>
   </view>
 
-  <!-- 钱包类型选择模态框 -->
+  <!-- 钱兜兜类型选择模态框 -->
   <view wx:if="{{showWalletTypeModal}}" class="modal-overlay" bindtap="hideWalletTypeModal">
     <view class="wallet-type-modal" catchtap="stopPropagation">
       <!-- 模态框头部 -->
@@ -169,7 +172,7 @@
         </view>
       </view>
       
-      <!-- 钱包类型选项 -->
+      <!-- 钱兜兜类型选项 -->
       <view class="wallet-type-options">
         <!-- 自己攒钱 -->
         <view class="wallet-type-option {{selectedWalletType === 'personal' ? 'selected' : ''}}" bindtap="selectWalletType" data-type="personal">
@@ -229,4 +232,12 @@
       </view>
     </view>
   </view>
+
+  <!-- 分享弹窗 -->
+  <share-modal 
+    show="{{showShareModal}}" 
+    shareImageUrl="{{shareImageUrl}}"
+    bind:close="onShareModalClose"
+    bind:save="onShareImageSave">
+  </share-modal>
 </view>

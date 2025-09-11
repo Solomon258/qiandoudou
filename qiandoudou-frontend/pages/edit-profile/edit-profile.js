@@ -93,8 +93,7 @@ Page({
         const tempFilePath = res.tempFilePaths[0]
         this.cropImage(tempFilePath)
       },
-      fail: (error) => {
-        console.error('选择图片失败:', error)
+      fail: (error) => {
         wx.showToast({
           title: '选择图片失败',
           icon: 'none'
@@ -121,8 +120,7 @@ Page({
         // 由于小程序限制，我们直接使用原图并保存
         this.saveAvatar(imagePath)
       },
-      fail: (error) => {
-        console.error('获取图片信息失败:', error)
+      fail: (error) => {
         this.saveAvatar(imagePath) // 即使获取信息失败也尝试保存
       }
     })
@@ -137,8 +135,7 @@ Page({
     uploadUserImage(imagePath, 'avatar')
       .then(response => {
         if (response.data && response.data.imageUrl) {
-          const ossUrl = response.data.imageUrl
-          console.log('头像上传OSS成功:', ossUrl)
+          const ossUrl = response.data.imageUrl
           
           // 更新用户信息
           const userInfo = { ...this.data.userInfo }
@@ -165,9 +162,7 @@ Page({
           app.globalData.userInfo.avatar = ossUrl
           app.globalData.userInfo.hasCustomAvatar = true
           app.globalData.userInfo.nickname = app.globalData.userInfo.nickname || storedUserInfo.nickname
-          app.globalData.userInfo.id = app.globalData.userInfo.id || storedUserInfo.id
-          
-          console.log('头像上传后更新的用户信息:', app.globalData.userInfo)
+          app.globalData.userInfo.id = app.globalData.userInfo.id || storedUserInfo.id
 
           // 同时更新后端数据库中的头像URL
           this.updateAvatarToServer(ossUrl)
@@ -178,16 +173,14 @@ Page({
           })
         }
       })
-      .catch(error => {
-        console.error('头像上传失败:', error)
+      .catch(error => {
         this.setData({ isUploadingAvatar: false })
         
         // 上传失败时，尝试使用本地保存作为备用方案
         wx.saveFile({
           tempFilePath: imagePath,
           success: (res) => {
-            const savedFilePath = res.savedFilePath
-            console.log('头像本地保存成功:', savedFilePath)
+            const savedFilePath = res.savedFilePath
             
             // 更新用户信息
             const userInfo = { ...this.data.userInfo }
@@ -231,15 +224,12 @@ Page({
     const { authAPI } = require('../../utils/api.js')
     
     // 获取当前用户ID
-    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
-    console.log('准备更新头像到服务器 - 用户ID:', userId, '头像URL:', avatarUrl)
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
     
     authAPI.updateAvatar(avatarUrl, userId)
-      .then(result => {
-        console.log('头像URL已同步到服务器:', avatarUrl)
+      .then(result => {
       })
-      .catch(error => {
-        console.error('同步头像URL到服务器失败:', error)
+      .catch(error => {
         // 不影响用户体验，静默失败
       })
   },
@@ -247,14 +237,12 @@ Page({
   // 上传头像到服务器（旧方法，保留兼容性）
   uploadAvatarToServer(filePath) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.log('用户ID不存在，跳过服务器上传')
+    if (!userId) {
       return
     }
 
     // 这里可以调用文件上传接口
-    // walletAPI.uploadAvatar(userId, filePath)
-    console.log('头像上传到服务器功能待实现')
+    // walletAPI.uploadAvatar(userId, filePath)
   },
 
   // 删除头像
@@ -392,18 +380,15 @@ Page({
   // 保存用户信息到服务器
   saveUserInfoToServer(userInfo) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.log('用户ID不存在，跳过服务器保存')
+    if (!userId) {
       return
     }
 
     // 调用API保存用户信息
     walletAPI.updateUserInfo(userId, userInfo)
-      .then(result => {
-        console.log('用户信息保存结果:', result.message || '保存成功')
+      .then(result => {
       })
-      .catch(error => {
-        console.log('用户信息保存失败:', error.message)
+      .catch(error => {
         // 其他类型的错误（非404）才需要特殊处理
       })
   },
@@ -459,17 +444,14 @@ Page({
   // 保存设置到服务器
   saveSettingsToServer(settings) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.log('用户ID不存在，跳过服务器保存')
+    if (!userId) {
       return
     }
 
     walletAPI.updateUserSettings(userId, settings)
-      .then(result => {
-        console.log('设置保存结果:', result.message || '保存成功')
+      .then(result => {
       })
-      .catch(error => {
-        console.log('设置保存失败:', error.message)
+      .catch(error => {
         this.setData({ isSaving: false })
       })
   },

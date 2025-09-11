@@ -47,16 +47,16 @@ Page({
   // 选择伴侣
   selectPartner(e) {
     const partnerId = parseInt(e.currentTarget.dataset.id)
-    console.log('selectPartner clicked, partnerId:', partnerId)
+
     this.setData({
       selectedPartnerId: partnerId
     })
-    console.log('selectedPartnerId after setData:', this.data.selectedPartnerId)
+
   },
 
   // 确认选择
   confirmSelection() {
-    console.log('confirmSelection clicked, selectedPartnerId:', this.data.selectedPartnerId)
+
     const { selectedPartnerId, partners } = this.data
     const selectedPartner = partners.find(p => p.id === selectedPartnerId)
     

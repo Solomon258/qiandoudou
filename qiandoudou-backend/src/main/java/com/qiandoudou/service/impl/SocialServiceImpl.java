@@ -13,6 +13,8 @@ import com.qiandoudou.mapper.WalletViewMapper;
 import com.qiandoudou.service.AiPartnerService;
 import com.qiandoudou.entity.WalletView;
 import com.qiandoudou.service.SocialService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,8 @@ import java.time.format.DateTimeFormatter;
  */
 @Service
 public class SocialServiceImpl implements SocialService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(SocialServiceImpl.class);
     
     @Autowired
     private NotificationMapper notificationMapper;
@@ -264,7 +268,7 @@ public class SocialServiceImpl implements SocialService {
     @Transactional
     public Map<String, Object> aiCommentTransaction(Long transactionId, String content, Long aiPartnerId, String voiceUrl) {
         try {
-            System.out.println("开始处理AI评论: aiPartnerId=" + aiPartnerId + ", transactionId=" + transactionId + ", content=" + content);
+            logger.info("处理AI评论，交易ID: {}", transactionId);
             
             // 获取AI伴侣信息
             com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
@@ -280,7 +284,7 @@ public class SocialServiceImpl implements SocialService {
             postComment.setIsAiComment(1); // 标记为AI评论
             
             postCommentMapper.insert(postComment);
-            System.out.println("AI评论记录插入成功，ID: " + postComment.getId());
+            logger.info("AI评论记录插入成功");
             
             // 2. 返回新创建的AI评论信息
             Map<String, Object> comment = new HashMap<>();
@@ -301,7 +305,7 @@ public class SocialServiceImpl implements SocialService {
             comment.put("user_avatar", aiPartner.getAvatar());
             comment.put("userAvatar", aiPartner.getAvatar());
             
-            System.out.println("AI伴侣 " + aiPartner.getName() + " 成功评论了交易 " + transactionId + ": " + content);
+            logger.info("AI伴侣评论成功，交易ID: {}", transactionId);
             
             return comment;
         } catch (Exception e) {

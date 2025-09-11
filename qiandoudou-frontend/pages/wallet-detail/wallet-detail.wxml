@@ -1,12 +1,12 @@
 <!--pages/wallet-detail/wallet-detail.wxml-->
 <view class="container" bindtap="onPageTap">
-  <!-- 顶部钱包背景区域 -->
+  <!-- 顶部钱兜兜背景区域 -->
   <view class="wallet-header-section">
     <!-- 背景图片和遮罩 -->
     <view class="wallet-background" style="{{walletBackgroundStyle}}" bindtap="{{isOwnWallet ? 'showBackgroundModal' : ''}}">
       <view class="background-overlay"></view>
       
-      <!-- 背景点击提示（只在自己钱包时显示） -->
+      <!-- 背景点击提示（只在自己钱兜兜时显示） -->
       <view wx:if="{{showBackgroundHint && isOwnWallet}}" class="background-hint">
         <text class="hint-text">点击更换背景</text>
       </view>
@@ -20,6 +20,10 @@
           <text class="user-title" bindtap="{{isOwnWallet ? 'editWalletName' : ''}}">{{wallet.name || '钱兜兜'}}💗</text>
           <text class="user-tags">#{{wallet.type === 2 ? '情侣' : '个人'}} #攒钱 #{{wallet.ai_partner_name || '理财'}}</text>
           <text class="user-desc">{{wallet.owner_nickname || wallet.name || '用户'}}的钱兜兜，当前余额 ¥{{wallet.balance || '0.00'}}</text>
+        </view>
+        <!-- 设置按钮（在背景图左下角，仅自己的钱兜兜显示） -->
+        <view wx:if="{{isOwnWallet}}" class="settings-button-corner">
+          <text class="settings-btn-icon" bindtap="showWalletSettings">设置</text>
         </view>
       </view>
       
@@ -70,35 +74,32 @@
       </view>
     </view>
     
-    <!-- 第二行：剧本攒和设置 -->
+    <!-- 第二行：剧本攒 -->
     <view class="script-button-row">
-      <view class="script-btn" bindtap="goToScripts">
+      <view class="script-btn-full" bindtap="goToScripts">
         <text class="script-btn-text">剧本攒</text>
-      </view>
-      <view class="settings-btn" bindtap="showWalletSettings">
-        <text class="settings-btn-text">设置</text>
       </view>
     </view>
   </view>
   
 
   
-  <!-- 剧本推广卡片（只在自己钱包时显示） -->
+  <!-- 剧本推广卡片（只在自己钱兜兜时显示） -->
   <view wx:if="{{showPromoCard && isOwnWallet}}" class="script-promotion">
     <view class="promo-card">
       <view class="promo-image-placeholder">
-        <text class="image-icon">🎮</text>
+        <image class="promo-image" src="{{ 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/ac089b4511b647509606f082acee161b.png'}}" mode="aspectFill" />
       </view>
       <view class="promo-content">
-        <text class="promo-title">超级玛丽多恋爱小事</text>
-        <text class="promo-desc">打卡超级玛丽多</text>
+        <text class="promo-title">{{scriptInfo.title || '重新养小时候的自己'}}</text>
+        <text class="promo-desc">第{{userScriptProgress.currentChapter || 1}}集已更新，问谁日常</text>
       </view>
       <view class="promo-action">
         <view class="close-btn" bindtap="closePromo">
           <text class="close-icon">×</text>
         </view>
-        <view class="action-btn-promo">
-          <text class="action-text">去闯关</text>
+        <view class="action-btn-promo" bindtap="goToScriptChapter">
+          <text class="action-text">跟剧情</text>
         </view>
       </view>
     </view>
@@ -113,7 +114,7 @@
       <view class="tab-item {{activeTab === 'bill' ? 'active' : ''}}" bindtap="{{isOwnWallet ? 'switchTab' : ''}}" data-tab="bill">
         <text class="tab-text">账单</text>
       </view>
-      <!-- 统计标签（只在自己钱包时显示） -->
+      <!-- 统计标签（只在自己钱兜兜时显示） -->
       <view wx:if="{{isOwnWallet}}" class="tab-item {{activeTab === 'stats' ? 'active' : ''}}" bindtap="switchTab" data-tab="stats">
         <text class="tab-text">统计</text>
       </view>
@@ -133,7 +134,7 @@
             <text wx:else class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
           </view>
           <view class="transaction-info">
-            <!-- 标题单独一行，加粗 - 显示AI伴侣名称或钱包名称 -->
+            <!-- 标题单独一行，加粗 - 显示AI伴侣名称或钱兜兜名称 -->
             <view class="title-row">
               <text class="transaction-title">{{item.isAiTransaction ? item.aiPartnerName : (wallet.name || '钱兜兜')}}</text>
               <view class="transaction-amount">
@@ -260,8 +261,6 @@
             </view>
           </view>
         </view>
-     
-
         <!-- 加载状态 -->
         <view wx:if="{{statsLoading}}" class="stats-loading">
           <text class="loading-text">加载中...</text>
@@ -312,7 +311,7 @@
   <view wx:if="{{showBackgroundModal}}" class="modal-overlay" bindtap="hideBackgroundModal">
     <view class="modal-content background-modal" catchtap="stopPropagation">
       <view class="modal-header">
-        <text class="modal-title">更换钱包背景</text>
+        <text class="modal-title">更换钱兜兜背景</text>
         <text class="modal-close" bindtap="hideBackgroundModal">×</text>
       </view>
       
@@ -357,16 +356,16 @@
   <view wx:if="{{showNameEditModal}}" class="modal-overlay" bindtap="hideNameEditModal">
     <view class="modal-content name-edit-modal" catchtap="stopPropagation">
       <view class="modal-header">
-        <text class="modal-title">修改钱包名称</text>
+        <text class="modal-title">修改钱兜兜名称</text>
         <text class="modal-close" bindtap="hideNameEditModal">×</text>
       </view>
       
       <view class="modal-body">
         <view class="form-item">
-          <text class="form-label">钱包名称</text>
+          <text class="form-label">钱兜兜名称</text>
           <input class="form-input" 
                  type="text" 
-                 placeholder="请输入钱包名称" 
+                 placeholder="请输入钱兜兜名称" 
                  value="{{editingName}}" 
                  bindinput="onNameInput" 
                  maxlength="20" />
@@ -435,7 +434,7 @@
   <view wx:if="{{showWalletSettings}}" class="modal-overlay" bindtap="hideWalletSettings">
     <view class="wallet-settings-modal" catchtap="stopPropagation">
       <view class="settings-header">
-        <text class="settings-title">钱包设置</text>
+        <text class="settings-title">钱兜兜设置</text>
         <view class="close-settings-btn" bindtap="hideWalletSettings">×</view>
       </view>
       
@@ -444,7 +443,7 @@
         <view class="setting-item">
           <view class="setting-info">
             <text class="setting-label">在兜圈圈中公开显示</text>
-            <text class="setting-desc">开启后，其他用户可以在兜圈圈中看到你的钱包动态</text>
+            <text class="setting-desc">开启后，其他用户可以在兜圈圈中看到你的钱兜兜动态</text>
           </view>
           <switch class="setting-switch" 
                   checked="{{wallet.is_public === 1}}" 
@@ -454,7 +453,7 @@
         <!-- 其他设置项可以在这里添加 -->
         <view class="setting-item">
           <view class="setting-info">
-            <text class="setting-label">钱包名称</text>
+            <text class="setting-label">钱兜兜名称</text>
             <text class="setting-desc">{{wallet.name || '钱兜兜'}}</text>
           </view>
           <text class="setting-action" bindtap="editWalletName">修改</text>

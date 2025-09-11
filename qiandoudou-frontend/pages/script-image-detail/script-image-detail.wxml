@@ -16,9 +16,10 @@
         <view class="script-empty"></view>
         <view class="chapter-selector">
           <view wx:for="{{selectedScript.totalChapters}}" wx:key="index" 
-                class="chapter-item {{currentChapter == (index + 1) ? 'active' : ''}}"
+                class="chapter-item {{currentChapter == (index + 1) ? 'active' : ''}} {{(index + 1) > (userProgress.currentChapter || 1) ? 'locked' : ''}}"
                 data-chapter="{{index + 1}}" bindtap="selectChapter">
             {{index + 1}}
+            <view wx:if="{{(index + 1) > (userProgress.currentChapter || 1)}}" class="lock-icon">🔒</view>
           </view>
         </view>
       </view>
@@ -30,8 +31,8 @@
     <!-- 章节标题和状态 -->
     <view class="chapter-header">
       <view class="chapter-title">第{{currentChapter}}集 {{chapterContent.title}}</view>
-      <view class="chapter-status {{userProgress.status === 2 && currentChapter <= userProgress.currentChapter ? 'completed' : 'pending'}}">
-        {{userProgress.status === 2 && currentChapter <= userProgress.currentChapter ? '已完成' : '未完成'}}
+      <view class="chapter-status {{currentChapter < userProgress.currentChapter ? 'completed' : 'pending'}}">
+        {{currentChapter < userProgress.currentChapter ? '已完成' : '未完成'}}
       </view>
     </view>
 
@@ -65,10 +66,5 @@
         向钱兜兜转入
       </button>
     </view>
-  </view>
-
-  <!-- 返回按钮 -->
-  <view class="back-button" bindtap="goBackToWallet">
-    <text>返回钱包</text>
   </view>
 </view>

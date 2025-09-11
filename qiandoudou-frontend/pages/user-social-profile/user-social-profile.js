@@ -27,8 +27,7 @@ Page({
     if (userId) {
       this.setData({ userId })
       this.loadUserData(userId)
-    } else {
-      console.error('用户ID不存在')
+    } else {
       wx.showToast({
         title: '用户信息获取失败',
         icon: 'none'
@@ -53,18 +52,13 @@ Page({
         avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
         description: userInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
-      }
-      
-      console.log('从本地加载用户信息:', displayUserInfo)
-      console.log('头像URL:', displayUserInfo.avatar)
-      console.log('是否自定义头像:', displayUserInfo.hasCustomAvatar)
+      }
       
       this.setData({
         userInfo: displayUserInfo
       })
     } else {
-      // 本地用户信息为空，尝试从后端获取
-      console.log('本地用户信息为空，尝试从后端获取...')
+      // 本地用户信息为空，尝试从后端获取
       this.loadUserInfoFromServer()
     }
   },
@@ -73,14 +67,15 @@ Page({
   loadUserInfoFromServer() {
     const { authAPI } = require('../../utils/api.js')
     
-    // 获取当前用户ID，如果没有则使用默认的test1用户ID
-    const userId = app.globalData.userInfo?.id || 1961688416014127106
-    console.log('从服务器获取用户信息，用户ID:', userId)
+    // 获取当前用户ID，如果没有用户ID则不加载
+    const userId = app.globalData.userInfo?.id
+    if (!userId) {
+      return
+    }
     
     authAPI.getCurrentUser(userId)
       .then(result => {
-        const serverUserInfo = result.data
-        console.log('从服务器获取用户信息:', serverUserInfo)
+        const serverUserInfo = result.data
         
         // 设置用户信息
         const displayUserInfo = {
@@ -97,12 +92,9 @@ Page({
         
         // 同步到本地存储和全局数据
         wx.setStorageSync('userInfo', displayUserInfo)
-        app.globalData.userInfo = displayUserInfo
-        
-        console.log('用户信息已同步到本地:', displayUserInfo)
+        app.globalData.userInfo = displayUserInfo
       })
-      .catch(error => {
-        console.error('从服务器获取用户信息失败:', error)
+      .catch(error => {
         
         // 使用默认用户信息
         const defaultUserInfo = {
@@ -115,15 +107,12 @@ Page({
         
         this.setData({
           userInfo: defaultUserInfo
-        })
-        
-        console.log('使用默认用户信息:', defaultUserInfo)
+        })
       })
   },
 
   // 加载用户数据
-  loadUserData(userId) {
-    console.log('开始加载用户数据:', userId)
+  loadUserData(userId) {
     this.setData({ loading: true })
     
     // 并行加载公开钱包和关注钱包
@@ -132,10 +121,8 @@ Page({
       this.loadFollowedWallets(userId),
       this.loadSocialStats(userId)
     ]).then(() => {
-      this.setData({ loading: false })
-      console.log('用户数据加载完成')
-    }).catch(error => {
-      console.error('加载用户数据失败:', error)
+      this.setData({ loading: false })
+    }).catch(error => {
       this.setData({ loading: false })
       wx.showToast({
         title: '数据加载失败',
@@ -169,12 +156,10 @@ Page({
           }
         })
         
-        this.setData({ publicWallets })
-        console.log('公开钱包加载完成:', publicWallets)
+        this.setData({ publicWallets })
         return publicWallets
       })
-      .catch(error => {
-        console.error('加载公开钱包失败:', error)
+      .catch(error => {
         return []
       })
   },
@@ -198,12 +183,10 @@ Page({
           }
         })
         
-        this.setData({ followedWallets })
-        console.log('加载关注钱包完成:', followedWallets.length + ' 个钱包')
+        this.setData({ followedWallets })
         return followedWallets
       })
-      .catch(error => {
-        console.log('加载关注钱包失败:', error.message)
+      .catch(error => {
         
         // API失败时显示空列表
         this.setData({ followedWallets: [] })
@@ -227,12 +210,7 @@ Page({
           fansCount: 0, // 使用真实数据，新用户为0
           likesCount: 0  // 使用真实数据，新用户为0
         }
-      })
-      
-      console.log('社交统计更新:', {
-        followingCount: followedWalletsCount,
-        publicWalletsCount: publicWalletsCount
-      })
+      })
     }, 100)
     
     return Promise.resolve()
@@ -307,14 +285,7 @@ Page({
     if (wallet) {
       // 构建完整的跳转URL，传递必要的社交信息以访问真实数据
       // 确保新钱包的社交数据为0，不传递任何可能的模拟数据
-      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=0&likeCount=0&viewsCount=0`
-      
-      console.log('跳转到关注的钱包详情（真实数据）:', {
-        walletId,
-        ownerNickname: wallet.ownerNickname,
-        title: wallet.title,
-        fromSocial: true
-      })
+      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=0&likeCount=0&viewsCount=0`
       
       wx.navigateTo({
         url: url

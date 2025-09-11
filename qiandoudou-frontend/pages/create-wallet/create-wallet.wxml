@@ -2,16 +2,16 @@
 <view class="container">
   <view class="form">
     <view class="form-item">
-      <text class="form-label">钱包名称</text>
-      <input class="form-input" placeholder="请输入钱包名称" bindinput="onNameInput" value="{{name}}" />
+      <text class="form-label">钱兜兜名称</text>
+      <input class="form-input" placeholder="请输入钱兜兜名称" bindinput="onNameInput" value="{{name}}" />
     </view>
     
     <view class="form-item">
-      <text class="form-label">钱包类型</text>
+      <text class="form-label">钱兜兜类型</text>
       <view class="wallet-type-options">
         <view class="type-option {{walletType === 1 ? 'selected' : ''}}" bindtap="selectWalletType" data-type="1">
           <text class="type-icon">👤</text>
-          <text class="type-name">个人钱包</text>
+          <text class="type-name">个人钱兜兜</text>
           <text class="type-desc">独自管理资金</text>
         </view>
         <view class="type-option {{walletType === 2 ? 'selected' : ''}}" bindtap="selectWalletType" data-type="2">
@@ -22,7 +22,7 @@
       </view>
     </view>
 
-    <!-- AI伴侣选择（仅情侣钱包显示） -->
+    <!-- AI伴侣选择（仅情侣钱兜兜显示） -->
     <view wx:if="{{walletType === 2}}" class="form-item">
       <text class="form-label">选择AI伴侣</text>
       <view class="ai-partner-selector" bindtap="goToSelectPartner">
@@ -43,7 +43,7 @@
     </view>
     
     <button class="create-btn" bindtap="handleCreate" disabled="{{loading || (walletType === 2 && !selectedPartner)}}">
-      {{loading ? '创建中...' : '创建钱包'}}
+      {{loading ? '创建中...' : '创建钱兜兜'}}
     </button>
   </view>
 </view>

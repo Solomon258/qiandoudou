@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": ""
+  "usingComponents": {
+    "share-modal": "/components/share-modal/share-modal"
+  },
+  "navigationBarTitleText": "剧本攒"
 }

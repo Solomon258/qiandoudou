@@ -65,8 +65,7 @@ Page({
 
   onLoad(options) {
     // 检查登录状态
-    if (!app.isLoggedIn()) {
-      console.log('用户未登录，尝试使用测试用户信息')
+    if (!app.isLoggedIn()) {
       // 为了测试，设置一个模拟用户
       const testUser = {
         id: 1,
@@ -74,31 +73,26 @@ Page({
         nickname: '测试用户',
         phone: '13800138000'
       }
-      app.setLoginInfo('test-token', testUser)
-      console.log('设置测试用户信息:', testUser)
-    } else {
-      console.log('用户已登录:', app.globalData.userInfo)
+      app.setLoginInfo('test-token', testUser)
+    } else {
     }
   },
 
   // 处理下方轮播滑动
   onSwiperChange(e) {
     // 添加边界检查，确保 e 存在
-    if (!e) {
-      console.error('事件对象未定义');
+    if (!e) {
       return;
     }
     
-    const current = e.detail?.current ?? 0;
-    console.log('当前索引:', current);
+    const current = e.detail?.current ?? 0;
     this.setData({
       currentIndex: current
     });
   },
 
   // 点击头像切换
-  onAvatarTap(e) {
-    console.log('当前索引:', e);
+  onAvatarTap(e) {
     const index = e.currentTarget.dataset.index
     this.setData({
       currentIndex: index
@@ -145,10 +139,9 @@ Page({
     })
     
     // 使用后端API创建情侣钱包
-    walletAPI.createWallet(userId, walletName, 2, 'gradient2', partner.id)
+    walletAPI.createWallet(userId, walletName, 2, null, partner.id)
       .then(result => {
-        const newWallet = result.data
-        console.log('钱包创建成功:', newWallet)
+        const newWallet = result.data
         
         // 让AI伴侣自动转入0.01元
         return this.aiPartnerTransferIn(newWallet.id, partner)
@@ -169,8 +162,7 @@ Page({
         }, 2000)
       })
       .catch(error => {
-        wx.hideLoading()
-        console.error('创建情侣钱包失败:', error)
+        wx.hideLoading()
         wx.showToast({
           title: error.message || '创建钱包失败',
           icon: 'none'
@@ -196,17 +188,16 @@ Page({
     // 检查walletAPI对象
     
     // 如果方法不存在，使用临时的直接API调用
-    if (typeof walletAPI.aiPartnerTransferIn !== 'function') {
-      console.log('aiPartnerTransferIn方法不存在，使用直接API调用')
-      return this.directAiPartnerTransfer(walletId, partner.id, 0.01, randomMessage, partner.name, partner.avatar)
+    if (typeof walletAPI.aiPartnerTransferIn !== 'function') {
+      return this.directAiPartnerTransfer(walletId, partner.id, 0.01, randomMessage, partner.name, partner.avatar, partner.name)
     }
     
-    // 调用AI伴侣转账API
-    return walletAPI.aiPartnerTransferIn(walletId, partner.id, 0.01, randomMessage, partner.name, partner.avatar)
+    // 调用AI伴侣转账API，传入人物名称用于TTS声音选择
+    return walletAPI.aiPartnerTransferIn(walletId, partner.id, 0.01, randomMessage, partner.name, partner.avatar, partner.name)
   },
 
   // 直接API调用（临时解决方案）
-  directAiPartnerTransfer(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar) {
+  directAiPartnerTransfer(walletId, aiPartnerId, amount, message, aiPartnerName, aiPartnerAvatar, characterName) {
     return request({
       url: '/wallet/ai-partner-transfer',
       method: 'POST',
@@ -216,7 +207,8 @@ Page({
         amount, 
         message, 
         aiPartnerName, 
-        aiPartnerAvatar 
+        aiPartnerAvatar,
+        characterName  // 新增人物名称参数
       }
     })
   }

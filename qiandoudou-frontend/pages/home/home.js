@@ -1,6 +1,6 @@
 // pages/home/home.js
 const app = getApp()
-const { walletAPI } = require('../../utils/api.js')
+const { walletAPI, shareImageAPI } = require('../../utils/api.js')
 
 Page({
   data: {
@@ -14,7 +14,9 @@ Page({
     showWalletTypeModal: false,
     selectedWalletType: '',
     isFirstTimeUser: false, // 是否为首次使用用户
-    unreadMessageCount: 0 // 未读消息数量
+    unreadMessageCount: 0, // 未读消息数量
+    showShareModal: false, // 是否显示分享弹窗
+    shareImageUrl: '' // 分享图片地址
   },
 
   onLoad() {
@@ -30,7 +32,7 @@ Page({
       userInfo: app.globalData.userInfo
     })
 
-    // 加载钱包数据
+    // 加载钱兜兜数据
     this.loadData()
     
     // 加载未读消息数量
@@ -39,15 +41,13 @@ Page({
 
   onShow() {
     // 每次显示页面时刷新数据
-    if (app.isLoggedIn()) {
-      console.log('首页显示，刷新数据')
+    if (app.isLoggedIn()) {
       this.loadData()
       
-      // 强制刷新钱包列表以获取最新的背景设置
+      // 强制刷新钱兜兜列表以获取最新的背景设置
       this.loadWallets()
       
-      // 强制刷新社交数据
-      console.log('强制刷新社交数据')
+      // 强制刷新社交数据
       this.loadPosts()
       
       // 加载未读消息数量
@@ -75,23 +75,31 @@ Page({
     }, 1000)
   },
 
-  // 加载钱包列表
+  // 加载钱兜兜列表
   loadWallets() {
-    const userId = app.globalData.userInfo?.id
-    if (!userId) {
-      console.error('用户ID不存在')
+    const userId = app.globalData.userInfo?.id
+    
+    if (!userId) {
+      const localUserInfo = wx.getStorageSync('userInfo')
+      
+      if (localUserInfo && localUserInfo.id) {
+        app.globalData.userInfo = localUserInfo
+        this.loadWallets() // 递归调用
+        return
+      }
+      wx.redirectTo({
+        url: '/pages/login/login'
+      })
       return
-    }
-
+    }
     this.setData({ loading: true })
 
     walletAPI.getUserWallets(userId)
-      .then(result => {
-        const wallets = result.data || []
+      .then(result => {
+        const wallets = result.data || []
         
         // 检查是否为新用户（没有钱包）
-        if (wallets.length === 0) {
-          console.log('新用户没有钱包，显示欢迎界面和选择弹框')
+        if (wallets.length === 0) {
           this.setData({
             loading: false,
             isFirstTimeUser: true,
@@ -129,11 +137,12 @@ Page({
           this.loadPosts()
         }
       })
-      .catch(error => {
-        console.error('加载钱包失败:', error)
+      .catch(error => {
+        
         wx.showToast({
-          title: '加载钱包失败',
-          icon: 'none'
+          title: '加载钱包失败: ' + (error.message || '未知错误'),
+          icon: 'none',
+          duration: 3000
         })
         this.setData({ loading: false })
       })
@@ -166,8 +175,7 @@ Page({
             transactions: formattedTransactions
           })
         })
-        .catch(error => {
-          console.error('加载交易记录失败:', error)
+        .catch(error => {
           // 如果加载失败，显示空数组
           this.setData({
             transactions: []
@@ -201,10 +209,6 @@ Page({
       url: `/pages/wallet-detail/wallet-detail?id=${walletId}`
     })
   },
-
-
-
-
 
   // 创建钱包
   handleCreateWallet() {
@@ -272,7 +276,7 @@ Page({
       '我的第一个钱兜兜' : 
       `我的钱包${this.data.wallets.length + 1}`
     
-    walletAPI.createWallet(userId, walletName, 1, 'gradient1', null)
+    walletAPI.createWallet(userId, walletName, 1, null, null)
       .then(result => {
         const newWallet = result.data
         
@@ -298,8 +302,7 @@ Page({
           icon: 'success'
         })
       })
-      .catch(error => {
-        console.error('创建钱包失败:', error)
+      .catch(error => {
         wx.showToast({
           title: error.message || '创建钱包失败',
           icon: 'none'
@@ -313,14 +316,12 @@ Page({
   },
 
   // 强制刷新钱包列表（供其他页面调用）
-  forceRefreshWallets() {
-    console.log('强制刷新钱包列表')
+  forceRefreshWallets() {
     this.loadWallets()
   },
 
   // 强制刷新社交数据（供调试使用）
-  forceRefreshSocial() {
-    console.log('强制刷新社交数据')
+  forceRefreshSocial() {
     this.loadPosts()
   },
 
@@ -361,11 +362,8 @@ Page({
       'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
   },
 
-
-
   // 跳转到用户个人社交圈主页
-  navigateToUserSocialProfile() {
-    console.log('🔥 从首页点击头像跳转到个人社交圈主页');
+  navigateToUserSocialProfile() {
     wx.navigateTo({
       url: '/pages/user-social-profile/user-social-profile'
     });
@@ -402,29 +400,20 @@ Page({
   },
 
   // 加载社交动态（公开钱包）
-  loadPosts() {
-    console.log('开始加载兜圈圈公开钱包数据...')
-    console.log('当前登录状态:', app.isLoggedIn())
-    console.log('当前用户信息:', app.globalData.userInfo)
-    console.log('当前token:', app.globalData.token ? '存在' : '不存在')
+  loadPosts() {
     
     walletAPI.getPublicWallets()
-      .then(result => {
-        console.log('API返回的完整结果:', result)
-        const publicWallets = result.data || []
-        console.log('获取到的公开钱包数量:', publicWallets.length)
-        console.log('获取到的公开钱包原始数据:', publicWallets)
+      .then(result => {
+        const publicWallets = result.data || []
         
         // 检查是否有数据
-        if (!publicWallets || publicWallets.length === 0) {
-          console.log('没有获取到公开钱包数据')
+        if (!publicWallets || publicWallets.length === 0) {
           this.setData({ posts: [] })
           return
         }
         
         // 将公开钱包数据转换为兜圈圈显示格式
-        const socialPosts = publicWallets.map((wallet, index) => {
-          console.log(`处理钱包${index + 1}:`, wallet)
+        const socialPosts = publicWallets.map((wallet, index) => {
           
           // 解析最新交易记录
           let recentTransactions = []
@@ -434,18 +423,14 @@ Page({
                 ? JSON.parse(wallet.recent_transactions) 
                 : wallet.recent_transactions
             }
-          } catch (e) {
-            console.log('解析交易记录失败:', e, '原始数据:', wallet.recent_transactions)
+          } catch (e) {
             recentTransactions = []
           }
           
           // 确保recentTransactions是数组
-          if (!Array.isArray(recentTransactions)) {
-            console.log('recentTransactions不是数组，重置为空数组:', recentTransactions)
+          if (!Array.isArray(recentTransactions)) {
             recentTransactions = []
-          }
-          
-          console.log(`钱包${index + 1}的交易记录:`, recentTransactions)
+          }
           
           // 处理钱包类型（可能是布尔值或数字）
           const walletType = wallet.type === true || wallet.type === 'true' || wallet.type === 2 ? 2 : 1
@@ -478,38 +463,19 @@ Page({
               comment: transaction.note || transaction.description || '无备注',
               create_time: this.formatTime(transaction.create_time)
             }))
-          }
-          
-          console.log(`钱包${index + 1}转换后的数据:`, socialPost)
+          }
           return socialPost
-        }).filter(post => post && post.id) // 过滤掉无效的钱包数据
+        }).filter(post => post && post.id) // 过滤掉无效的钱包数据
         
-        console.log('转换后的社交动态数据:', socialPosts)
-        console.log('有效钱包数量:', socialPosts.length)
-        
-        if (socialPosts.length === 0) {
-          console.log('没有有效的公开钱包数据')
+        if (socialPosts.length === 0) {
           this.setData({ posts: [] })
           return
-        }
-        
-        console.log('每个钱包的详细信息:')
-        socialPosts.forEach((post, index) => {
-          console.log(`钱包${index + 1}:`, {
-            id: post.id,
-            title: post.title,
-            owner: post.owner_nickname,
-            balance: post.total_amount,
-            type: post.tags,
-            description: post.description,
-            transactions: post.recent_transactions.length
-          })
+        }
+        socialPosts.forEach((post, index) => {
         })
         this.setData({ posts: socialPosts })
       })
-      .catch(error => {
-        console.error('加载公开钱包失败:', error)
-        console.error('错误详情:', error.message)
+      .catch(error => {
         
         // 显示错误提示
         wx.showToast({
@@ -523,8 +489,7 @@ Page({
   },
 
   // 生成钱包描述
-  generateWalletDescription(wallet, transactions) {
-    console.log('生成钱包描述 - 钱包:', wallet, '交易:', transactions)
+  generateWalletDescription(wallet, transactions) {
     
     if (transactions && Array.isArray(transactions) && transactions.length > 0) {
       const latestTransaction = transactions[0]
@@ -571,8 +536,7 @@ Page({
         // 超过30天显示具体日期
         return `${time.getMonth() + 1}月${time.getDate()}日`
       }
-    } catch (e) {
-      console.error('时间格式化失败:', e, '原始时间:', timeStr)
+    } catch (e) {
       return '时间格式错误'
     }
   },
@@ -613,8 +577,7 @@ Page({
 
   // 切换标签页
   switchTab(e) {
-    const tab = e.currentTarget.dataset.tab
-    console.log('切换到标签页:', tab)
+    const tab = e.currentTarget.dataset.tab
     this.setData({
       currentTab: tab
     })
@@ -689,11 +652,9 @@ Page({
     walletAPI.getUnreadMessageCount(userId)
       .then(result => {
         const count = result.data || 0
-        this.setData({ unreadMessageCount: count })
-        console.log('未读消息数量:', count)
+        this.setData({ unreadMessageCount: count })
       })
-      .catch(error => {
-        console.log('获取未读消息数量失败:', error.message)
+      .catch(error => {
         // 不影响用户体验，默认为0
         this.setData({ unreadMessageCount: 0 })
       })
@@ -717,30 +678,23 @@ Page({
     }
 
     walletAPI.markMessagesAsRead(userId)
-      .then(result => {
-        console.log('消息标记为已读成功')
+      .then(result => {
         this.setData({ unreadMessageCount: 0 })
       })
-      .catch(error => {
-        console.log('标记消息已读失败:', error.message)
+      .catch(error => {
       })
   },
 
-  loadMorePosts() {
-    console.log('加载更多动态')
+  loadMorePosts() {
   },
 
   // 跳转到钱包详情页（从社交圈）
   goToWalletDetail(e) {
     const walletId = e.currentTarget.dataset.walletId
-    const postIndex = e.currentTarget.dataset.index
-    
-    console.log('从社交圈跳转到钱包详情页:', walletId, '类型:', typeof walletId)
-    console.log('帖子索引:', postIndex)
+    const postIndex = e.currentTarget.dataset.index
     
     // 获取完整的钱包信息
-    const post = this.data.posts.find(p => p.wallet_id == walletId)
-    console.log('找到的钱包信息:', post)
+    const post = this.data.posts.find(p => p.wallet_id == walletId)
     
     // 从社交圈跳转，使用wallet-detail页面但传递社交参数
     if (walletId) {
@@ -755,9 +709,7 @@ Page({
         const likeCount = 0  // 新钱包获赞数应该为0
         
         url += `&ownerNickname=${ownerNickname}&title=${title}&fansCount=${fansCount}&likeCount=${likeCount}`
-      }
-      
-      console.log('跳转URL:', url)
+      }
       
       wx.navigateTo({
         url: url
@@ -772,8 +724,7 @@ Page({
 
   // 处理图片加载错误
   handleImageError(e) {
-    const index = e.currentTarget.dataset.index
-    console.log('图片加载失败，索引:', index)
+    const index = e.currentTarget.dataset.index
     
     // 更新失败的图片为默认图片
     const posts = this.data.posts
@@ -784,26 +735,18 @@ Page({
   },
 
   // 测试API调用（调试用）
-  testAPICall() {
-    console.log('=== 开始测试API调用 ===')
-    console.log('登录状态:', app.isLoggedIn())
-    console.log('用户信息:', app.globalData.userInfo)
-    console.log('Token:', app.globalData.token)
+  testAPICall() {
     
     // 直接调用API
     walletAPI.getPublicWallets()
-      .then(result => {
-        console.log('=== API调用成功 ===')
-        console.log('完整结果:', result)
+      .then(result => {
         wx.showModal({
           title: 'API测试结果',
           content: `获取到${result.data ? result.data.length : 0}个公开钱包`,
           showCancel: false
         })
       })
-      .catch(error => {
-        console.error('=== API调用失败 ===')
-        console.error('错误:', error)
+      .catch(error => {
         wx.showModal({
           title: 'API测试失败',
           content: error.message || '未知错误',
@@ -835,8 +778,7 @@ Page({
               title: '存储空间已清理',
               icon: 'success'
             })
-          } catch (e) {
-            console.error('清理存储失败:', e)
+          } catch (e) {
             wx.showToast({
               title: '清理失败',
               icon: 'none'
@@ -845,5 +787,59 @@ Page({
         }
       }
     })
-  }
+  },
+
+  // 钱包分享
+  onWalletShare(e) {
+    const wallet = e.currentTarget.dataset.wallet
+    
+    wx.showLoading({
+      title: '加载分享图片...'
+    })
+    
+    // 获取钱兜兜分享图片
+    shareImageAPI.getWalletShareImage()
+      .then(result => {
+        wx.hideLoading()
+        
+        if (result.data && result.data.imageUrl) {
+          this.setData({
+            showShareModal: true,
+            shareImageUrl: result.data.imageUrl
+          })
+        } else {
+          wx.showToast({
+            title: '分享图片数据无效',
+            icon: 'none'
+          })
+        }
+      })
+      .catch(error => {
+        wx.hideLoading()
+        wx.showModal({
+          title: '分享功能错误',
+          content: `错误信息：${error.message || '未知错误'}`,
+          showCancel: false
+        })
+      })
+  },
+
+  // 关闭分享弹窗
+  onShareModalClose() {
+    this.setData({
+      showShareModal: false,
+      shareImageUrl: ''
+    })
+  },
+
+  // 分享图片保存回调
+  onShareImageSave(e) {
+    if (e.detail.success) {
+      // 保存成功后可以关闭弹窗
+      setTimeout(() => {
+        this.onShareModalClose()
+      }, 1000)
+    }
+  },
+
 })

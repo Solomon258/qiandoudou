@@ -1,0 +1,176 @@
+/* components/share-modal/share-modal.wxss */
+.share-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.share-modal-container {
+  position: relative;
+  width: 85vw;
+  max-width: 350px;
+  background-color: transparent;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-btn:active {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.close-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.share-image-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px 0 15px 0;
+  min-height: 400px;
+}
+
+.share-image {
+  width: 308px;
+  height: 520px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  display: block;
+  background-color: #ffffff;
+}
+
+/* 分享操作区域 */
+.share-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 15px;
+  background-color: transparent;
+  border-radius: 12px;
+  padding: 20px 15px 15px 15px;
+}
+
+/* 主要分享按钮（分享到朋友圈） */
+.primary-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007aff;
+  color: white;
+  border-radius: 25px;
+  padding: 12px 32px;
+  margin-bottom: 15px;
+  transition: background-color 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+.primary-share-btn:active {
+  background-color: #0056cc;
+}
+
+.primary-share-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.primary-share-text {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 其他分享选项容器 */
+.other-share-options {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* 单个分享选项 */
+.share-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  transition: opacity 0.2s;
+}
+
+.share-option:active {
+  opacity: 0.7;
+}
+
+.share-option-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
+}
+
+.share-option-text {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+}
+
+/* 状态提示样式 */
+.loading-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #666;
+  font-size: 14px;
+}
+
+.error-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #ff4444;
+  font-size: 14px;
+}
+
+.no-url-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}

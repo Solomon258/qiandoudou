@@ -175,7 +175,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (weChatConfig.isDevMode()) {
                 System.out.println("开发模式已启用，使用演示模式跳过IP白名单限制");
                 token = handleDemoWeChatLogin(code);
-                String openid = "demo_wx_" + code;
+                String openid = "demo_wx_fixed_user";
                 user = getUserByOpenid(openid);
             } else {
                 // 检查微信配置
@@ -184,14 +184,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     weChatConfig.getAppid().equals("your_wx_appid")) {
                     System.out.println("微信配置未正确设置，使用演示模式");
                     token = handleDemoWeChatLogin(code);
-                    String openid = "demo_wx_" + code;
+                    String openid = "demo_wx_fixed_user";
                     user = getUserByOpenid(openid);
                 } else {
-                    // 调用真实微信API
-                    token = wechatLogin(code);
-                    // 需要从微信API响应中获取openid来查找用户
-                    // 由于wechatLogin方法已经处理了用户创建，我们需要重构
-                    user = getLastCreatedWeChatUser(code);
+                    // 调用真实微信API - 使用统一处理方法
+                    Map<String, Object> wechatResult = handleRealWeChatLogin(code);
+                    token = (String) wechatResult.get("token");
+                    user = (User) wechatResult.get("user");
                 }
             }
             
@@ -208,27 +207,84 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
     
+    
     /**
-     * 获取最近创建的微信用户（临时方法，用于兼容现有逻辑）
+     * 处理真实微信登录（统一方法）
      */
-    private User getLastCreatedWeChatUser(String code) {
-        // 这是一个临时解决方案，实际应该重构wechatLogin方法来返回用户对象
-        // 目前先通过时间戳查找最近创建的用户
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.isNotNull(User::getOpenid)
-                   .orderByDesc(User::getCreateTime)
-                   .last("LIMIT 1");
-        return getOne(queryWrapper);
+    private Map<String, Object> handleRealWeChatLogin(String code) {
+        try {
+            System.out.println("处理真实微信登录，code: " + code);
+            
+            // 调用微信API获取openid和session_key
+            String url = String.format("%s?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+                    weChatConfig.getAuthUrl(),
+                    weChatConfig.getAppid(),
+                    weChatConfig.getSecret(),
+                    code);
+            
+            System.out.println("调用微信API: " + url.replaceAll("secret=[^&]+", "secret=***"));
+            
+            RestTemplate restTemplate = new RestTemplate();
+            String response = restTemplate.getForObject(url, String.class);
+            System.out.println("微信API响应: " + response);
+            
+            // 解析响应
+            ObjectMapper objectMapper = new ObjectMapper();
+            WeChatLoginResponse weChatResponse = objectMapper.readValue(response, WeChatLoginResponse.class);
+            
+            if (weChatResponse.getErrcode() != null && weChatResponse.getErrcode() != 0) {
+                throw new RuntimeException("微信API调用失败: " + weChatResponse.getErrmsg());
+            }
+            
+            // 检查是否获取到openid
+            if (!StringUtils.hasText(weChatResponse.getOpenid())) {
+                throw new RuntimeException("未获取到用户openid");
+            }
+            
+            String openid = weChatResponse.getOpenid();
+            System.out.println("获取到用户openid: " + openid);
+            
+            // 查找是否已有该openid的用户
+            User user = getUserByOpenid(openid);
+            
+            if (user == null) {
+                // 如果用户不存在，创建新用户
+                user = new User();
+                user.setUsername("wx_" + System.currentTimeMillis());
+                user.setNickname("微信用户");
+                user.setOpenid(openid);
+                user.setPassword(""); // 微信用户设置空密码
+                user.setAvatar("https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default_avatar.png");
+                save(user);
+                System.out.println("创建新用户: " + user.getId());
+            } else {
+                System.out.println("找到现有用户: " + user.getId());
+            }
+            
+            // 生成JWT token
+            String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+            System.out.println("生成token成功");
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            result.put("user", user);
+            
+            return result;
+        } catch (Exception e) {
+            System.err.println("真实微信登录异常: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("微信登录失败: " + e.getMessage());
+        }
     }
     
     /**
      * 演示模式的微信登录（用于开发测试）
      */
     private String handleDemoWeChatLogin(String code) {
-        System.out.println("使用演示模式处理微信登录");
+        System.out.println("使用演示模式处理微信登录，code: " + code);
         
-        // 生成演示openid
-        String openid = "demo_wx_" + code;
+        // 使用固定的演示openid，确保同一个微信用户每次登录都是同一个账号
+        String openid = "demo_wx_fixed_user";
         
         // 查找是否已有该openid的用户
         User user = getUserByOpenid(openid);
@@ -236,15 +292,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             // 如果用户不存在，创建新用户
             user = new User();
-            user.setUsername("wx_demo_" + System.currentTimeMillis());
-            user.setNickname("微信用户(演示)");
+            user.setUsername("wx_demo_user");
+            user.setNickname("微信演示用户");
             user.setOpenid(openid);
             user.setPassword(""); // 微信用户设置空密码
             user.setAvatar("https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default_avatar.png");
             save(user);
-            System.out.println("创建演示用户: " + user.getId());
+            System.out.println("创建固定演示用户: " + user.getId() + ", openid: " + openid);
         } else {
-            System.out.println("找到现有演示用户: " + user.getId());
+            System.out.println("找到现有演示用户: " + user.getId() + ", openid: " + openid);
         }
         
         // 生成JWT token

@@ -20,4 +20,12 @@ public interface TtsService {
      * @return 语音文件的字节数组
      */
     byte[] generateVoice(String text, String voiceType);
+
+    /**
+     * 根据人物名称生成语音文件并上传
+     * @param text 要转换的文本
+     * @param characterName 人物名称
+     * @return 语音文件在静态资源库中的URL
+     */
+    String generateVoiceByCharacterName(String text, String characterName);
 }

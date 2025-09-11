@@ -63,8 +63,7 @@ Page({
 
   // 加载用户资料
   loadUserProfile() {
-    const userId = parseInt(this.data.userId)
-    console.log('加载用户资料，userId:', userId)
+    const userId = parseInt(this.data.userId)
     
     // 首先尝试从本地存储获取用户信息（包括头像）
     const localUserInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
@@ -78,9 +77,7 @@ Page({
         description: localUserInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(localUserInfo.avatar && localUserInfo.hasCustomAvatar),
         tags: ['成长', '生活']
-      }
-      
-      console.log('使用本地用户数据（含头像）:', userInfo)
+      }
       this.setData({ userInfo })
       return
     }
@@ -117,20 +114,15 @@ Page({
       description: '07年小女生从2025.2.1开始存钱 目标…',
       hasCustomAvatar: false,
       tags: ['成长', '生活']
-    }
-    
-    console.log('使用模拟用户数据:', userInfo)
+    }
     this.setData({ userInfo })
   },
 
   // 加载钱包详情
   loadWalletDetail() {
-    if (!this.data.walletId) {
-      console.error('钱包ID不存在')
+    if (!this.data.walletId) {
       return
-    }
-
-    console.log('加载用户详情页钱包数据，walletId:', this.data.walletId)
+    }
 
     // 根据walletId使用不同的模拟数据
     const mockWallets = {
@@ -168,9 +160,7 @@ Page({
       type: 1,
       backgroundImage: 'gradient1',
       description: '07年小女生从2025.2.1开始存钱 目标…'
-    }
-
-    console.log('使用模拟钱包数据:', mockWallet)
+    }
     
     this.setData({ wallet: mockWallet })
     this.updateWalletBackgroundStyle()
@@ -219,15 +209,12 @@ Page({
 
   // 加载社交统计数据
   loadSocialStats() {
-    const walletId = parseInt(this.data.walletId)
-    console.log('加载用户详情页社交统计数据，walletId:', walletId)
+    const walletId = parseInt(this.data.walletId)
     
     // 根据钱包ID生成固定的社交数据（与social页面保持一致）
     // 移除硬编码的测试数据，统一使用真实的0值
     const defaultStats = { fansCount: 0, likesCount: 0, viewsCount: 0 }
-    const socialStats = defaultStats
-    
-    console.log('设置用户详情页社交统计数据:', socialStats)
+    const socialStats = defaultStats
     
     this.setData({ 
       socialStats: socialStats,
@@ -305,9 +292,7 @@ Page({
         icon: 'none'
       })
       return
-    }
-    
-    console.log('用户详情页关注状态切换:', currentFollowing, '->', newFollowing)
+    }
     
     // 先获取钱包所有者ID，然后进行关注操作
     walletAPI.getWalletOwnerId(walletId)
@@ -332,8 +317,7 @@ Page({
         
         return apiCall
       })
-      .then(result => {
-        console.log(newFollowing ? '关注成功' : '取消关注成功', result)
+      .then(result => {
         
         // 重新加载社交统计数据
         this.loadSocialStats()
@@ -345,8 +329,7 @@ Page({
           duration: 1500
         })
       })
-      .catch(error => {
-        console.error('关注操作失败:', error)
+      .catch(error => {
         
         // 恢复之前的状态
         this.setData({ isFollowing: currentFollowing })
@@ -400,12 +383,10 @@ Page({
       .then(result => {
         if (result) {
           const isFollowing = result.data || false
-          this.setData({ isFollowing })
-          console.log('关注状态检查完成:', isFollowing)
+          this.setData({ isFollowing })
         }
       })
-      .catch(error => {
-        console.log('检查关注状态失败:', error.message)
+      .catch(error => {
         this.setData({ isFollowing: false })
       })
   },

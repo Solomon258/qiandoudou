@@ -48,6 +48,18 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         wallet.setName(name);
         wallet.setType(type);
         wallet.setBalance(BigDecimal.ZERO);
+        
+        // 根据钱包类型设置默认背景图，如果没有传入背景图的话
+        if (backgroundImage == null || backgroundImage.trim().isEmpty()) {
+            if (type == 1) {
+                // 个人钱包（自己攒钱）
+                backgroundImage = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/view.jpg";
+            } else if (type == 2) {
+                // 情侣钱包
+                backgroundImage = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/lover.jpg";
+            }
+        }
+        
         wallet.setBackgroundImage(backgroundImage);
         wallet.setAiPartnerId(aiPartnerId);
         wallet.setIsPublic(1); // 修改：默认公开到社交圈
@@ -197,7 +209,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
 
     @Override
     @Transactional
-    public void aiPartnerTransfer(Long walletId, Long aiPartnerId, BigDecimal amount, String message, String aiPartnerName, String aiPartnerAvatar) {
+    public void aiPartnerTransfer(Long walletId, Long aiPartnerId, BigDecimal amount, String message, String aiPartnerName, String aiPartnerAvatar, String characterName) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("转入金额必须大于0");
         }
@@ -227,9 +239,14 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             aiGeneratedMessage = aiService.generatePartnerComment(aiPartnerId, postContent);
             logger.info("AI伴侣评论生成成功: {}", aiGeneratedMessage);
             
-            // 生成语音
-            logger.info("开始调用TTS服务生成语音");
-            voiceUrl = aiService.generatePartnerVoice(aiPartnerId, aiGeneratedMessage);
+            // 生成语音 - 使用人物名称
+            logger.info("开始调用TTS服务生成语音，人物名称: {}", characterName);
+            if (characterName != null && !characterName.trim().isEmpty()) {
+                voiceUrl = aiService.generatePartnerVoiceByCharacterName(characterName, aiGeneratedMessage);
+            } else {
+                // 如果没有提供人物名称，回退到原来的方法
+                voiceUrl = aiService.generatePartnerVoice(aiPartnerId, aiGeneratedMessage);
+            }
             if (voiceUrl != null) {
                 logger.info("TTS语音生成成功，URL: {}", voiceUrl);
             } else {

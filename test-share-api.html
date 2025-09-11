@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试分享API</title>
+</head>
+<body>
+    <h1>测试分享API</h1>
+    
+    <button onclick="testWalletShare()">测试钱包分享API</button>
+    <button onclick="testScriptShare(1)">测试剧本1分享API</button>
+    <button onclick="testScriptShare(2)">测试剧本2分享API</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080/api';
+        
+        function testWalletShare() {
+            console.log('测试钱包分享API...');
+            fetch(`${BASE_URL}/share/wallet`)
+                .then(response => {
+                    console.log('响应状态:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('钱包分享API响应:', data);
+                    document.getElementById('result').innerHTML = 
+                        '<h3>钱包分享API结果:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    console.error('钱包分享API错误:', error);
+                    document.getElementById('result').innerHTML = 
+                        '<h3>钱包分享API错误:</h3><pre>' + error.message + '</pre>';
+                });
+        }
+        
+        function testScriptShare(scriptId) {
+            console.log(`测试剧本${scriptId}分享API...`);
+            fetch(`${BASE_URL}/share/script/${scriptId}`)
+                .then(response => {
+                    console.log('响应状态:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`剧本${scriptId}分享API响应:`, data);
+                    document.getElementById('result').innerHTML = 
+                        `<h3>剧本${scriptId}分享API结果:</h3><pre>` + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    console.error(`剧本${scriptId}分享API错误:`, error);
+                    document.getElementById('result').innerHTML = 
+                        `<h3>剧本${scriptId}分享API错误:</h3><pre>` + error.message + '</pre>';
+                });
+        }
+    </script>
+</body>
+</html>

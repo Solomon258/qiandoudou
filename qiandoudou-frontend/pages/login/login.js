@@ -35,21 +35,16 @@ Page({
     this.setData({ 
       loading: true,
       loginType: 'wechat'
-    })
-
-    console.log('开始微信登录流程')
+    })
     
     // 调用微信登录接口获取code
     wx.login({
-      success: (res) => {
-        console.log('wx.login 成功，获取到code:', res.code)
+      success: (res) => {
         
         if (res.code) {
-          // 发送code到后端进行微信登录
-          console.log('发送code到后端进行验证')
+          // 发送code到后端进行微信登录
           authAPI.wechatLogin(res.code)
-            .then(result => {
-              console.log('微信登录成功，后端返回:', result)
+            .then(result => {
               
               // 检查返回数据结构
               if (!result.data) {
@@ -65,10 +60,7 @@ Page({
               
               if (!user) {
                 throw new Error('未获取到用户信息')
-              }
-              
-              console.log('Token:', token ? '已获取' : '未获取')
-              console.log('用户信息:', user)
+              }
               
               // 保存登录信息
               app.setLoginInfo(token, user)
@@ -85,8 +77,7 @@ Page({
                 })
               }, 1500)
             })
-            .catch(error => {
-              console.error('微信登录失败:', error)
+            .catch(error => {
               wx.showToast({
                 title: error.message || '微信登录失败',
                 icon: 'none',
@@ -94,8 +85,7 @@ Page({
               })
               this.setData({ loading: false, loginType: '' })
             })
-        } else {
-          console.error('wx.login 未返回code')
+        } else {
           wx.showToast({
             title: '获取微信授权失败',
             icon: 'none'
@@ -103,8 +93,7 @@ Page({
           this.setData({ loading: false, loginType: '' })
         }
       },
-      fail: (error) => {
-        console.error('wx.login 调用失败:', error)
+      fail: (error) => {
         wx.showToast({
           title: '微信登录失败',
           icon: 'none'
@@ -280,6 +269,5 @@ Page({
       confirmText: '我知道了'
     })
   },
-
 
 })

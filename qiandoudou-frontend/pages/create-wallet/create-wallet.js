@@ -22,7 +22,7 @@ Page({
   onShow() {
     // 检查是否从AI伴侣选择页面返回
     const selectedPartner = wx.getStorageSync('selectedAiPartner')
-    console.log('create-wallet onShow, selectedPartner:', selectedPartner)
+
     if (selectedPartner) {
       this.setData({
         selectedPartner
@@ -90,10 +90,9 @@ Page({
 
     this.setData({ loading: true })
 
-    const backgroundImage = walletType === 2 ? 'gradient2' : 'gradient1'
     const aiPartnerId = walletType === 2 && selectedPartner ? selectedPartner.id : null
 
-    walletAPI.createWallet(userId, name.trim(), walletType, backgroundImage, aiPartnerId)
+    walletAPI.createWallet(userId, name.trim(), walletType, null, aiPartnerId)
       .then(result => {
         wx.showToast({
           title: '创建成功',
@@ -123,7 +122,7 @@ Page({
         }, 1500)
       })
       .catch(error => {
-        console.error('创建钱包失败:', error)
+
         wx.showToast({
           title: error.message || '创建钱包失败',
           icon: 'none'

@@ -31,6 +31,11 @@ public interface AiService {
     String generatePartnerVoice(Long partnerId, String text);
 
     /**
+     * 根据人物名称生成AI伴侣语音
+     */
+    String generatePartnerVoiceByCharacterName(String characterName, String text);
+
+    /**
      * 根据图片生成文字描述
      */
     String generateTextFromImage(String imageUrl);

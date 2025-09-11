@@ -1535,3 +1535,1563 @@
   border-radius: 10px;
   z-index: 3;
 }
+/* pages/home/home.wxss */
+.container {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+/* 钱包页面 */
+.wallet-page {
+  min-height: 100vh;
+  background: #f1f2f3;
+  padding-bottom: 97px;
+}
+
+/* 顶部导航栏 */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  background: transparent;
+  padding: 0 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.nav-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+}
+
+.back-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-arrow {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin-top: -10px;
+  color: #000000e6;
+  font-weight: 300;
+}
+
+.nav-title {
+  font-size: 16px;
+  height: 48px;
+  line-height: 48px;
+  font-weight: 600;
+  color: #000000e6;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar-icon {
+  width: 24px;
+  height: 24px;
+  background: #e6e6e6;
+  border-radius: 50%;
+  position: relative;
+}
+
+.user-avatar-icon::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #666;
+  border-radius: 50%;
+}
+
+.user-avatar-icon::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  background: #666;
+  border-radius: 6px 6px 0 0;
+}
+
+/* 新的通知图标样式（钱兜兜页面） */
+.notification-icon-new {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.notification-icon-img {
+  width: 24px;
+  height: 24px;
+}
+.notification-icon-img2 {
+  width: 40px;
+  height: 40px;
+}
+
+/* 未读消息红点 */
+.unread-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  background: #ff4757;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+}
+
+.unread-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+/* 保留旧样式以防其他地方使用 */
+.notification-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bell-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.bell-icon::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #666;
+  border-radius: 50% 50% 0 0;
+  top: 2px;
+  left: 3px;
+}
+
+.bell-icon::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 2px;
+  background: #666;
+  border-radius: 2px;
+  bottom: 2px;
+  left: 8px;
+}
+
+/* 钱包列表区域 */
+.wallet-list-section {
+  padding: 16px;
+  margin-top: 0px;
+}
+
+.wallet-card {
+  position: relative;
+  height: 140px;
+  border-radius: 8px;
+  padding: 0;
+  color: white;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.wallet-card:last-child {
+  margin-bottom: 0;
+}
+
+/* 保留原有的主钱包样式用于兼容性 */
+.main-wallet-section {
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.main-wallet-card, .no-wallet-card {
+  position: relative;
+  height: 140px;
+  border-radius: 8px;
+  padding: 0;
+  color: white;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 欢迎区域 */
+.welcome-section {
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.welcome-card {
+  height: 140px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.welcome-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.welcome-desc {
+  font-size: 14px;
+  color: #ffffff;
+  opacity: 0.9;
+  text-align: center;
+}
+
+.wallet-info {
+  padding: 19px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.wallet-type {
+  font-size: 12px;
+  color: #ffffff;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.ai-partner-info {
+  margin-top: 8px;
+}
+
+.partner-label {
+  font-size: 12px;
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+.partner-name {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.wallet-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+  line-height: 22px;
+}
+
+.wallet-amount {
+  margin-top: auto;
+  margin-bottom: 8px;
+}
+
+.amount-text {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 33px;
+}
+
+/* 右上角头像样式已移除 */
+
+
+
+.wallet-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.wallet-name {
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-top: 10px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.wallet-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 15px;
+}
+
+.currency {
+  font-size: 18px;
+  font-weight: 300;
+  opacity: 0.9;
+}
+
+.amount {
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ai-partner-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+.partner-avatar-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.partner-name-small {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* 没有钱包的状态 */
+.no-wallet-state {
+  height: 200px;
+  background: #f0f0f0;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d0d0d0;
+}
+
+.no-wallet-text {
+  color: #999;
+  font-size: 16px;
+}
+
+
+
+/* 其他钱包列表 */
+.other-wallets-section {
+  padding: 0 16px 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.other-wallets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wallet-card-small {
+  position: relative;
+  height: 100px;
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-card-small:active {
+  transform: scale(0.98);
+}
+
+.wallet-info-small {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.wallet-name-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 20px;
+}
+
+.wallet-balance-small {
+  margin-top: auto;
+}
+
+.amount-small {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ai-partner-info-small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.partner-avatar-tiny {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.partner-name-tiny {
+  font-size: 12px;
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+/* 新建钱包按钮 */
+.create-wallet-section {
+  padding: 0 16px 20px;
+}
+
+.create-wallet-card {
+  width: 100%;
+  height: 66px;
+  background: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.create-wallet-card:active {
+  background: #f8f9fa;
+  transform: scale(0.98);
+}
+
+.create-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-icon {
+  font-size: 16px;
+  color: #000000;
+  font-weight: normal;
+}
+
+.create-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.plus-icon {
+  font-size: 18px;
+  color: #409EFF;
+}
+
+.create-text {
+  color: #333;
+  font-weight: 500;
+}
+
+
+
+
+/* 社交页面样式 */
+.social-page {
+  padding: 10px;
+  padding-bottom: 80px;
+}
+
+.social-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 10px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.social-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.publish-btn {
+  color: #409EFF;
+  font-size: 14px;
+  padding: 5px 15px;
+  background: #f0f9ff;
+  border-radius: 15px;
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #409EFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.post-user-info {
+  flex: 1;
+}
+
+.post-username {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.post-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.post-content {
+  margin-bottom: 12px;
+}
+
+.post-text {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.post-content .transaction-info .transaction-card {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.post-content .transaction-icon {
+  font-size: 16px;
+}
+
+.post-content .transaction-details {
+  flex: 1;
+}
+
+.post-content .transaction-desc {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.post-content .transaction-amount {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.post-content .transaction-amount.income {
+  color: #67C23A;
+}
+
+.post-content .transaction-amount.expense {
+  color: #f56c6c;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.post-actions .action-btn {
+  font-size: 13px;
+  color: #999;
+  padding: 5px 10px;
+}
+
+.post-actions .action-btn.active {
+  color: #f56c6c;
+}
+
+/* 底部导航样式 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  display: flex;
+  height: 97px;
+  z-index: 100;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  padding-bottom: 10px;
+}
+
+.nav-item.active {
+  color: #000000;
+}
+
+.nav-icon-container {
+  margin-bottom: 0px;
+  width: 40px;
+  height: 40px;
+}
+
+.nav-text {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* 新的钱袋图标样式 */
+.wallet-icon-new {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.money-bag-body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 16px;
+  background: #5B9BD5;
+  border-radius: 0 0 10px 10px;
+}
+
+.nav-item.active .money-bag-body {
+  background: #5B9BD5;
+}
+
+.nav-item:not(.active) .money-bag-body {
+  background: #999;
+}
+
+.money-bag-top {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  background: #5B9BD5;
+  border-radius: 6px 6px 0 0;
+}
+
+.nav-item.active .money-bag-top {
+  background: #5B9BD5;
+}
+
+.nav-item:not(.active) .money-bag-top {
+  background: #999;
+}
+
+.coin-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #FFD700;
+  border-radius: 50%;
+  border: 1px solid #FFA500;
+}
+
+/* 新的社交圈图标样式 */
+.social-icon-new {
+  position: relative;
+  width: 25px;
+  height: 25px;
+}
+
+.circle-outer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 25px;
+  border: 2px solid #5B9BD5;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.nav-item.active .circle-outer {
+  border-color: #5B9BD5;
+}
+
+.nav-item:not(.active) .circle-outer {
+  border-color: #999;
+}
+
+.circle-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 15px;
+  height: 15px;
+  border: 1px solid #5B9BD5;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.nav-item.active .circle-inner {
+  border-color: #5B9BD5;
+}
+
+.nav-item:not(.active) .circle-inner {
+  border-color: #999;
+}
+
+/* 钱包类型选择模态框 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.wallet-type-modal {
+  width: 100%;
+  max-height: 80vh;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* 模态框头部 */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-icon {
+  font-size: 24px;
+  color: #999;
+}
+
+/* 钱包类型选项 */
+.wallet-type-options {
+  padding: 20px;
+}
+
+.wallet-type-option {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.wallet-type-option:active {
+  background: #f8f9fa;
+}
+
+.wallet-type-option:last-child {
+  margin-bottom: 0;
+}
+
+.wallet-type-option.selected {
+  border-color: #4A90E2;
+  background: #f0f8ff;
+}
+
+/* 选项图标 */
+.option-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.option-icon.personal {
+  background: #FFD700;
+}
+
+.option-icon.couple {
+  background: transparent;
+}
+
+.person-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.couple-avatar-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: none;
+}
+
+.avatar-icon {
+  font-size: 16px;
+}
+
+/* 选项内容 */
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.option-desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  display: block;
+}
+
+/* 选项单选框 */
+.option-radio {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-circle.selected {
+  border-color: #4A90E2;
+  background: #4A90E2;
+}
+
+.check-mark {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 模态框底部 */
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.confirm-create-btn {
+  width: 100%;
+  height: 52px;
+  background: #4A90E2;
+  border: none;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-create-btn:disabled {
+  background: #ccc;
+}
+
+.confirm-create-btn:not(:disabled):active {
+  background: #357ABD;
+}
+
+.btn-text {
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 钱兜兜图标 - 蓝色钱袋样式 */
+.wallet-icon {
+  margin-bottom: 4px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pixel-money-bag {
+  position: relative;
+  width: 24px;
+  height: 18px;
+  background: #5B9BD5;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item:not(.active) .pixel-money-bag {
+  background: #999;
+}
+
+/* 钱袋口部 */
+.pixel-money-bag::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 6px;
+  background: #5B9BD5;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item:not(.active) .pixel-money-bag::before {
+  background: #999;
+}
+
+/* 中央圆形装饰 */
+.diamond {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #F5F5DC;
+  border-radius: 50%;
+  border: 1px solid #D3D3D3;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* 社交圈图标 - 像素风格环形 */
+.pixel-social-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 3px solid #409EFF;
+  border-radius: 50%;
+  image-rendering: pixelated;
+}
+
+.nav-item:not(.active) .pixel-social-icon {
+  border-color: #999;
+}
+
+/* 十字形扩展 */
+.pixel-social-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 2px solid #409EFF;
+  border-radius: 50%;
+}
+
+.nav-item:not(.active) .pixel-social-icon::before {
+  border-color: #999;
+}
+
+/* 四个方向的矩形扩展 */
+.pixel-social-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background: transparent;
+}
+
+/* 上、下、左、右四个矩形扩展 */
+.pixel-social-icon .extension {
+  position: absolute;
+  background: #409EFF;
+}
+
+.nav-item:not(.active) .pixel-social-icon .extension {
+  background: #999;
+}
+
+.pixel-social-icon .extension.top {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 6px;
+}
+
+.pixel-social-icon .extension.bottom {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 6px;
+}
+
+.pixel-social-icon .extension.left {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 4px;
+}
+
+.pixel-social-icon .extension.right {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 4px;
+}
+
+.nav-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.nav-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* =============== 兜圈圈页面样式 =============== */
+
+.social-page {
+  min-height: 100vh;
+  background: #f2f3f7;
+  position: relative;
+}
+
+/* 兜圈圈顶部导航栏 */
+.social-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 16px 16px; /* 考虑状态栏高度 */
+  background: #fff;
+}
+
+.social-top-nav .nav-left {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-top-nav .back-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.social-top-nav .back-icon::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid #000;
+  border-bottom: 2px solid #000;
+  transform: rotate(45deg);
+  top: 50%;
+  left: 50%;
+  margin-top: -4px;
+  margin-left: -2px;
+}
+
+.social-top-nav .nav-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000e6;
+}
+
+.social-top-nav .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 新的用户图标样式 */
+.social-top-nav .user-icon-new {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-top-nav .user-icon-img {
+  width: 24px;
+  height: 24px;
+}
+
+/* 新的通知图标样式 */
+.social-top-nav .notification-icon-new {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.social-top-nav .notification-icon-img {
+  width: 24px;
+  height: 24px;
+}
+
+/* 兜圈圈页面的未读消息红点 */
+.social-top-nav .unread-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  background: #ff4757;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+}
+
+.social-top-nav .unread-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+/* 保留旧样式以防其他地方使用 */
+.social-top-nav .user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: #e6e6e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-top-nav .avatar-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.social-top-nav .notification-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-top-nav .bell-icon {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.social-top-nav .bell-icon::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #666;
+  border-radius: 50% 50% 0 0;
+  top: 2px;
+  left: 3px;
+}
+
+.social-top-nav .bell-icon::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 2px;
+  background: #666;
+  border-radius: 2px;
+  bottom: 2px;
+  left: 8px;
+}
+
+/* 动态列表 */
+.social-posts-scroll {
+  height: calc(100vh - 140px); /* 减去顶部导航和底部导航高度 */
+  padding: 16px;
+}
+
+.social-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.social-empty-state .empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.social-empty-state .empty-text {
+  font-size: 14px;
+  color: #999;
+}
+
+/* 动态卡片 */
+.social-post-card {
+  position: relative;
+  width: 100%;
+  height: 309px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 默认渐变背景 */
+}
+
+.social-post-card .post-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.social-post-card .fans-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid #fff;
+  z-index: 3;
+}
+
+.social-post-card .post-content-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.33) 33.27%, #ffffff 100%);
+  padding: 16px 16px 28px;
+  z-index: 2;
+}
+
+.social-post-card .post-main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.social-post-card .post-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000e6;
+  max-width: 200px;
+}
+
+.social-post-card .post-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: #000000e6;
+  text-align: right;
+}
+
+.social-post-card .post-tags-desc {
+  margin-bottom: 16px;
+}
+
+.social-post-card .tag {
+  font-size: 12px;
+  color: #00000099;
+  margin-right: 8px;
+}
+
+.social-post-card .description {
+  font-size: 12px;
+  color: #00000099;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+/* 最新账单交易 */
+.social-post-card .recent-transactions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.social-post-card .transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.social-post-card .transaction-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: #e6e6e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.social-post-card .transaction-user-avatar .avatar-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.social-post-card .transaction-content {
+  flex: 1;
+  background: #f0f8ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.social-post-card .transaction-desc {
+  font-size: 12px;
+  color: #000000e6;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.social-post-card .amount-change {
+  font-size: 12px;
+  color: #ee6811;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* 参与人数 */
+.social-post-card .participants {
+  position: absolute;
+  bottom: 6px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  color: #00000099;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  z-index: 3;
+}
+
+/* 分享按钮样式 */
+.share-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 58px;
+  height: 58px;
+  background-color: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.share-btn:active {
+  transform: scale(0.9);
+}
+
+.share-icon {
+  width: 29px;
+  height: 29px;
+}

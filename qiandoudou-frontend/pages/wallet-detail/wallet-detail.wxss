@@ -301,7 +301,7 @@
   width: 100%;
 }
 
-.script-btn {
+.script-btn-full {
   width: 100%;
   height: 48px;
   background: #4A90E2;
@@ -311,7 +311,7 @@
   justify-content: center;
 }
 
-.script-btn:active {
+.script-btn-full:active {
   background: #357ABD;
 }
 
@@ -340,14 +340,15 @@
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.image-icon {
-  font-size: 24px;
+.promo-image {
+  width: 100%;
+  height: 100%;
 }
 
 .promo-content {
@@ -763,7 +764,6 @@
 .action-text {
   font-size: 24rpx;
   color: #666;
-  color: #ffffff;
 }
 
 .action-btn.liked .action-text {
@@ -941,7 +941,7 @@
 /* 统计标签 */
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: #ffffff;
   margin-bottom: 8px;
   font-weight: 500;
 }
@@ -1532,28 +1532,29 @@
   transform: scale(0.95);
 }
 
-/* 设置按钮样式 */
-.settings-btn {
-  flex: 1;
-  height: 44px;
-  background: #f8f9fa;
-  border-radius: 22px;
+/* 背景图左下角设置按钮 */
+.settings-button-corner {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  z-index: 21;
+}
+
+.settings-btn-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 8px;
-  border: 1px solid #e9ecef;
+  width: 48px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
 }
 
-.settings-btn:active {
-  background: #e9ecef;
-  transform: scale(0.98);
-}
-
-.settings-btn-text {
-  font-size: 14px;
-  color: #495057;
-  font-weight: 500;
+.settings-btn-icon:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 @keyframes slideUp {

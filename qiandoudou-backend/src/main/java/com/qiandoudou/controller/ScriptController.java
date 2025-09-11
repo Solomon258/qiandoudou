@@ -88,12 +88,27 @@ public class ScriptController {
     @GetMapping("/{scriptId}/chapters/{chapterNumber}")
     public ResponseEntity<Map<String, Object>> getChapterContent(
             @PathVariable Long scriptId, 
-            @PathVariable Integer chapterNumber) {
+            @PathVariable Integer chapterNumber,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long walletId) {
         Map<String, Object> response = new HashMap<>();
         try {
             ScriptChapter chapter = scriptService.getChapterContent(scriptId, chapterNumber);
+            
+            // 构建返回数据
+            Map<String, Object> data = new HashMap<>();
+            data.put("chapter", chapter);
+            
+            // 如果提供了用户ID和钱包ID，同时返回用户进度状态
+            if (userId != null && walletId != null) {
+                UserScriptProgress progress = scriptService.getUserProgressByWallet(userId, walletId, scriptId);
+                if (progress != null) {
+                    data.put("userProgress", progress);
+                }
+            }
+            
             response.put("code", 200);
-            response.put("data", chapter);
+            response.put("data", data);
             response.put("message", "获取成功");
         } catch (Exception e) {
             log.error("获取章节内容失败", e);

@@ -1,0 +1,77 @@
+<!--components/share-modal/share-modal.wxml-->
+<view wx:if="{{show}}" class="share-modal-overlay" bindtap="onOverlayTap">
+  <view class="share-modal-container" catchtap="stopPropagation">
+    <!-- 关闭按钮 -->
+    <view class="close-btn" bindtap="onClose">
+      <image class="close-icon" src="/static/icon/close-circle.png" mode="aspectFit"/>
+    </view>
+    
+    <!-- 分享图片 -->
+    <view class="share-image-container">
+      <!-- 分享图片 -->
+      <image 
+        wx:if="{{shareImageUrl}}"
+        class="share-image" 
+        src="{{shareImageUrl}}" 
+        mode="scaleToFill"
+        show-menu-by-longpress="false"
+        lazy-load="false"
+        bindload="onImageLoad"
+        binderror="onImageError"
+      />
+      
+      
+      <!-- 加载提示 -->
+      <view wx:if="{{shareImageUrl && !imageLoaded && !imageError}}" class="loading-text">
+        <text>图片加载中...</text>
+      </view>
+      
+      <!-- 错误提示 -->
+      <view wx:if="{{imageError}}" class="error-text">
+        <text>图片加载失败，请重试</text>
+      </view>
+      
+      <!-- 没有URL的提示 -->
+      <view wx:if="{{!shareImageUrl}}" class="no-url-text">
+        <text>分享图片加载中...</text>
+      </view>
+    </view>
+    
+    <!-- 分享操作按钮区域 -->
+    <view class="share-actions">
+      <!-- 分享到朋友圈按钮 -->
+      <view class="primary-share-btn" bindtap="onShareToFriends">
+        <image class="primary-share-icon" src="/static/icon/share_friend_circle.png" mode="aspectFit"/>
+        <text class="primary-share-text">分享到朋友圈</text>
+      </view>
+      
+      <!-- 其他分享选项 -->
+      <view class="other-share-options">
+        <view class="share-option" bindtap="onSave">
+          <image class="share-option-icon" src="/static/icon/download.png" mode="aspectFit"/>
+          <text class="share-option-text">保存图片</text>
+        </view>
+        
+        <view class="share-option" bindtap="onShareToDouyin">
+          <image class="share-option-icon" src="/static/icon/douyin.png" mode="aspectFit"/>
+          <text class="share-option-text">抖音</text>
+        </view>
+        
+        <view class="share-option" bindtap="onShareToXiaohongshu">
+          <image class="share-option-icon" src="/static/icon/xiaohongshu.png" mode="aspectFit"/>
+          <text class="share-option-text">小红书</text>
+        </view>
+        
+        <view class="share-option" bindtap="onShareToWeibo">
+          <image class="share-option-icon" src="/static/icon/weibo.png" mode="aspectFit"/>
+          <text class="share-option-text">微博</text>
+        </view>
+        
+        <view class="share-option" bindtap="onShareToKuaishou">
+          <image class="share-option-icon" src="/static/icon/kuaishou.png" mode="aspectFit"/>
+          <text class="share-option-text">快手</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
