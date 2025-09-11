@@ -13,10 +13,10 @@
   
   <view class="info-card">
     <!-- 头像 -->
-    <view class="info-item" bindtap="changeAvatar">
+    <view class="info-item">
       <text class="item-label">头像</text>
       <view class="item-content">
-        <view class="avatar-preview">
+        <view class="avatar-preview" bindtap="changeAvatar">
           <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}" 
                  class="avatar-image" 
                  src="{{userInfo.avatar}}" 
@@ -26,18 +26,42 @@
             <view class="loading-spinner"></view>
           </view>
         </view>
-        <view class="arrow-icon"></view>
+        
+        <!-- 微信头像选择按钮 -->
+        <view class="wechat-avatar-section" wx:if="{{showWechatAvatarOption}}">
+          <button class="wechat-avatar-btn" 
+                  open-type="chooseAvatar" 
+                  bind:chooseavatar="onChooseWechatAvatar"
+                  disabled="{{isUploadingAvatar}}">
+            <text class="wechat-icon">💬</text>
+            <text class="btn-text">使用微信头像</text>
+          </button>
+        </view>
+        
+        <view class="arrow-icon" bindtap="changeAvatar"></view>
       </view>
     </view>
     
     <view class="divider"></view>
     
     <!-- 昵称 -->
-    <view class="info-item" bindtap="editNickname">
+    <view class="info-item">
       <text class="item-label">昵称</text>
       <view class="item-content">
-        <text class="item-value">{{userInfo.nickname || '昆虫记'}}</text>
-        <view class="arrow-icon"></view>
+        <view class="nickname-display" bindtap="editNickname">
+          <text class="item-value">{{userInfo.nickname || '昆虫记'}}</text>
+        </view>
+        
+        <!-- 微信昵称选择按钮 -->
+        <view class="wechat-nickname-section" wx:if="{{showWechatAvatarOption}}">
+          <input class="wechat-nickname-input" 
+                 type="nickname" 
+                 placeholder="点击获取微信昵称"
+                 bind:input="onWechatNicknameInput"
+                 disabled="{{isUpdatingNickname}}" />
+        </view>
+        
+        <view class="arrow-icon" bindtap="editNickname"></view>
       </view>
     </view>
     

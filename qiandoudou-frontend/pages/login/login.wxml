@@ -1,6 +1,47 @@
 <!--pages/login/login.wxml-->
 <view class="container">
-  <view class="login-box">
+  <!-- 授权面板 -->
+  <view class="auth-panel" wx:if="{{showAuthPanel}}">
+    <view class="auth-content">
+      <view class="logo-section">
+        <view class="logo-icon">💰</view>
+        <text class="logo-text">钱兜兜</text>
+        <text class="logo-subtitle">和AI一起攒钱</text>
+      </view>
+      
+      <view class="auth-title">设置你的昵称、头像</view>
+      <view class="auth-desc">请设置您在钱兜兜的个人信息</view>
+      
+      <!-- 头像选择 -->
+      <view class="avatar-section">
+        <view class="avatar-preview">
+          <image wx:if="{{tempAvatar}}" class="avatar-image" src="{{tempAvatar}}" mode="aspectFill"/>
+          <text wx:else class="avatar-placeholder">选择头像</text>
+        </view>
+        <button class="choose-avatar-btn" 
+                open-type="chooseAvatar" 
+                bind:chooseavatar="onChooseAvatar">选择微信头像</button>
+      </view>
+      
+      <!-- 昵称输入 -->
+      <view class="nickname-section">
+        <input class="nickname-input" 
+               type="nickname" 
+               placeholder="请输入昵称"
+               value="{{tempNickname}}"
+               bind:input="onNicknameInput" />
+      </view>
+      
+      <view class="auth-buttons">
+        <button class="auth-btn-primary" 
+                bindtap="handleSaveProfile"
+                disabled="{{!tempAvatar || !tempNickname}}">完成设置</button>
+        <button class="auth-btn-secondary" bindtap="handleManualSetup">跳过</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="login-box" wx:if="{{!showAuthPanel}}">
     <!-- Logo区域 -->
     <view class="logo-section">
       <view class="logo-icon">💰</view>

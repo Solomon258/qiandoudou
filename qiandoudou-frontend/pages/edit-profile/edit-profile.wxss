@@ -335,3 +335,88 @@
 .cancel-btn::after, .confirm-btn::after {
   border: none;
 }
+
+/* 微信头像选择按钮样式 */
+.wechat-avatar-section {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.wechat-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 20rpx;
+  background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
+  border-radius: 20rpx;
+  border: none;
+  font-size: 24rpx;
+  color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+  transition: all 0.2s ease;
+  min-width: 140rpx;
+  height: 60rpx;
+}
+
+.wechat-avatar-btn::after {
+  border: none;
+}
+
+.wechat-avatar-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.4);
+}
+
+.wechat-avatar-btn[disabled] {
+  background: #cccccc;
+  box-shadow: none;
+  transform: none;
+}
+
+.wechat-avatar-btn .wechat-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.wechat-avatar-btn .btn-text {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+/* 微信昵称输入框样式 */
+.wechat-nickname-section {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.wechat-nickname-input {
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
+  border-radius: 16rpx;
+  border: none;
+  font-size: 24rpx;
+  color: #ffffff;
+  min-width: 160rpx;
+  height: 50rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+}
+
+.wechat-nickname-input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 22rpx;
+}
+
+.wechat-nickname-input[disabled] {
+  background: #cccccc;
+  box-shadow: none;
+}
+
+/* 昵称显示区域样式调整 */
+.nickname-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}

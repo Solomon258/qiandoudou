@@ -2,8 +2,8 @@
 const app = getApp()
 
 // 后端API基础地址
-const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  // const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
+// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+  const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
@@ -140,6 +140,31 @@ const authAPI = {
       url: '/auth/update-avatar',
       method: 'POST',
       data: { 
+        avatarUrl: avatarUrl,
+        userId: userId
+      }
+    })
+  },
+
+  // 更新用户昵称
+  updateNickname(nickname, userId) {
+    return request({
+      url: '/auth/update-nickname',
+      method: 'POST',
+      data: { 
+        nickname: nickname,
+        userId: userId
+      }
+    })
+  },
+
+  // 同时更新用户头像和昵称
+  updateProfile(nickname, avatarUrl, userId) {
+    return request({
+      url: '/auth/update-profile',
+      method: 'POST',
+      data: { 
+        nickname: nickname,
         avatarUrl: avatarUrl,
         userId: userId
       }

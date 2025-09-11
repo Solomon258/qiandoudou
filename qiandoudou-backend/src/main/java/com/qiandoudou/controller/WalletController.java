@@ -242,7 +242,14 @@ public class WalletController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "type", required = false, defaultValue = "general") String type) {
         try {
+            System.out.println("=== 开始处理用户图片上传 ===");
+            System.out.println("文件名: " + file.getOriginalFilename());
+            System.out.println("文件大小: " + file.getSize() + " bytes");
+            System.out.println("文件类型: " + file.getContentType());
+            System.out.println("图片类型: " + type);
+            
             if (file.isEmpty()) {
+                System.err.println("文件为空");
                 return Result.error("请选择图片文件");
             }
 

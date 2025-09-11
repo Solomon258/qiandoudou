@@ -150,4 +150,78 @@ public class AuthController {
             return Result.error("头像更新失败：" + e.getMessage());
         }
     }
+
+    /**
+     * 更新用户昵称
+     */
+    @PostMapping("/update-nickname")
+    public Result<String> updateUserNickname(@RequestBody Map<String, Object> request) {
+        try {
+            String nickname = request.get("nickname").toString();
+            Long userId = request.get("userId") != null ? 
+                Long.valueOf(request.get("userId").toString()) : 1961688416014127106L;
+            
+            System.out.println("开始更新用户昵称 - 用户ID: " + userId + ", 昵称: " + nickname);
+            
+            // 从数据库获取用户信息
+            User user = userService.getById(userId);
+            if (user == null) {
+                System.out.println("用户不存在，ID: " + userId);
+                return Result.error("用户不存在");
+            }
+            
+            // 更新用户昵称
+            user.setNickname(nickname);
+            boolean updateResult = userService.updateById(user);
+            
+            if (updateResult) {
+                System.out.println("用户 " + userId + " 昵称更新成功: " + nickname);
+                return Result.success("昵称更新成功");
+            } else {
+                System.out.println("用户 " + userId + " 昵称更新失败");
+                return Result.error("昵称更新失败");
+            }
+        } catch (Exception e) {
+            System.err.println("更新用户昵称异常: " + e.getMessage());
+            return Result.error("昵称更新失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 同时更新用户头像和昵称
+     */
+    @PostMapping("/update-profile")
+    public Result<String> updateUserProfile(@RequestBody Map<String, Object> request) {
+        try {
+            String nickname = request.get("nickname").toString();
+            String avatarUrl = request.get("avatarUrl").toString();
+            Long userId = request.get("userId") != null ? 
+                Long.valueOf(request.get("userId").toString()) : 1961688416014127106L;
+            
+            System.out.println("开始更新用户资料 - 用户ID: " + userId + ", 昵称: " + nickname + ", 头像: " + avatarUrl);
+            
+            // 从数据库获取用户信息
+            User user = userService.getById(userId);
+            if (user == null) {
+                System.out.println("用户不存在，ID: " + userId);
+                return Result.error("用户不存在");
+            }
+            
+            // 同时更新用户头像和昵称
+            user.setNickname(nickname);
+            user.setAvatar(avatarUrl);
+            boolean updateResult = userService.updateById(user);
+            
+            if (updateResult) {
+                System.out.println("用户 " + userId + " 资料更新成功 - 昵称: " + nickname + ", 头像: " + avatarUrl);
+                return Result.success("个人资料更新成功");
+            } else {
+                System.out.println("用户 " + userId + " 资料更新失败");
+                return Result.error("个人资料更新失败");
+            }
+        } catch (Exception e) {
+            System.err.println("更新用户资料异常: " + e.getMessage());
+            return Result.error("个人资料更新失败：" + e.getMessage());
+        }
+    }
 }

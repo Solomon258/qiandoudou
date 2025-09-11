@@ -20,11 +20,36 @@ Page({
     editValue: '',
     originalValue: '',
     isSaving: false, // 添加保存状态标识
-    isUploadingAvatar: false // 头像上传状态
+    isUploadingAvatar: false, // 头像上传状态
+    showWechatAvatarOption: false, // 是否显示微信头像选择选项
+    isFirstLogin: false, // 是否为首次登录
+    shouldSetWechatAvatar: false, // 是否应该自动设置微信头像
+    isUpdatingNickname: false // 昵称更新状态
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 检查是否为首次登录和是否需要设置微信头像
+    const isFirstLogin = options.firstLogin === 'true'
+    const shouldSetWechatAvatar = options.setWechatAvatar === 'true'
+    
+    this.setData({
+      isFirstLogin: isFirstLogin,
+      shouldSetWechatAvatar: shouldSetWechatAvatar,
+      showWechatAvatarOption: isFirstLogin || shouldSetWechatAvatar
+    })
+    
     this.loadUserInfo()
+    
+    // 如果是首次登录且需要设置微信头像，显示引导提示
+    if (isFirstLogin && shouldSetWechatAvatar) {
+      setTimeout(() => {
+        wx.showToast({
+          title: '可设置微信头像和昵称',
+          icon: 'none',
+          duration: 3000
+        })
+      }, 500)
+    }
   },
 
   onUnload() {
@@ -93,7 +118,8 @@ Page({
         const tempFilePath = res.tempFilePaths[0]
         this.cropImage(tempFilePath)
       },
-      fail: (error) => {
+      fail: (error) => {
+
         wx.showToast({
           title: '选择图片失败',
           icon: 'none'
@@ -120,7 +146,8 @@ Page({
         // 由于小程序限制，我们直接使用原图并保存
         this.saveAvatar(imagePath)
       },
-      fail: (error) => {
+      fail: (error) => {
+
         this.saveAvatar(imagePath) // 即使获取信息失败也尝试保存
       }
     })
@@ -128,14 +155,47 @@ Page({
 
   // 保存头像到OSS
   saveAvatar(imagePath) {
+    console.log('开始保存头像，路径:', imagePath)
     this.setData({ isUploadingAvatar: true })
 
-    // 上传到OSS
+    // 检查是否为网络URL（微信头像）
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      console.log('检测到网络URL，需要先下载到本地')
+      // 先下载微信头像到本地
+      wx.downloadFile({
+        url: imagePath,
+        success: (res) => {
+          console.log('微信头像下载成功:', res.tempFilePath)
+          // 使用下载的临时文件路径上传
+          this.uploadAvatarToOSS(res.tempFilePath)
+        },
+        fail: (error) => {
+          console.error('微信头像下载失败:', error)
+          wx.hideLoading()
+          this.setData({ isUploadingAvatar: false })
+          wx.showToast({
+            title: '头像下载失败',
+            icon: 'error'
+          })
+        }
+      })
+    } else {
+      console.log('本地文件路径，直接上传')
+      // 本地文件，直接上传
+      this.uploadAvatarToOSS(imagePath)
+    }
+  },
+
+  // 上传头像到OSS
+  uploadAvatarToOSS(filePath) {
+    console.log('上传头像到OSS，文件路径:', filePath)
     const { uploadUserImage } = require('../../utils/api.js')
-    uploadUserImage(imagePath, 'avatar')
+    uploadUserImage(filePath, 'avatar')
       .then(response => {
+        console.log('OSS上传响应:', response)
         if (response.data && response.data.imageUrl) {
-          const ossUrl = response.data.imageUrl
+          const ossUrl = response.data.imageUrl
+
           
           // 更新用户信息
           const userInfo = { ...this.data.userInfo }
@@ -162,7 +222,8 @@ Page({
           app.globalData.userInfo.avatar = ossUrl
           app.globalData.userInfo.hasCustomAvatar = true
           app.globalData.userInfo.nickname = app.globalData.userInfo.nickname || storedUserInfo.nickname
-          app.globalData.userInfo.id = app.globalData.userInfo.id || storedUserInfo.id
+          app.globalData.userInfo.id = app.globalData.userInfo.id || storedUserInfo.id
+
 
           // 同时更新后端数据库中的头像URL
           this.updateAvatarToServer(ossUrl)
@@ -173,14 +234,16 @@ Page({
           })
         }
       })
-      .catch(error => {
+      .catch(error => {
+        console.error('OSS上传失败:', error)
         this.setData({ isUploadingAvatar: false })
         
         // 上传失败时，尝试使用本地保存作为备用方案
         wx.saveFile({
-          tempFilePath: imagePath,
+          tempFilePath: filePath,
           success: (res) => {
-            const savedFilePath = res.savedFilePath
+            const savedFilePath = res.savedFilePath
+
             
             // 更新用户信息
             const userInfo = { ...this.data.userInfo }
@@ -224,12 +287,138 @@ Page({
     const { authAPI } = require('../../utils/api.js')
     
     // 获取当前用户ID
-    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+
     
     authAPI.updateAvatar(avatarUrl, userId)
-      .then(result => {
+      .then(result => {
+
       })
-      .catch(error => {
+      .catch(error => {
+
+        // 不影响用户体验，静默失败
+      })
+  },
+
+  // 处理微信头像选择
+  onChooseWechatAvatar(e) {
+    console.log('微信头像选择事件:', e)
+    const { avatarUrl } = e.detail
+    console.log('选择的微信头像:', avatarUrl)
+    
+    if (!avatarUrl) {
+      console.error('未获取到微信头像URL')
+      wx.showToast({
+        title: '未选择头像',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 显示加载提示
+    wx.showLoading({
+      title: '设置头像中...'
+    })
+    
+    this.setData({ isUploadingAvatar: true })
+    
+    console.log('开始上传微信头像到OSS...')
+    // 直接使用微信头像路径上传到OSS
+    this.saveAvatar(avatarUrl)
+    
+    // 如果是首次登录，设置完头像后引导用户
+    if (this.data.isFirstLogin) {
+      setTimeout(() => {
+        wx.hideLoading()
+        wx.showModal({
+          title: '设置成功',
+          content: '微信头像设置成功！现在去探索钱兜兜吧~',
+          showCancel: false,
+          confirmText: '开始使用',
+          success: () => {
+            wx.redirectTo({
+              url: '/pages/home/home'
+            })
+          }
+        })
+      }, 2000)
+    } else {
+      setTimeout(() => {
+        wx.hideLoading()
+      }, 1000)
+    }
+  },
+
+  // 处理微信昵称输入
+  onWechatNicknameInput(e) {
+    const nickname = e.detail.value
+    console.log('获取到微信昵称:', nickname)
+    
+    if (!nickname || nickname.trim() === '') {
+      console.log('昵称为空，忽略')
+      return
+    }
+    
+    // 显示加载状态
+    this.setData({ isUpdatingNickname: true })
+    
+    // 更新昵称
+    this.updateNickname(nickname.trim())
+  },
+
+  // 更新用户昵称
+  updateNickname(nickname) {
+    console.log('开始更新昵称:', nickname)
+    
+    // 更新本地显示
+    const userInfo = { ...this.data.userInfo }
+    userInfo.nickname = nickname
+    
+    this.setData({ 
+      userInfo,
+      isUpdatingNickname: false
+    })
+    
+    // 保存到本地存储
+    const storedUserInfo = wx.getStorageSync('userInfo') || {}
+    storedUserInfo.nickname = nickname
+    wx.setStorageSync('userInfo', storedUserInfo)
+    
+    // 更新全局数据
+    if (app.globalData.userInfo) {
+      app.globalData.userInfo.nickname = nickname
+    }
+    
+    // 同时更新后端数据库
+    this.updateNicknameToServer(nickname)
+    
+    wx.showToast({
+      title: '昵称更新成功',
+      icon: 'success'
+    })
+    
+    console.log('昵称更新完成:', nickname)
+  },
+
+  // 更新昵称到服务器
+  updateNicknameToServer(nickname) {
+    const { authAPI } = require('../../utils/api.js')
+    
+    // 获取当前用户ID
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+    
+    if (!userId) {
+      console.error('无法获取用户ID，跳过服务器更新')
+      return
+    }
+    
+    // 调用更新昵称的API
+    authAPI.updateNickname(nickname, userId)
+      .then(result => {
+        console.log('服务器昵称更新成功')
+      })
+      .catch(error => {
+        console.error('服务器昵称更新失败:', error)
         // 不影响用户体验，静默失败
       })
   },
@@ -237,12 +426,14 @@ Page({
   // 上传头像到服务器（旧方法，保留兼容性）
   uploadAvatarToServer(filePath) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
     }
 
     // 这里可以调用文件上传接口
-    // walletAPI.uploadAvatar(userId, filePath)
+    // walletAPI.uploadAvatar(userId, filePath)
+
   },
 
   // 删除头像
@@ -380,15 +571,18 @@ Page({
   // 保存用户信息到服务器
   saveUserInfoToServer(userInfo) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
     }
 
     // 调用API保存用户信息
     walletAPI.updateUserInfo(userId, userInfo)
-      .then(result => {
+      .then(result => {
+
       })
-      .catch(error => {
+      .catch(error => {
+
         // 其他类型的错误（非404）才需要特殊处理
       })
   },
@@ -444,14 +638,17 @@ Page({
   // 保存设置到服务器
   saveSettingsToServer(settings) {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
     }
 
     walletAPI.updateUserSettings(userId, settings)
-      .then(result => {
+      .then(result => {
+
       })
-      .catch(error => {
+      .catch(error => {
+
         this.setData({ isSaving: false })
       })
   },

@@ -143,8 +143,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 user.setNickname("微信用户");
                 user.setOpenid(openid);
                 user.setPassword(""); // 微信用户设置空密码
-                // 可以设置默认头像
-                user.setAvatar("https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default_avatar.png");
+                // 设置默认头像 - 使用存在的头像路径
+                user.setAvatar("https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png");
                 save(user);
                 System.out.println("创建新用户: " + user.getId());
             } else {
