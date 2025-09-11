@@ -59,8 +59,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户名已存在");
         }
 
-        // 检查手机号是否已存在
-        if (phone != null && getUserByPhone(phone) != null) {
+        // 检查手机号是否已存在 - 修复空字符串问题
+        if (phone != null && !phone.trim().isEmpty() && getUserByPhone(phone) != null) {
             throw new RuntimeException("手机号已注册");
         }
 
@@ -85,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User getUserByPhone(String phone) {
-        if (phone == null) {
+        if (phone == null || phone.trim().isEmpty()) {
             return null;
         }
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();

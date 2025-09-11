@@ -35,16 +35,20 @@ Page({
     this.setData({ 
       loading: true,
       loginType: 'wechat'
-    })
+    })
+
     
     // 调用微信登录接口获取code
     wx.login({
-      success: (res) => {
+      success: (res) => {
+
         
         if (res.code) {
-          // 发送code到后端进行微信登录
+          // 发送code到后端进行微信登录
+
           authAPI.wechatLogin(res.code)
-            .then(result => {
+            .then(result => {
+
               
               // 检查返回数据结构
               if (!result.data) {
@@ -60,7 +64,9 @@ Page({
               
               if (!user) {
                 throw new Error('未获取到用户信息')
-              }
+              }
+
+
               
               // 保存登录信息
               app.setLoginInfo(token, user)
@@ -77,7 +83,8 @@ Page({
                 })
               }, 1500)
             })
-            .catch(error => {
+            .catch(error => {
+
               wx.showToast({
                 title: error.message || '微信登录失败',
                 icon: 'none',
@@ -85,7 +92,8 @@ Page({
               })
               this.setData({ loading: false, loginType: '' })
             })
-        } else {
+        } else {
+
           wx.showToast({
             title: '获取微信授权失败',
             icon: 'none'
@@ -93,7 +101,8 @@ Page({
           this.setData({ loading: false, loginType: '' })
         }
       },
-      fail: (error) => {
+      fail: (error) => {
+
         wx.showToast({
           title: '微信登录失败',
           icon: 'none'
@@ -222,7 +231,10 @@ Page({
 
     this.setData({ loading: true })
 
-    authAPI.register(username, password, nickname, phone)
+    // 处理手机号：空字符串转为null，避免后端验证问题
+    const phoneToSubmit = phone && phone.trim() ? phone.trim() : null
+
+    authAPI.register(username, password, nickname, phoneToSubmit)
       .then(result => {
         wx.showToast({
           title: '注册成功，请登录',
