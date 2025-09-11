@@ -92,7 +92,7 @@
       </view>
       <view class="promo-content">
         <text class="promo-title">{{scriptInfo.title || '重新养小时候的自己'}}</text>
-        <text class="promo-desc">第{{userScriptProgress.currentChapter || 1}}集已更新，问谁日常</text>
+        <text class="promo-desc">第{{userScriptProgress.currentChapter || 1}}集已更新，{{currentChapterTitle || '问谁日常'}}</text>
       </view>
       <view class="promo-action">
         <view class="close-btn" bindtap="closePromo">

@@ -2384,30 +2384,78 @@ Page({
       success: (res) => {
 
         if (res.data && res.data.code === 200 && res.data.data) {
+          const progressData = res.data.data
           this.setData({
-            userScriptProgress: res.data.data
+            userScriptProgress: progressData
           })
+          
+          // 获取当前章节的标题信息
+          this.loadCurrentChapterTitle(scriptId, progressData.currentChapter || 1)
         } else {
           // 如果没有进度记录，设置默认值
+          const defaultProgress = {
+            currentChapter: 1,
+            status: 1
+          }
           this.setData({
-            userScriptProgress: {
-              currentChapter: 1,
-              status: 1
-            }
+            userScriptProgress: defaultProgress
           })
+          
+          // 获取第1集的标题信息
+          this.loadCurrentChapterTitle(scriptId, 1)
         }
       },
       fail: (error) => {
 
         // 设置默认值
+        const defaultProgress = {
+          currentChapter: 1,
+          status: 1
+        }
         this.setData({
-          userScriptProgress: {
-            currentChapter: 1,
-            status: 1
-          }
+          userScriptProgress: defaultProgress
         })
+        
+        // 获取第1集的标题信息
+        this.loadCurrentChapterTitle(scriptId, 1)
       }
     })
+  },
+
+  // 加载当前章节标题
+  async loadCurrentChapterTitle(scriptId, chapterNumber) {
+    const userId = app.globalData.userInfo?.id
+    const walletId = this.data.walletId
+    
+    if (!userId || !walletId) {
+      return
+    }
+
+    try {
+      // 引入scriptAPI
+      const { scriptAPI } = require('../../utils/api.js')
+      
+      // 使用正确的API方法获取章节内容
+      const response = await scriptAPI.getChapterContent(scriptId, chapterNumber, userId, walletId)
+      
+      if (response.code === 200 && response.data) {
+        const chapterData = response.data.chapter || response.data
+        this.setData({
+          currentChapterTitle: chapterData.title || ''
+        })
+      } else {
+        // 如果获取失败，使用默认标题
+        this.setData({
+          currentChapterTitle: ''
+        })
+      }
+    } catch (error) {
+      console.error('获取章节标题失败:', error)
+      // 如果获取失败，使用默认标题
+      this.setData({
+        currentChapterTitle: ''
+      })
+    }
   },
 
   // 跳转到剧本当前集

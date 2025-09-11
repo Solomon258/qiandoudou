@@ -2,8 +2,8 @@
 const app = getApp()
 
 // 后端API基础地址
-// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
+const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+  // const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
