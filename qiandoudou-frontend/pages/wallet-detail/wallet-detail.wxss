@@ -117,6 +117,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* 钱包所有者头像 */
+.wallet-owner-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .avatar-text {
@@ -501,6 +511,14 @@
 
 /* AI伴侣头像 */
 .ai-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 用户头像 */
+.user-avatar-image {
   width: 100%;
   height: 100%;
   border-radius: 50%;

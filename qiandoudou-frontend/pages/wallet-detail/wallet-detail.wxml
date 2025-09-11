@@ -13,8 +13,12 @@
       
       <!-- 用户信息 -->
       <view class="user-info" catchtap="stopPropagation">
-        <view class="user-avatar">
-          <text class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
+        <view class="user-avatar" bindtap="goToWalletOwnerProfile">
+          <image wx:if="{{walletOwnerInfo.hasCustomAvatar && walletOwnerInfo.avatar}}" 
+                 class="wallet-owner-avatar-image" 
+                 src="{{walletOwnerInfo.avatar}}" 
+                 mode="aspectFill"/>
+          <text wx:else class="avatar-text">{{walletOwnerInfo.nickname ? walletOwnerInfo.nickname.charAt(0) : (wallet.name ? wallet.name.charAt(0) : 'U')}}</text>
         </view>
         <view class="user-details">
           <text class="user-title" bindtap="{{isOwnWallet ? 'editWalletName' : ''}}">{{wallet.name || '钱兜兜'}}💗</text>
@@ -126,12 +130,16 @@
         <!-- 用户头像和基本信息 -->
         <view class="user-header">
           <!-- AI伴侣头像或用户头像 -->
-          <view class="user-avatar-small">
+          <view class="user-avatar-small" bindtap="goToUserProfile" data-user-id="{{item.userId}}" data-transaction="{{item}}">
             <image wx:if="{{item.isAiTransaction && item.aiPartnerAvatar}}" 
                    class="ai-avatar-image" 
                    src="{{item.aiPartnerAvatar}}" 
                    mode="aspectFill"></image>
-            <text wx:else class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
+            <image wx:elif="{{!item.isAiTransaction && item.hasCustomAvatar && item.userAvatar}}" 
+                   class="user-avatar-image" 
+                   src="{{item.userAvatar}}" 
+                   mode="aspectFill"></image>
+            <text wx:else class="avatar-text">{{item.isAiTransaction ? (item.aiPartnerName ? item.aiPartnerName.charAt(0) : 'A') : (item.userNickname ? item.userNickname.charAt(0) : (wallet.name ? wallet.name.charAt(0) : 'U'))}}</text>
           </view>
           <view class="transaction-info">
             <!-- 标题单独一行，加粗 - 显示AI伴侣名称或钱兜兜名称 -->

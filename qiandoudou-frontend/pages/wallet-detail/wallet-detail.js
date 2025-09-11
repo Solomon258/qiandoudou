@@ -61,7 +61,12 @@ Page({
     ],
     showWalletSettings: false, // 显示钱包设置模态框
     userScriptProgress: null, // 用户在"重新养小时候的自己"剧本的进度
-    scriptInfo: null // "重新养小时候的自己"剧本信息
+    scriptInfo: null, // "重新养小时候的自己"剧本信息
+    walletOwnerInfo: { // 钱包所有者信息
+      nickname: '用户',
+      avatar: '',
+      hasCustomAvatar: false
+    }
   },
 
   onLoad(options) {
@@ -245,6 +250,9 @@ Page({
           isOwnWallet: isOwnWallet
         })
         
+        // 加载钱包所有者的头像信息
+        this.loadWalletOwnerAvatar(wallet.userId || wallet.user_id)
+        
         // 更新背景样式
         this.updateBackgroundStyle()
         
@@ -335,6 +343,9 @@ Page({
           transactions: formattedTransactions
         })
         
+        // 加载每个交易的用户头像信息
+        this.loadTransactionsUserData(formattedTransactions)
+        
         // 加载每个交易的真实社交数据（点赞状态、评论数等）
         this.loadTransactionsSocialData(formattedTransactions)
       })
@@ -345,6 +356,112 @@ Page({
           transactions: []
         })
       })
+  },
+
+  // 加载钱包所有者头像信息
+  loadWalletOwnerAvatar(userId) {
+    if (!userId) {
+      return
+    }
+    
+    const { authAPI } = require('../../utils/api.js')
+    
+    authAPI.getCurrentUser(userId)
+      .then(response => {
+        if (response.code === 200 && response.data) {
+          const ownerInfo = {
+            nickname: response.data.nickname || '用户',
+            avatar: response.data.avatar,
+            hasCustomAvatar: !!(response.data.avatar && response.data.avatar.startsWith('http'))
+          }
+          
+          this.setData({
+            walletOwnerInfo: ownerInfo
+          })
+        }
+      })
+      .catch(error => {
+        console.error('获取钱包所有者信息失败:', error)
+        // 设置默认值
+        this.setData({
+          walletOwnerInfo: {
+            nickname: '用户',
+            avatar: '',
+            hasCustomAvatar: false
+          }
+        })
+      })
+  },
+
+  // 加载交易的用户数据（头像等）
+  loadTransactionsUserData(transactions) {
+    const { authAPI } = require('../../utils/api.js')
+    const userCache = new Map() // 缓存用户信息，避免重复请求
+    
+    // 为每个交易并行加载用户数据
+    const userDataPromises = transactions.map(transaction => {
+      // 如果是AI交易，不需要加载用户头像
+      if (transaction.isAiTransaction) {
+        return Promise.resolve(null)
+      }
+      
+      const userId = transaction.userId || transaction.user_id
+      if (!userId) {
+        return Promise.resolve(null)
+      }
+      
+      // 检查缓存
+      if (userCache.has(userId)) {
+        return Promise.resolve({
+          transactionId: transaction.id,
+          userData: userCache.get(userId)
+        })
+      }
+      
+      return authAPI.getCurrentUser(userId)
+        .then(response => {
+          if (response.code === 200 && response.data) {
+            const userData = {
+              nickname: response.data.nickname || '用户',
+              avatar: response.data.avatar,
+              hasCustomAvatar: !!(response.data.avatar && response.data.avatar.startsWith('http'))
+            }
+            // 缓存用户信息
+            userCache.set(userId, userData)
+            
+            return {
+              transactionId: transaction.id,
+              userData: userData
+            }
+          }
+          return null
+        })
+        .catch(error => {
+          console.error('获取用户信息失败:', error)
+          return null
+        })
+    })
+    
+    // 等待所有用户数据加载完成
+    Promise.all(userDataPromises).then(results => {
+      const updatedTransactions = [...this.data.transactions]
+      
+      results.forEach(result => {
+        if (result) {
+          const transactionIndex = updatedTransactions.findIndex(t => t.id === result.transactionId)
+          if (transactionIndex !== -1) {
+            // 更新交易的用户头像信息
+            updatedTransactions[transactionIndex].userNickname = result.userData.nickname
+            updatedTransactions[transactionIndex].userAvatar = result.userData.avatar
+            updatedTransactions[transactionIndex].hasCustomAvatar = result.userData.hasCustomAvatar
+          }
+        }
+      })
+
+      this.setData({
+        transactions: updatedTransactions
+      })
+    })
   },
 
   // 加载交易的社交数据
@@ -2464,6 +2581,64 @@ Page({
     wx.navigateTo({
       url: `/pages/script-detail/script-detail?walletId=${this.data.walletId}&autoPlay=3`
     })
+  },
+
+  // 跳转到用户兜圈圈个人主页
+  goToUserProfile(e) {
+    const userId = e.currentTarget.dataset.userId
+    const transaction = e.currentTarget.dataset.transaction
+    
+    // 如果是AI交易，不跳转
+    if (transaction && transaction.isAiTransaction) {
+      return
+    }
+    
+    // 如果是自己的交易，跳转到自己的兜圈圈个人主页
+    const currentUserId = app.globalData.userInfo?.id
+    if (userId && userId == currentUserId) {
+      wx.navigateTo({
+        url: '/pages/user-social-profile/user-social-profile'
+      })
+      return
+    }
+    
+    // 如果是其他用户的交易，跳转到对应用户的兜圈圈个人主页
+    if (userId) {
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${userId}`
+      })
+    } else {
+      wx.showToast({
+        title: '用户信息不可用',
+        icon: 'none'
+      })
+    }
+  },
+
+  // 跳转到钱包所有者的兜圈圈个人主页
+  goToWalletOwnerProfile() {
+    const walletOwnerId = this.data.wallet?.userId || this.data.wallet?.user_id
+    const currentUserId = app.globalData.userInfo?.id
+    
+    if (!walletOwnerId) {
+      wx.showToast({
+        title: '用户信息不可用',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 如果是自己的钱包，跳转到自己的兜圈圈个人主页
+    if (walletOwnerId == currentUserId) {
+      wx.navigateTo({
+        url: '/pages/user-social-profile/user-social-profile'
+      })
+    } else {
+      // 如果是其他用户的钱包，跳转到对应用户的兜圈圈个人主页
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${walletOwnerId}`
+      })
+    }
   }
 
 })
