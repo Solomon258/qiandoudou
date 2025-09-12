@@ -1,15 +1,20 @@
 <!--pages/home/home.wxml-->
 <view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="height:{{navHeight}}px">
+    <view class="nav-back" bindtap="onBack">登出</view>
+    <view class="nav-title">{{currentTab === 'wallet' ? '钱兜兜' : '兜圈圈'}}</view>
+  </view>
   <!-- 钱兜兜页面 -->
   <view wx:if="{{currentTab === 'wallet'}}" class="wallet-page">
     <!-- 顶部导航栏 -->
     <view class="top-nav">
-      <view class="nav-left">
+      <!-- <view class="nav-left">
         <view class="back-btn" bindtap="handleLogout">
           <text class="back-arrow">‹</text>
         </view>
         <text class="nav-title">钱兜兜</text>
-      </view>
+      </view> -->
       <view class="nav-right">
         <view class="notification-icon-new" bindtap="showNotifications">
           <image class="notification-icon-img" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/7AB14F84-3AAF-42E6-9C09-AD1AC9545E14.png" mode="aspectFit"/>
@@ -74,10 +79,10 @@
   <view wx:if="{{currentTab === 'social'}}" class="social-page">
     <!-- 顶部导航栏 -->
     <view class="social-top-nav">
-      <view class="nav-left" bindtap="handleBack">
+      <!-- <view class="nav-left" bindtap="handleBack">
         <view class="back-icon"></view>
       </view>
-      <view class="nav-title">兜圈圈</view>
+      <view class="nav-title">兜圈圈</view> -->
       <view class="nav-right">
         <view class="user-icon-new" bindtap="navigateToUserSocialProfile">
           <image class="user-icon-img" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png" mode="aspectFit"/>
@@ -148,15 +153,15 @@
   <view class="bottom-nav">
     <view class="nav-item {{currentTab === 'wallet' ? 'active' : ''}}" bindtap="switchTab" data-tab="wallet">
       <view class="nav-icon-container">
-        <image class="notification-icon-img2" wx:if="{{currentTab === 'wallet'}}" src="/static/icon/qiandoudou.svg" mode="aspectFit"/>
-        <image class="notification-icon-img2"  wx:else src="/static/icon/qian_active.svg" mode="aspectFit"/>
+        <image class="notification-icon-img2" wx:if="{{currentTab === 'wallet'}}" src="/static/icon/qian_active.svg" mode="aspectFit"/>
+        <image class="notification-icon-img2"  wx:else src="/static/icon/qiandoudou.svg" mode="aspectFit"/>
       </view>
       <text class="nav-text">钱兜兜</text>
     </view>
     <view class="nav-item {{currentTab === 'social' ? 'active' : ''}}" bindtap="switchTab" data-tab="social">
       <view class="nav-icon-container">
-        <image wx:if="{{currentTab === 'social'}}" class="notification-icon-img2" src="/static/icon/douquanquan.svg" mode="aspectFit"/>
-        <image wx:else class="notification-icon-img2" src="/static/icon/douquan_active.svg" mode="aspectFit"/>
+        <image wx:if="{{currentTab === 'social'}}" class="notification-icon-img2" src="/static/icon/douquan_active.svg" mode="aspectFit"/>
+        <image wx:else class="notification-icon-img2" src="/static/icon/douquanquan.svg" mode="aspectFit"/>
       </view>
       <text class="nav-text">兜圈圈</text>
     </view>
@@ -167,7 +172,9 @@
     <view class="wallet-type-modal" catchtap="stopPropagation">
       <!-- 模态框头部 -->
       <view class="modal-header">
-        <text class="modal-title">选择钱兜兜用途</text>
+        <view class="modal-title">
+          <text>选择钱兜兜用途</text>
+        </view>
         <!-- 只有非首次用户才显示关闭按钮 -->
         <view wx:if="{{!isFirstTimeUser}}" class="modal-close" bindtap="hideWalletTypeModal">
           <text class="close-icon">×</text>

@@ -9,13 +9,12 @@
   <!-- 主要内容 -->
   <view wx:else>
     <!-- 顶部导航栏 -->
-    <view class="top-nav">
-    <view class="nav-left">
-      <!-- 回退按钮已移除 -->
-    </view>
-    <view class="nav-title">兜圈圈个人主页</view>
-    <view class="nav-right"></view>
-  </view>
+    <!-- <view class="top-nav">
+      <view class="nav-left">
+      </view>
+      <view class="nav-title">兜圈圈个人主页</view>
+      <view class="nav-right"></view>
+    </view> -->
 
   <!-- 用户信息区域 -->
   <view class="user-info-section">

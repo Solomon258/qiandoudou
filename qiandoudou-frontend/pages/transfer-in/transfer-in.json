@@ -1,5 +1,4 @@
 {
-  "navigationStyle": "custom",
-  "backgroundColor": "#f1f2f3",
-  "enablePullDownRefresh": false
+  "navigationBarTitleText": "转入",
+  "backgroundTextStyle": "dark"
 }

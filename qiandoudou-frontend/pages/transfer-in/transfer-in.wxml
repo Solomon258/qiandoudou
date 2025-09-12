@@ -1,18 +1,5 @@
 <!--pages/transfer-in/transfer-in.wxml-->
 <view class="container">
-  <!-- 顶部导航 -->
-  <view class="top-nav">
-    <view class="nav-left">
-      <view class="back-btn" bindtap="goBack">
-        <text class="back-arrow">‹</text>
-      </view>
-    </view>
-    <view class="nav-center">
-      <text class="nav-title">转入</text>
-    </view>
-    <view class="nav-right"></view>
-  </view>
-
   <!-- 页签切换 -->
   <view class="tab-section">
     <view class="tab-item {{activeTab === 'direct' ? 'active' : ''}}" bindtap="switchTab" data-tab="direct">

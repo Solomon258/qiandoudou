@@ -11,18 +11,6 @@
   padding-bottom: 97px;
 }
 
-/* 顶部导航栏 */
-.top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 48px;
-  background: transparent;
-  padding: 0 16px;
-  position: relative;
-  z-index: 10;
-}
-
 .nav-left {
   display: flex;
   flex-direction: row;
@@ -51,13 +39,6 @@
   font-weight: 300;
 }
 
-.nav-title {
-  font-size: 16px;
-  height: 48px;
-  line-height: 48px;
-  font-weight: 600;
-  color: #000000e6;
-}
 
 .nav-right {
   display: flex;
@@ -188,7 +169,7 @@
 
 /* 钱包列表区域 */
 .wallet-list-section {
-  padding: 16px;
+  padding: 32rpx;
   margin-top: 0px;
 }
 
@@ -205,7 +186,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 24rpx;
 }
 
 .wallet-card:last-child {
@@ -991,7 +972,7 @@
 
 /* 模态框底部 */
 .modal-footer {
-  padding: 20px;
+  padding: 40rpx 40rpx 96rpx 40rpx;
 }
 
 .confirm-create-btn {
@@ -1174,13 +1155,6 @@
   position: relative;
 }
 
-/* 兜圈圈顶部导航栏 */
-.social-top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fff;
-}
 
 .social-top-nav .nav-left {
   width: 32px;
@@ -1329,9 +1303,9 @@
 
 /* 动态列表 */
 .social-posts-scroll {
-  height: calc(100vh - 140px); /* 减去顶部导航和底部导航高度 */
-  padding: 16px;
-  width: calc(100% - 32px);
+  height: calc(100vh - 280rpx); /* 减去顶部导航和底部导航高度 */
+  padding: 32rpx;
+  width: calc(100% - 64rpx);
 }
 
 .social-empty-state {
@@ -1355,7 +1329,7 @@
   position: relative;
   width: 100%;
   height: 309px;
-  margin-bottom: 16px;
+  margin-bottom: 24rpx;
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%); /* 默认渐变背景 */
@@ -1512,9 +1486,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
   background: transparent;
-  padding: 0 16px;
+  padding: 20rpx 32rpx 0;
   position: relative;
   z-index: 10;
 }
@@ -1547,13 +1520,6 @@
   font-weight: 300;
 }
 
-.nav-title {
-  font-size: 16px;
-  height: 48px;
-  line-height: 48px;
-  font-weight: 600;
-  color: #000000e6;
-}
 
 .nav-right {
   display: flex;
@@ -1681,31 +1647,6 @@
   left: 8px;
 }
 
-/* 钱包列表区域 */
-.wallet-list-section {
-  padding: 16px;
-  margin-top: 0px;
-}
-
-.wallet-card {
-  position: relative;
-  height: 140px;
-  border-radius: 8px;
-  padding: 0;
-  color: white;
-  overflow: hidden;
-  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.wallet-card:last-child {
-  margin-bottom: 0;
-}
 
 /* 保留原有的主钱包样式用于兼容性 */
 .main-wallet-section {
@@ -2361,7 +2302,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  justify-content: center;
   font-family:PingFang SC;
   font-weight:500;
   color:rgba(0, 0, 0, 0.9);
@@ -2369,22 +2309,25 @@
 }
 
 .modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-family:PingFang SC;
+  font-weight:500;
+  color:rgba(0, 0, 0, 0.9);
+  font-size: 32rpx;
+  text-align: center;
+  width: 100%;
 }
 
 .modal-close {
-  width: 32px;
-  height: 32px;
+  /* width: 32px;
+  height: 32px; */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .close-icon {
-  font-size: 24px;
-  color: #999;
+  font-size: 38rpx;
+  color: rgba(0, 0, 0, 0.8);
 }
 
 /* 钱包类型选项 */
@@ -2646,8 +2589,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 16px 16px; /* 考虑状态栏高度 */
-  background: #fff;
+  padding: 10rpx 32rpx; /* 考虑状态栏高度 */
 }
 
 .social-top-nav .nav-left {
@@ -2795,11 +2737,6 @@
   left: 8px;
 }
 
-/* 动态列表 */
-.social-posts-scroll {
-  height: calc(100vh - 140px); /* 减去顶部导航和底部导航高度 */
-  padding: 16px;
-}
 
 .social-empty-state {
   text-align: center;
@@ -2815,117 +2752,6 @@
 .social-empty-state .empty-text {
   font-size: 14px;
   color: #999;
-}
-
-/* 动态卡片 */
-.social-post-card {
-  position: relative;
-  width: 100%;
-  height: 309px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%); /* 默认渐变背景 */
-}
-
-.social-post-card .post-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-
-.social-post-card .post-main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-
-.social-post-card .post-amount {
-  font-size: 18px;
-  font-weight: 800;
-  color: #000000e6;
-  text-align: right;
-}
-
-.social-post-card .post-tags-desc {
-  margin-bottom: 16px;
-}
-
-.social-post-card .tag {
-  font-size: 12px;
-  color: #00000099;
-  margin-right: 8px;
-}
-
-.social-post-card .description {
-  font-size: 12px;
-  color: #00000099;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 240px;
-}
-
-/* 最新账单交易 */
-.social-post-card .recent-transactions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.social-post-card .transaction-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.social-post-card .transaction-user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
-  background: #e6e6e6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.social-post-card .transaction-user-avatar .avatar-text {
-  font-size: 12px;
-  color: #666;
-}
-
-.social-post-card .transaction-content {
-  flex: 1;
-  background: #f0f8ff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.social-post-card .transaction-desc {
-  font-size: 12px;
-  color: #000000e6;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 180px;
-}
-
-.social-post-card .amount-change {
-  font-size: 12px;
-  color: #ee6811;
-  font-weight: 800;
-  flex-shrink: 0;
 }
 
 /* 参与人数 */
@@ -2965,4 +2791,33 @@
 .share-icon {
   width: 29px;
   height: 29px;
+}
+/* pages/home/home.wxss */
+.custom-nav {
+  display: flex;
+  align-items: center;
+  padding-top: var(--status-bar-height);
+  position: relative;
+}
+
+.nav-back {
+  position: absolute;
+  bottom: 30rpx;
+  left: 20rpx;
+}
+
+.nav-title {
+  /*flex: 1;
+  text-align: center;
+  padding-right: 80px;  让标题居中，因为返回按钮占位 */
+  position: absolute;
+  bottom: 30rpx;
+  left: calc((100% - 80px)/2);
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.content {
+  padding: 20rpx;
 }
