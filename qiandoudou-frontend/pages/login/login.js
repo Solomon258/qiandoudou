@@ -8,10 +8,20 @@ Page({
     loginType: '', // 'wechat', 'phone', 'register'
     showRegisterForm: false,
     showLoginForm: false,
-    showAuthPanel: false, // 是否显示授权面板
-    userId: null, // 用户ID
-    tempAvatar: '', // 临时头像URL
-    tempNickname: '', // 临时昵称
+    showAuthPanel: false, // 保留授权面板代码，但不再使用
+    userId: null, // 保留用户ID
+    tempAvatar: '', // 保留临时头像URL
+    tempNickname: '', // 保留临时昵称
+    
+    // 新登录页面数据
+    phoneNumber: '',
+    verificationCode: '',
+    agreeTerms: false,
+    isPhoneValid: false,
+    canLogin: false,
+    codeCountdown: 0,
+    countdownTimer: null,
+    
     registerForm: {
       username: '',
       password: '',
@@ -26,16 +36,6 @@ Page({
   },
 
   onLoad(options) {
-    // 检查是否需要显示授权面板
-    if (options.showAuth === 'true' && options.userId) {
-      console.log('显示授权面板，用户ID:', options.userId)
-      this.setData({
-        showAuthPanel: true,
-        userId: options.userId
-      })
-      return
-    }
-    
     // 检查是否已登录
     if (app.isLoggedIn()) {
       wx.redirectTo({
@@ -44,8 +44,207 @@ Page({
     }
   },
 
+  onUnload() {
+    // 清理定时器
+    if (this.data.countdownTimer) {
+      clearInterval(this.data.countdownTimer)
+    }
+  },
+
+  // 手机号输入处理
+  onPhoneInput(e) {
+    const phoneNumber = e.detail.value
+    const isPhoneValid = this.validatePhone(phoneNumber)
+    
+    this.setData({
+      phoneNumber,
+      isPhoneValid,
+      canLogin: isPhoneValid && this.data.verificationCode.length === 6 && this.data.agreeTerms
+    })
+  },
+
+  // 验证码输入处理
+  onCodeInput(e) {
+    const verificationCode = e.detail.value
+    
+    this.setData({
+      verificationCode,
+      canLogin: this.data.isPhoneValid && verificationCode.length === 6 && this.data.agreeTerms
+    })
+  },
+
+  // 手机号格式验证
+  validatePhone(phone) {
+    const phoneRegex = /^1[3-9]\d{9}$/
+    return phoneRegex.test(phone)
+  },
+
+  // 获取验证码
+  getVerificationCode() {
+    if (!this.data.isPhoneValid) {
+      wx.showToast({
+        title: '请输入正确的手机号',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 生成6位随机验证码
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    
+    // 模拟填入验证码
+    this.setData({
+      verificationCode: code,
+      canLogin: this.data.isPhoneValid && code.length === 6 && this.data.agreeTerms,
+      codeCountdown: 60
+    })
+
+    // 开始倒计时
+    this.startCountdown()
+
+    wx.showToast({
+      title: `验证码：${code}`,
+      icon: 'none',
+      duration: 3000
+    })
+  },
+
+  // 开始倒计时
+  startCountdown() {
+    if (this.data.countdownTimer) {
+      clearInterval(this.data.countdownTimer)
+    }
+
+    const timer = setInterval(() => {
+      const countdown = this.data.codeCountdown - 1
+      if (countdown <= 0) {
+        clearInterval(timer)
+        this.setData({
+          codeCountdown: 0,
+          countdownTimer: null
+        })
+      } else {
+        this.setData({
+          codeCountdown: countdown
+        })
+      }
+    }, 1000)
+
+    this.setData({
+      countdownTimer: timer
+    })
+  },
+
+  // 切换协议同意状态
+  toggleAgreeTerms() {
+    const newAgreeTerms = !this.data.agreeTerms
+    
+    if (!newAgreeTerms) {
+      // 如果取消勾选，震动提醒
+      wx.vibrateShort({
+        type: 'medium'
+      })
+      wx.showToast({
+        title: '请勾选用户协议',
+        icon: 'none'
+      })
+    }
+
+    this.setData({
+      agreeTerms: newAgreeTerms,
+      canLogin: this.data.isPhoneValid && this.data.verificationCode.length === 6 && newAgreeTerms
+    })
+  },
+
+  // 手机号登录
+  handlePhoneLogin() {
+    console.log('handlePhoneLogin方法被调用')
+    console.log('当前数据状态:', {
+      agreeTerms: this.data.agreeTerms,
+      isPhoneValid: this.data.isPhoneValid,
+      phoneNumber: this.data.phoneNumber,
+      verificationCode: this.data.verificationCode,
+      canLogin: this.data.canLogin
+    })
+    
+    if (!this.data.agreeTerms) {
+      wx.vibrateShort({
+        type: 'medium'
+      })
+      wx.showToast({
+        title: '请先勾选用户协议',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (!this.data.isPhoneValid) {
+      wx.showToast({
+        title: '请输入正确的手机号',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (this.data.verificationCode.length !== 6) {
+      wx.showToast({
+        title: '请输入6位验证码',
+        icon: 'none'
+      })
+      return
+    }
+
+    this.setData({ 
+      loading: true,
+      loginType: 'phone'
+    })
+
+    // 调用后端手机号登录接口
+    console.log('开始调用手机号登录接口', {
+      phone: this.data.phoneNumber,
+      code: this.data.verificationCode
+    })
+    
+    authAPI.phoneLogin(this.data.phoneNumber, this.data.verificationCode)
+      .then(result => {
+        console.log('手机号登录成功', result)
+        const { token, user } = result.data
+        app.setLoginInfo(token, user)
+        
+        wx.showToast({
+          title: '登录成功',
+          icon: 'success'
+        })
+
+        setTimeout(() => {
+          wx.redirectTo({
+            url: '/pages/home/home'
+          })
+        }, 1500)
+      })
+      .catch(error => {
+        console.error('手机号登录失败', error)
+        wx.showToast({
+          title: error.message || '登录失败',
+          icon: 'none'
+        })
+        this.setData({ loading: false, loginType: '' })
+      })
+  },
+
   // 微信登录
   handleWechatLogin() {
+    if (!this.data.agreeTerms) {
+      wx.vibrateShort({
+        type: 'medium'
+      })
+      wx.showToast({
+        title: '请先勾选用户协议',
+        icon: 'none'
+      })
+      return
+    }
+
     this.setData({ 
       loading: true,
       loginType: 'wechat'
@@ -88,26 +287,18 @@ Page({
               
               console.log('微信登录成功 - 用户:', user.nickname || user.username, '首次登录:', isFirstLogin)
               
-              if (isFirstLogin) {
-                console.log('首次登录，跳转到授权页面...')
-                
-                // 首次登录，跳转到专门的授权页面
+              // 不论是否为首次登录，都直接跳转到首页
+              wx.showToast({
+                title: '微信登录成功',
+                icon: 'success'
+              })
+              
+              // 直接跳转首页
+              setTimeout(() => {
                 wx.redirectTo({
-                  url: '/pages/login/login?showAuth=true&userId=' + user.id
+                  url: '/pages/home/home'
                 })
-              } else {
-                wx.showToast({
-                  title: '微信登录成功',
-                  icon: 'success'
-                })
-                
-                // 已有头像，直接跳转首页
-                setTimeout(() => {
-                  wx.redirectTo({
-                    url: '/pages/home/home'
-                  })
-                }, 1500)
-              }
+              }, 1500)
             })
             .catch(error => {
               console.error('微信登录失败:', error.message)
@@ -139,16 +330,6 @@ Page({
     })
   },
 
-  // 显示登录表单
-  handlePhoneLogin() {
-    this.setData({ 
-      showLoginForm: true,
-      loginForm: {
-        username: '',
-        password: ''
-      }
-    })
-  },
 
   // 隐藏登录表单
   hideLoginForm() {

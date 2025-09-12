@@ -44,4 +44,9 @@ public interface UserService extends IService<User> {
      * 根据openid获取用户
      */
     User getUserByOpenid(String openid);
+
+    /**
+     * 手机号登录
+     */
+    Map<String, Object> phoneLogin(String phone, String code);
 }

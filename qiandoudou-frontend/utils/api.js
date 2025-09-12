@@ -3,7 +3,7 @@ const app = getApp()
 
 // 后端API基础地址
 // const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
+const BASE_URL = 'http://192.168.43.188:8080/api'  // IP访问（用于微信小程序调试）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
@@ -27,12 +27,27 @@ function request(options) {
       header['Authorization'] = `Bearer ${token}`
     }
 
+    // 添加调试信息
+    if (options.url.includes('/auth/phone-login')) {
+      console.log('发起手机号登录请求', {
+        url: `${BASE_URL}${options.url}`,
+        method: options.method || 'GET',
+        data: options.data,
+        header: header
+      })
+    }
+
     wx.request({
       url: `${BASE_URL}${options.url}`,
       method: options.method || 'GET',
       data: options.data,
       header: header,
       success: (res) => {
+        // 添加调试信息
+        if (options.url.includes('/auth/phone-login')) {
+          console.log('手机号登录请求响应', res)
+        }
+        
         // 只在开发模式下输出详细日志
         if (options.debug !== false) {
 
@@ -64,15 +79,16 @@ function request(options) {
         }
       },
       fail: (error) => {
+        // 添加调试信息
+        if (options.url.includes('/auth/phone-login')) {
+          console.error('手机号登录请求失败', error)
+        }
+        
         // 只在网络真正失败时输出错误
-
-
-
-
-
-
-
-
+        console.error('网络请求失败:', {
+          url: `${BASE_URL}${options.url}`,
+          error: error
+        })
         
         // 根据错误类型提供更具体的错误信息
         let errorMessage = '网络连接失败'
@@ -118,6 +134,7 @@ const authAPI = {
 
   // 手机号登录
   phoneLogin(phone, code) {
+    console.log('phoneLogin API调用', { phone, code })
     return request({
       url: '/auth/phone-login',
       method: 'POST',

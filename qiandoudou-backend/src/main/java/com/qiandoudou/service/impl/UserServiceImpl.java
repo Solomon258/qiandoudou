@@ -316,4 +316,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.eq(User::getOpenid, openid);
         return getOne(queryWrapper);
     }
+
+    @Override
+    public Map<String, Object> phoneLogin(String phone, String code) {
+        try {
+            System.out.println("开始手机号登录，手机号: " + phone + ", 验证码: " + code);
+            
+            // 查找是否已有该手机号的用户
+            User user = getUserByPhone(phone);
+            
+            if (user == null) {
+                // 如果用户不存在，创建新用户（登录即注册）
+                user = new User();
+                user.setUsername("phone_" + phone); // 用手机号作为用户名
+                user.setNickname("用户" + phone.substring(phone.length() - 4)); // 用手机号后4位作为昵称
+                user.setPhone(phone);
+                user.setPassword(""); // 手机号登录用户设置空密码
+                user.setAvatar("https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default_avatar.png");
+                save(user);
+                System.out.println("创建新手机号用户: " + user.getId() + ", 手机号: " + phone);
+            } else {
+                System.out.println("找到现有手机号用户: " + user.getId() + ", 手机号: " + phone);
+            }
+            
+            // 生成JWT token
+            String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            result.put("user", user);
+            
+            System.out.println("手机号登录完成，用户: " + user.getNickname());
+            return result;
+        } catch (Exception e) {
+            System.err.println("手机号登录异常: " + e.getMessage());
+            throw new RuntimeException("手机号登录失败: " + e.getMessage());
+        }
+    }
 }

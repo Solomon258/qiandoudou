@@ -86,6 +86,48 @@ public class AuthController {
     }
 
     /**
+     * 手机号登录
+     */
+    @PostMapping("/phone-login")
+    public Result<Map<String, Object>> phoneLogin(@RequestBody Map<String, String> request) {
+        try {
+            String phone = request.get("phone");
+            String code = request.get("code");
+
+            if (phone == null || phone.isEmpty()) {
+                return Result.error("手机号不能为空");
+            }
+
+            if (code == null || code.isEmpty()) {
+                return Result.error("验证码不能为空");
+            }
+
+            // 验证手机号格式
+            if (!phone.matches("^1[3-9]\\d{9}$")) {
+                return Result.error("手机号格式不正确");
+            }
+
+            // 验证码长度检查（这里是模拟验证，实际项目中应该验证真实验证码）
+            if (code.length() != 6) {
+                return Result.error("验证码格式不正确");
+            }
+
+            // 调用手机号登录服务
+            Map<String, Object> loginResult = userService.phoneLogin(phone, code);
+            String token = (String) loginResult.get("token");
+            User user = (User) loginResult.get("user");
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            result.put("user", user);
+
+            return Result.success("登录成功", result);
+        } catch (Exception e) {
+            return Result.error("登录失败：" + e.getMessage());
+        }
+    }
+
+    /**
      * 获取当前用户信息
      */
     @GetMapping("/current-user")

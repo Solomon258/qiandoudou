@@ -73,10 +73,12 @@ public class ImageToTextServiceImpl implements ImageToTextService {
             HttpPost httpPost = new HttpPost(apiUrl);
             httpPost.setHeader("Content-Type", "application/json");
 
-            // 构造请求体
+            // 构造请求体 - 添加中文限制
+            String finalPrompt = prompt != null ? prompt : "你是一个朋友圈文案助手，根据图片生成朋友圈的文案，少于100字，不要生成其他内容,不要思考太久";
+            finalPrompt += "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。";
             Map<String, Object> payload = new HashMap<>();
             payload.put("image", new String[]{imageBase64});
-            payload.put("prompt", prompt != null ? prompt : "你是一个朋友圈文案助手，根据图片生成朋友圈的文案，少于100字，不要生成其他内容,不要思考太久");
+            payload.put("prompt", finalPrompt);
 
             String jsonPayload = objectMapper.writeValueAsString(payload);
             StringEntity entity = new StringEntity(jsonPayload, StandardCharsets.UTF_8);
@@ -189,9 +191,10 @@ public class ImageToTextServiceImpl implements ImageToTextService {
             HttpPost httpPost = new HttpPost(apiUrl);
             httpPost.setHeader("Content-Type", "application/json");
             
-            // 构建请求体（不包含图片）
+            // 构建请求体（不包含图片）- 添加中文限制
+            String finalPrompt = prompt + "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。";
             Map<String, Object> requestData = new HashMap<>();
-            requestData.put("prompt", prompt);
+            requestData.put("prompt", finalPrompt);
             // 不传image字段，只传文本
             
             String jsonRequest = objectMapper.writeValueAsString(requestData);
