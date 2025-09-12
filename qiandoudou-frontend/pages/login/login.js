@@ -145,7 +145,7 @@ Page({
         type: 'medium'
       })
       wx.showToast({
-        title: '请勾选用户协议',
+        title: '请勾选协议',
         icon: 'none'
       })
     }
@@ -172,7 +172,7 @@ Page({
         type: 'medium'
       })
       wx.showToast({
-        title: '请先勾选用户协议',
+        title: '请勾选协议',
         icon: 'none'
       })
       return
@@ -239,7 +239,7 @@ Page({
         type: 'medium'
       })
       wx.showToast({
-        title: '请先勾选用户协议',
+        title: '请勾选协议',
         icon: 'none'
       })
       return

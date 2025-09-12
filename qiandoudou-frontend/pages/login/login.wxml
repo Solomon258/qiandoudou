@@ -84,12 +84,12 @@
         </view>
 
         <!-- 登录按钮 -->
-        <button class="login-btn" bindtap="handlePhoneLogin" disabled="{{!canLogin || loading}}">
+        <button class="login-btn" bindtap="handlePhoneLogin" disabled="{{loading}}">
           {{loading && loginType === 'phone' ? '登录中...' : '登录'}}
         </button>
 
         <!-- 微信登录按钮 -->
-        <button class="login-btn wx" bindtap="handleWechatLogin" disabled="{{!agreeTerms || loading}}">
+        <button class="login-btn wx" bindtap="handleWechatLogin" disabled="{{loading}}">
           <image class="wechat-icon" src="/static/icon/wx_logo.png"></image>
           <text class="wechat-text">{{loading && loginType === 'wechat' ? '登录中...' : '微信登录'}}</text>
         </button>
