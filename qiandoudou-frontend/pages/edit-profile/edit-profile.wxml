@@ -47,9 +47,9 @@
     <view class="info-item">
       <text class="item-label">昵称</text>
       <view class="item-content">
-        <view class="nickname-display" bindtap="editNickname">
+        <!-- <view class="nickname-display" bindtap="editNickname">
           <text class="item-value">{{userInfo.nickname || '昆虫记'}}</text>
-        </view>
+        </view> -->
         
         <!-- 微信昵称选择按钮 -->
         <view class="wechat-nickname-section" wx:if="{{showWechatAvatarOption}}">
@@ -65,6 +65,7 @@
              type="nickname" 
              value="{{userInfo.nickname || '昆虫记'}}"
              bind:input="onWechatNicknameSelected" />
+        <!-- <view class="arrow-icon" bindtap="onWechatNicknameSelected"></view> -->
       </view>
     </view>
     

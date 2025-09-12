@@ -63,21 +63,21 @@ Page({
     }
     app.globalData.eventBus.on('walletPublicStatusChanged', this.walletStatusChangeHandler)
   },
-  onBack() {
-    // 显示模态框
-    wx.showModal({
-      title: '确认退出',
-      content: '确定要退出登录吗？',
-      success: (modalRes) => {
-        if (modalRes.confirm) {
-          app.clearLoginInfo()
-          wx.redirectTo({
-            url: '/pages/login/login'
-          })
-        }
-      }
-    })
-  },
+  // onBack() {
+  //   // 显示模态框
+  //   wx.showModal({
+  //     title: '确认退出',
+  //     content: '确定要退出登录吗？',
+  //     success: (modalRes) => {
+  //       if (modalRes.confirm) {
+  //         app.clearLoginInfo()
+  //         wx.redirectTo({
+  //           url: '/pages/login/login'
+  //         })
+  //       }
+  //     }
+  //   })
+  // },
   onShow() {
     // 每次显示页面时刷新数据
     if (app.isLoggedIn()) {
@@ -766,20 +766,20 @@ Page({
   },
 
   // 退出登录
-  handleLogout() {
-    wx.showModal({
-      title: '确认退出',
-      content: '确定要退出登录吗？',
-      success: (modalRes) => {
-        if (modalRes.confirm) {
-          app.clearLoginInfo()
-          wx.redirectTo({
-            url: '/pages/login/login'
-          })
-        }
-      }
-    })
-  },
+  // handleLogout() {
+  //   wx.showModal({
+  //     title: '确认退出',
+  //     content: '确定要退出登录吗？',
+  //     success: (modalRes) => {
+  //       if (modalRes.confirm) {
+  //         app.clearLoginInfo()
+  //         wx.redirectTo({
+  //           url: '/pages/login/login'
+  //         })
+  //       }
+  //     }
+  //   })
+  // },
 
   // 加载未读消息数量
   loadUnreadMessageCount() {

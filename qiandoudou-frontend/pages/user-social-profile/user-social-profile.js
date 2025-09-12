@@ -335,6 +335,21 @@ Page({
       url: '/pages/edit-profile/edit-profile'
     })
   },
+  // 退出登录
+  handleLogout() {
+    wx.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (modalRes) => {
+        if (modalRes.confirm) {
+          app.clearLoginInfo()
+          wx.redirectTo({
+            url: '/pages/login/login'
+          })
+        }
+      }
+    })
+  },
 
   // 点击公开钱包卡片
   onPublicWalletTap(e) {

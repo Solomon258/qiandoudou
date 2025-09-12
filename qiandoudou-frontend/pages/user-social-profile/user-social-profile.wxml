@@ -51,10 +51,16 @@
       </view>
     </view>
 
+  <view class="do_btn">
     <!-- 编辑资料按钮 -->
-    <view class="edit-profile-btn" bindtap="editProfile">
+    <view class="edit-profile-btn" style="margin-right:16rpx" bindtap="editProfile">
       <text class="edit-text">编辑资料</text>
     </view>
+    <!-- 退出登录 -->
+    <view class="edit-profile-btn" bindtap="handleLogout">
+      <text class="edit-text">退出登录</text>
+    </view>
+  </view>
   </view>
 
   <!-- 公开的钱兜兜 -->

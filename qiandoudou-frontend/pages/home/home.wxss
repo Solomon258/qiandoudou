@@ -88,8 +88,8 @@
 
 /* 新的通知图标样式（钱兜兜页面） */
 .notification-icon-new {
-  width: 32px;
-  height: 32px;
+  /* width: 32px;
+  height: 32px; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1197,7 +1197,7 @@
 }
 
 /* 新的用户图标样式 */
-.social-top-nav .user-icon-new {
+.user-icon-new {
   width: 24px;
   height: 24px;
   display: flex;
@@ -1212,8 +1212,8 @@
 
 /* 新的通知图标样式 */
 .social-top-nav .notification-icon-new {
-  width: 24px;
-  height: 24px;
+  /* width: 24px;
+  height: 24px; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1569,12 +1569,13 @@
 
 /* 新的通知图标样式（钱兜兜页面） */
 .notification-icon-new {
-  width: 32px;
-  height: 32px;
+  /* width: 32px;
+  height: 32px; */
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  margin-left: 48rpx;
+  /* position: relative; */
 }
 
 .notification-icon-img {
@@ -2632,14 +2633,6 @@
   gap: 12px;
 }
 
-/* 新的用户图标样式 */
-.social-top-nav .user-icon-new {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .social-top-nav .user-icon-img {
   width: 24px;
@@ -2804,6 +2797,7 @@
   position: absolute;
   bottom: 30rpx;
   left: 20rpx;
+  display: flex;
 }
 
 .nav-title {
