@@ -66,7 +66,7 @@
         <!-- 用户互动消息 -->
         <view class="interactions">
           <view wx:for="{{item.comments}}" wx:key="index" class="interaction-item">
-            <view class="user-avatar" bindtap="navigateToUserSocialProfile" catchtap="navigateToUserSocialProfile">
+            <view class="user-avatar" bindtap="navigateToCommentUserProfile" catchtap="navigateToCommentUserProfile" data-user-id="{{item.userId}}" data-username="{{item.username}}">
               <text class="avatar-text">{{item.username.charAt(0)}}</text>
             </view>
             <view class="interaction-content">

@@ -24,11 +24,15 @@ Page({
   onLoad(options) {
     // 获取用户ID参数（如果有的话）
     const userId = options.userId || app.globalData.userInfo?.id
+    const username = options.username
+    
+    console.log('用户社交主页加载参数:', { userId, username })
+    
     if (userId) {
-      this.setData({ userId })
+      this.setData({ userId, username })
       this.loadUserData(userId)
     } else {
-
+      console.log('用户ID为空，使用默认信息')
       wx.showToast({
         title: '用户信息获取失败',
         icon: 'none'
@@ -44,8 +48,56 @@ Page({
 
   // 加载用户信息
   loadUserInfo() {
+    const currentUserId = this.data.userId
+    const currentUsername = this.data.username
+    
+    console.log('个人主页加载用户信息, 目标用户ID:', currentUserId, '用户名:', currentUsername)
+    
+    // 如果有传入的userId且不是当前登录用户，显示对应用户的信息
+    if (currentUserId && currentUserId != (app.globalData.userInfo?.id)) {
+      // 这是别人的主页，使用模拟数据或从后端获取
+      const mockUsers = {
+        201: {
+          nickname: '冲动的',
+          description: '一个冲动的投资者，喜欢尝试新的理财方式',
+          avatar: ''
+        },
+        202: {
+          nickname: '足呱呱',
+          description: '专注于日常记账和小额投资',
+          avatar: ''
+        },
+        203: {
+          nickname: '朱敏多',
+          description: '善于发现生活中的小确幸和小收获',
+          avatar: ''
+        }
+      }
+      
+      const targetUserInfo = mockUsers[currentUserId] || {
+        nickname: currentUsername || `用户${currentUserId}`,
+        description: '这个人很懒，什么都没留下',
+        avatar: ''
+      }
+      
+      const displayUserInfo = {
+        nickname: targetUserInfo.nickname,
+        avatar: targetUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+        description: targetUserInfo.description,
+        hasCustomAvatar: !!(targetUserInfo.avatar && !targetUserInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
+      }
+
+      console.log('显示其他用户的信息:', displayUserInfo)
+      
+      this.setData({
+        userInfo: displayUserInfo
+      })
+      return
+    }
+    
+    // 这是自己的主页，显示当前登录用户信息
     const userInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
-    console.log('个人主页加载用户信息:', userInfo)
+    console.log('个人主页加载自己的用户信息:', userInfo)
     
     if (userInfo) {
       // 有本地用户信息，直接使用
@@ -63,7 +115,7 @@ Page({
       })
     } else {
       // 本地用户信息为空，尝试从后端获取
-
+      console.log('本地用户信息为空，从服务器获取')
       this.loadUserInfoFromServer()
     }
   },

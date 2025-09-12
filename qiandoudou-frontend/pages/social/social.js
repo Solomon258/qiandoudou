@@ -23,11 +23,13 @@ Page({
         participantCount: 2,
         comments: [
           {
+            userId: 201,
             username: '冲动的',
             message: '来啦记得回',
             avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
           },
           {
+            userId: 202,
             username: '足呱呱',
             message: '好漂亮',
             avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
@@ -47,12 +49,14 @@ Page({
         participantCount: 2,
         comments: [
           {
+            userId: 203,
             username: '朱敏多',
             message: '今天在垃圾桶捡到五块',
             avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
             amount: '+¥100.00'
           },
           {
+            userId: 202,
             username: '足呱呱',
             message: '来啦来啦',
             avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
@@ -269,6 +273,26 @@ Page({
         });
       }
     });
+  },
+
+  // 点击评论用户头像跳转到该用户的主页
+  navigateToCommentUserProfile(e) {
+    const userId = e.currentTarget.dataset.userId;
+    const username = e.currentTarget.dataset.username;
+    
+    console.log('点击评论用户头像，用户ID:', userId, '用户名:', username);
+    
+    if (userId) {
+      // 跳转到用户主页，传入用户ID
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${userId}&username=${username}`
+      });
+    } else {
+      wx.showToast({
+        title: '用户信息获取失败',
+        icon: 'none'
+      });
+    }
   },
 
   // 显示用户菜单（保留原有功能）

@@ -64,9 +64,73 @@ Page({
   // 加载用户资料
   loadUserProfile() {
     const userId = parseInt(this.data.userId)
-
+    const currentLoginUserId = app.globalData.userInfo?.id
     
-    // 首先尝试从本地存储获取用户信息（包括头像）
+    console.log('用户主页加载用户资料, 目标用户ID:', userId, '当前登录用户ID:', currentLoginUserId)
+    
+    // 如果是查看别人的主页，使用模拟数据
+    if (userId && userId !== currentLoginUserId) {
+      // 根据userId使用不同的模拟数据
+      const mockUsers = {
+        101: {
+          id: 101,
+          nickname: '宝儿',
+          avatar: '',
+          description: '一年每天自动存一块已到期（说真的，突然…',
+          tags: ['生活', '攒钱']
+        },
+        102: {
+          id: 102,
+          nickname: '朱敏',
+          avatar: '',
+          description: '给发哥攒钱买车',
+          tags: ['情感', '校园']
+        },
+        103: {
+          id: 103,
+          nickname: '小王',
+          avatar: '',
+          description: '小王的理财之路',
+          tags: ['理财', '成长']
+        },
+        201: {
+          id: 201,
+          nickname: '冲动的',
+          avatar: '',
+          description: '一个冲动的投资者，喜欢尝试新的理财方式',
+          tags: ['投资', '理财']
+        },
+        202: {
+          id: 202,
+          nickname: '足呱呱',
+          avatar: '',
+          description: '专注于日常记账和小额投资',
+          tags: ['记账', '投资']
+        },
+        203: {
+          id: 203,
+          nickname: '朱敏多',
+          avatar: '',
+          description: '善于发现生活中的小确幸和小收获',
+          tags: ['生活', '理财']
+        }
+      }
+      
+      const userInfo = mockUsers[userId] || {
+        id: userId,
+        nickname: `用户${userId}`,
+        avatar: '',
+        description: '这个人很懒，什么都没留下',
+        hasCustomAvatar: false,
+        tags: ['成长', '生活']
+      }
+
+      console.log('显示其他用户的资料:', userInfo)
+      this.setData({ userInfo })
+      return
+    }
+    
+    // 查看自己的主页，首先尝试从本地存储获取用户信息（包括头像）
     const localUserInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
     
     if (localUserInfo && localUserInfo.avatar) {
@@ -80,37 +144,14 @@ Page({
         tags: ['成长', '生活']
       }
 
+      console.log('显示自己的资料:', userInfo)
       this.setData({ userInfo })
       return
     }
     
-    // 根据userId使用不同的模拟数据
-    const mockUsers = {
-      101: {
-        id: 101,
-        nickname: '宝儿',
-        avatar: '',
-        description: '一年每天自动存一块已到期（说真的，突然…',
-        tags: ['生活', '攒钱']
-      },
-      102: {
-        id: 102,
-        nickname: '朱敏',
-        avatar: '',
-        description: '给发哥攒钱买车',
-        tags: ['情感', '校园']
-      },
-      103: {
-        id: 103,
-        nickname: '小王',
-        avatar: '',
-        description: '小王的理财之路',
-        tags: ['理财', '成长']
-      }
-    }
-    
-    const userInfo = mockUsers[userId] || {
-      id: userId,
+    // 如果没有本地用户信息，使用默认信息
+    const userInfo = {
+      id: userId || currentLoginUserId,
       nickname: '07年小女生攒钱',
       avatar: '',
       description: '07年小女生从2025.2.1开始存钱 目标…',
@@ -118,6 +159,7 @@ Page({
       tags: ['成长', '生活']
     }
 
+    console.log('使用默认用户资料:', userInfo)
     this.setData({ userInfo })
   },
 
