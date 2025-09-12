@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: #f2f3f7;
   padding-bottom: 40rpx;
+  padding-top: 32rpx;
 }
 
 /* 顶部导航栏 */
@@ -488,7 +489,11 @@
 }
 
 .wechat-avatar-picker-btn {
-  width: 300rpx;
+  width: 22rpx !important;
+  padding: 0 !important;
+  background: #fff !important;
+  color: rgba(0, 0, 0, 0.4) !important;
+  /* width: 300rpx;
   height: 80rpx;
   background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
   color: #ffffff;
@@ -496,7 +501,7 @@
   border-radius: 16rpx;
   font-size: 30rpx;
   font-weight: 500;
-  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.3); */
 }
 
 .wechat-avatar-picker-btn::after {

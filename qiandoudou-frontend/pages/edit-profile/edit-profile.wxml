@@ -1,22 +1,16 @@
 <!--pages/edit-profile/edit-profile.wxml-->
 <view class="container">
   <!-- 顶部导航栏 -->
-  <view class="top-nav">
-    <view class="nav-left" bindtap="goBack">
-    </view>
-    <view class="nav-title">编辑账号信息</view>
-    <view class="nav-right"></view>
-  </view>
 
   <!-- 兜圈圈身份信息 -->
-  <view class="section-title">兜圈圈身份信息</view>
+  <!-- <view class="section-title">兜圈圈身份信息</view> -->
   
   <view class="info-card">
     <!-- 头像 -->
     <view class="info-item">
       <text class="item-label">头像</text>
       <view class="item-content">
-        <view class="avatar-preview" bindtap="changeAvatar">
+        <view class="avatar-preview">
           <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}" 
                  class="avatar-image" 
                  src="{{userInfo.avatar}}" 
@@ -37,8 +31,13 @@
             <text class="btn-text">使用微信头像</text>
           </button>
         </view>
-        
-        <view class="arrow-icon" bindtap="changeAvatar"></view>
+        <button id="wechat-avatar-picker"
+              class="wechat-avatar-picker-btn" 
+              open-type="chooseAvatar" 
+              bind:chooseavatar="onWechatAvatarSelected">
+              <view class="arrow-icon"></view>
+      </button>
+        <!-- <view class="arrow-icon" bindtap="changeAvatar"></view> -->
       </view>
     </view>
     
@@ -60,8 +59,12 @@
                  bind:input="onWechatNicknameInput"
                  disabled="{{isUpdatingNickname}}" />
         </view>
-        
-        <view class="arrow-icon" bindtap="editNickname"></view>
+        <!-- <view class="arrow-icon" bindtap="editNickname"></view> -->
+        <!-- <view class="arrow-icon" bindtap="onWechatNicknameSelected"></view> -->
+        <input class="wechat-nickname-picker-input" 
+             type="nickname" 
+             value="{{userInfo.nickname || '昆虫记'}}"
+             bind:input="onWechatNicknameSelected" />
       </view>
     </view>
     
