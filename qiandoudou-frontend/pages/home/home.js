@@ -17,7 +17,13 @@ Page({
     unreadMessageCount: 0, // 未读消息数量
     showShareModal: false, // 是否显示分享弹窗
     shareImageUrl: '', // 分享图片地址
-    navHeight: 0
+    navHeight: 0,
+    // 分页相关
+    currentPage: 1,
+    pageSize: 10,
+    hasMorePosts: true,
+    loadingMore: false,
+    socialDataLoaded: false // 标记社交数据是否已加载
   },
 
   onLoad() {
@@ -45,6 +51,17 @@ Page({
     
     // 加载未读消息数量
     this.loadUnreadMessageCount()
+    
+    // 监听钱包公开状态变化事件
+    this.walletStatusChangeHandler = (data) => {
+      console.log('收到钱包状态变化事件:', data)
+      // 如果当前在社交页面，刷新数据
+      if (this.data.currentTab === 'social') {
+        this.loadPosts(true)
+        this.setData({ socialDataLoaded: true })
+      }
+    }
+    app.globalData.eventBus.on('walletPublicStatusChanged', this.walletStatusChangeHandler)
   },
   onBack() {
     // 显示模态框
@@ -70,9 +87,11 @@ Page({
       // 强制刷新钱兜兜列表以获取最新的背景设置
       this.loadWallets()
       
-      // 强制刷新社交数据
-
-      this.loadPosts()
+      // 只在社交数据未加载时才刷新
+      if (!this.data.socialDataLoaded) {
+        this.loadPosts(true)
+        this.setData({ socialDataLoaded: true })
+      }
       
       // 加载未读消息数量
       this.loadUnreadMessageCount()
@@ -80,6 +99,14 @@ Page({
     
     // 重置刷新标记
     this.setData({ shouldRefresh: false })
+  },
+
+  onUnload() {
+    // 移除事件监听器
+    if (this.walletStatusChangeHandler) {
+      const app = getApp()
+      app.globalData.eventBus.off('walletPublicStatusChanged', this.walletStatusChangeHandler)
+    }
   },
 
   // 加载数据
@@ -94,7 +121,8 @@ Page({
     // 延迟加载社交数据，优化首次加载速度
     setTimeout(() => {
       if (this.data.currentTab === 'social') {
-        this.loadPosts()
+        this.loadPosts(true) // 首次加载使用刷新模式
+        this.setData({ socialDataLoaded: true })
       }
     }, 1000)
   },
@@ -172,7 +200,8 @@ Page({
         
         // 如果当前在社交页面，重新加载动态数据以使用真实钱包ID
         if (this.data.currentTab === 'social') {
-          this.loadPosts()
+          this.loadPosts(true) // 重新加载使用刷新模式
+          this.setData({ socialDataLoaded: true })
         }
       })
       .catch(error => {
@@ -209,7 +238,7 @@ Page({
           // 格式化交易记录
           const formattedTransactions = transactions.slice(0, 5).map(transaction => ({
             ...transaction,
-            createTime: this.formatTime(new Date(transaction.createTime).getTime()),
+            createTime: this.formatTime(transaction.createTime),
             amount: parseFloat(transaction.amount).toFixed(2),
             type: transaction.type === 1 ? 'INCOME' : 'EXPENSE'
           }))
@@ -228,22 +257,6 @@ Page({
     }
   },
 
-  // 格式化时间
-  formatTime(timestamp) {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diff = now - date
-
-    if (diff < 60000) { // 1分钟内
-      return '刚刚'
-    } else if (diff < 3600000) { // 1小时内
-      return `${Math.floor(diff / 60000)}分钟前`
-    } else if (diff < 86400000) { // 1天内
-      return `${Math.floor(diff / 3600000)}小时前`
-    } else {
-      return `${date.getMonth() + 1}月${date.getDate()}日`
-    }
-  },
 
   // 点击钱包
   handleWalletTap(e) {
@@ -366,11 +379,6 @@ Page({
     this.loadWallets()
   },
 
-  // 强制刷新社交数据（供调试使用）
-  forceRefreshSocial() {
-
-    this.loadPosts()
-  },
 
   // 获取钱包背景样式
   getWalletBackground(wallet) {
@@ -448,23 +456,57 @@ Page({
   },
 
   // 加载社交动态（公开钱包）
-  loadPosts() {
+  loadPosts(isRefresh = false) {
+    // 如果是刷新，重置分页数据
+    if (isRefresh) {
+      this.setData({
+        currentPage: 1,
+        posts: [],
+        hasMorePosts: true
+      })
+    }
 
+    // 如果没有更多数据或正在加载中，直接返回
+    if (!this.data.hasMorePosts || this.data.loadingMore) {
+      return
+    }
 
-
-
+    this.setData({ loadingMore: true })
     
-    walletAPI.getPublicWallets()
+    console.log(`开始加载兜圈圈数据 - 当前页: ${this.data.currentPage}, 每页: ${this.data.pageSize}, 刷新模式: ${isRefresh}`)
+    
+    walletAPI.getPublicWallets(this.data.currentPage, this.data.pageSize)
       .then(result => {
-
-        const publicWallets = result.data || []
-
-
+        console.log('API响应数据:', result)
         
+        const responseData = result.data || {}
+        const publicWallets = responseData.list || []
+        const hasMore = responseData.hasMore || false
+        
+        console.log('解析后的分页信息:', {
+          本页数据量: publicWallets.length,
+          总数: responseData.total,
+          当前页: responseData.page,
+          每页大小: responseData.size,
+          还有更多: hasMore
+        })
+
         // 检查是否有数据
         if (!publicWallets || publicWallets.length === 0) {
-
-          this.setData({ posts: [] })
+          if (this.data.currentPage === 1) {
+            // 第一页没有数据，显示空状态
+            this.setData({ 
+              posts: [],
+              hasMorePosts: false,
+              loadingMore: false
+            })
+          } else {
+            // 后续页没有数据，更新状态
+            this.setData({ 
+              hasMorePosts: false,
+              loadingMore: false
+            })
+          }
           return
         }
         
@@ -528,22 +570,32 @@ Page({
           return socialPost
         }).filter(post => post && post.id) // 过滤掉无效的钱包数据
 
-
+        // 处理分页数据
+        const isFirstPage = this.data.currentPage === 1
+        const currentPosts = isFirstPage ? [] : this.data.posts
+        const newPosts = [...currentPosts, ...socialPosts]
         
-        if (socialPosts.length === 0) {
-
-          this.setData({ posts: [] })
-          return
-        }
-
-        socialPosts.forEach((post, index) => {
-
+        console.log('分页数据处理:', {
+          当前页码: this.data.currentPage,
+          是否首页: isFirstPage,
+          本页新数据: socialPosts.length,
+          原有数据: currentPosts.length,
+          合并后总数: newPosts.length,
+          还有更多: hasMore
         })
-        this.setData({ posts: socialPosts })
+        
+        this.setData({
+          posts: newPosts,
+          currentPage: this.data.currentPage + 1, // 为下次请求准备页码
+          hasMorePosts: hasMore,
+          loadingMore: false
+        })
       })
       .catch(error => {
-
-
+        console.error('加载公开钱包失败:', error)
+        this.setData({
+          loadingMore: false
+        })
         
         // 显示错误提示
         wx.showToast({
@@ -583,11 +635,25 @@ Page({
     if (!timeStr) return '刚刚'
     
     try {
-      const time = new Date(timeStr)
+      // 处理iOS不兼容的日期格式
+      let processedTimeStr = timeStr
+      
+      // 如果包含微秒，去掉微秒部分 (例如: "2025-09-09 18:12:24.000000" -> "2025-09-09 18:12:24")
+      if (typeof timeStr === 'string' && timeStr.includes('.')) {
+        processedTimeStr = timeStr.split('.')[0]
+      }
+      
+      // 将空格替换为T，符合ISO格式 (例如: "2025-09-09 18:12:24" -> "2025-09-09T18:12:24")
+      if (typeof processedTimeStr === 'string' && processedTimeStr.includes(' ')) {
+        processedTimeStr = processedTimeStr.replace(' ', 'T')
+      }
+      
+      const time = new Date(processedTimeStr)
       const now = new Date()
       
       // 检查时间是否有效
       if (isNaN(time.getTime())) {
+        console.warn('日期解析失败:', timeStr, '处理后:', processedTimeStr)
         return '时间无效'
       }
       
@@ -606,7 +672,7 @@ Page({
         return `${time.getMonth() + 1}月${time.getDate()}日`
       }
     } catch (e) {
-
+      console.error('formatTime错误:', e, '输入:', timeStr)
       return '时间格式错误'
     }
   },
@@ -762,8 +828,20 @@ Page({
       })
   },
 
+  // 上拉加载更多动态
   loadMorePosts() {
+    // 如果当前不在社交页面，不加载
+    if (this.data.currentTab !== 'social') {
+      return
+    }
+    
+    // 调用loadPosts来加载下一页，不使用刷新模式
+    this.loadPosts(false)
+  },
 
+  // 触底加载更多
+  onReachBottom() {
+    this.loadMorePosts()
   },
 
   // 跳转到钱包详情页（从社交圈）
@@ -817,69 +895,6 @@ Page({
     }
   },
 
-  // 测试API调用（调试用）
-  testAPICall() {
-
-
-
-
-    
-    // 直接调用API
-    walletAPI.getPublicWallets()
-      .then(result => {
-
-
-        wx.showModal({
-          title: 'API测试结果',
-          content: `获取到${result.data ? result.data.length : 0}个公开钱包`,
-          showCancel: false
-        })
-      })
-      .catch(error => {
-
-
-        wx.showModal({
-          title: 'API测试失败',
-          content: error.message || '未知错误',
-          showCancel: false
-        })
-      })
-  },
-
-  // 清理存储空间
-  clearStorage() {
-    wx.showModal({
-      title: '清理存储',
-      content: '是否清理本地存储空间？这将删除缓存的图片和临时数据。',
-      success: (res) => {
-        if (res.confirm) {
-          try {
-            // 清理自定义背景图片
-            wx.removeStorageSync('custom_images')
-            
-            // 清理临时的钱包社交信息
-            const storageInfo = wx.getStorageInfoSync()
-            storageInfo.keys.forEach(key => {
-              if (key.startsWith('wallet_social_')) {
-                wx.removeStorageSync(key)
-              }
-            })
-            
-            wx.showToast({
-              title: '存储空间已清理',
-              icon: 'success'
-            })
-          } catch (e) {
-
-            wx.showToast({
-              title: '清理失败',
-              icon: 'none'
-            })
-          }
-        }
-      }
-    })
-  },
 
   // 钱包分享
   onWalletShare(e) {

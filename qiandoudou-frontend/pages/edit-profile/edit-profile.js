@@ -24,7 +24,9 @@ Page({
     showWechatAvatarOption: false, // 是否显示微信头像选择选项
     isFirstLogin: false, // 是否为首次登录
     shouldSetWechatAvatar: false, // 是否应该自动设置微信头像
-    isUpdatingNickname: false // 昵称更新状态
+    isUpdatingNickname: false, // 昵称更新状态
+    showWechatAvatarPicker: false, // 显示微信头像选择器
+    showWechatNicknamePicker: false // 显示微信昵称选择器
   },
 
   onLoad(options) {
@@ -94,13 +96,16 @@ Page({
   // 更换头像
   changeAvatar() {
     wx.showActionSheet({
-      itemList: ['拍照', '从相册选择', '删除头像'],
+      itemList: ['拍照', '从相册选择', '使用微信头像', '删除头像'],
       success: (res) => {
         if (res.tapIndex === 0 || res.tapIndex === 1) {
           // 拍照或从相册选择
           const sourceType = res.tapIndex === 0 ? 'camera' : 'album'
           this.selectImage(sourceType)
         } else if (res.tapIndex === 2) {
+          // 使用微信头像
+          this.chooseWechatAvatar()
+        } else if (res.tapIndex === 3) {
           // 删除头像
           this.removeAvatar()
         }
@@ -423,6 +428,213 @@ Page({
       })
   },
 
+  // 选择微信头像
+  chooseWechatAvatar() {
+    // 显示一个隐藏的按钮来触发微信头像选择
+    this.setData({
+      showWechatAvatarPicker: true
+    })
+    
+    // 延迟一下，确保DOM更新完成
+    setTimeout(() => {
+      // 模拟点击微信头像选择按钮
+      const query = wx.createSelectorQuery()
+      query.select('#wechat-avatar-picker').boundingClientRect()
+      query.exec((res) => {
+        if (res[0]) {
+          // 触发微信头像选择
+          wx.showToast({
+            title: '请点击"选择微信头像"按钮',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      })
+    }, 100)
+  },
+
+  // 选择微信昵称
+  chooseWechatNickname() {
+    // 显示一个隐藏的输入框来触发微信昵称选择
+    this.setData({
+      showWechatNicknamePicker: true
+    })
+    
+    // 延迟一下，确保DOM更新完成
+    setTimeout(() => {
+      wx.showToast({
+        title: '请点击"获取微信昵称"输入框',
+        icon: 'none',
+        duration: 2000
+      })
+    }, 100)
+  },
+
+  // 处理微信昵称选择（从隐藏输入框）
+  onWechatNicknameSelected(e) {
+    const nickname = e.detail.value
+    if (nickname && nickname.trim()) {
+      console.log('选择的微信昵称:', nickname)
+      
+      // 更新昵称
+      this.updateNickname(nickname.trim())
+      
+      // 隐藏选择器
+      this.setData({
+        showWechatNicknamePicker: false
+      })
+    }
+  },
+
+  // 处理微信头像选择（从隐藏按钮）
+  onWechatAvatarSelected(e) {
+    console.log('微信头像选择事件:', e)
+    const { avatarUrl } = e.detail
+    console.log('选择的微信头像:', avatarUrl)
+    
+    if (!avatarUrl) {
+      console.error('未获取到微信头像URL')
+      wx.showToast({
+        title: '未选择头像',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 显示加载提示
+    wx.showLoading({
+      title: '设置头像中...'
+    })
+    
+    this.setData({ 
+      isUploadingAvatar: true,
+      showWechatAvatarPicker: false
+    })
+    
+    // 处理微信头像上传
+    this.processWechatAvatar(avatarUrl)
+  },
+
+  // 处理微信头像上传
+  processWechatAvatar(avatarUrl) {
+    // 检查是否为模拟头像（已经是OSS链接）
+    if (avatarUrl.includes('qiandoudou.oss-cn-guangzhou.aliyuncs.com')) {
+      console.log('使用现有OSS头像，直接更新用户资料')
+      // 直接更新用户资料，不需要重新上传
+      this.updateAvatarInfo(avatarUrl)
+      return
+    }
+    
+    // 先下载微信头像到本地
+    console.log('开始下载微信头像:', avatarUrl)
+    wx.downloadFile({
+      url: avatarUrl,
+      success: (downloadRes) => {
+        console.log('微信头像下载成功:', downloadRes.tempFilePath)
+        
+        // 上传头像到OSS
+        console.log('开始上传头像到OSS...')
+        const { uploadUserImage } = require('../../utils/api.js')
+        uploadUserImage(downloadRes.tempFilePath, 'avatar')
+          .then(response => {
+            console.log('头像上传OSS响应:', response)
+            if (response.data && response.data.imageUrl) {
+              const ossAvatarUrl = response.data.imageUrl
+              this.updateAvatarInfo(ossAvatarUrl)
+            } else {
+              throw new Error('头像上传失败')
+            }
+          })
+          .catch(error => {
+            console.error('头像上传失败:', error)
+            wx.hideLoading()
+            wx.showToast({
+              title: '头像上传失败',
+              icon: 'error'
+            })
+            this.setData({ isUploadingAvatar: false })
+          })
+      },
+      fail: (error) => {
+        console.error('微信头像下载失败:', error)
+        wx.hideLoading()
+        wx.showToast({
+          title: '头像下载失败',
+          icon: 'error'
+        })
+        this.setData({ isUploadingAvatar: false })
+      }
+    })
+  },
+
+  // 更新头像信息
+  updateAvatarInfo(avatarUrl) {
+    // 更新本地数据
+    const userInfo = { ...this.data.userInfo }
+    userInfo.avatar = avatarUrl
+    userInfo.hasCustomAvatar = true
+    
+    this.setData({
+      userInfo,
+      isUploadingAvatar: false
+    })
+    
+    // 保存到本地存储
+    const storedUserInfo = wx.getStorageSync('userInfo') || {}
+    storedUserInfo.avatar = avatarUrl
+    storedUserInfo.hasCustomAvatar = true
+    wx.setStorageSync('userInfo', storedUserInfo)
+    
+    // 更新全局数据
+    if (app.globalData.userInfo) {
+      app.globalData.userInfo.avatar = avatarUrl
+      app.globalData.userInfo.hasCustomAvatar = true
+    }
+    
+    // 更新服务器
+    this.updateAvatarToServer(avatarUrl)
+    
+    wx.hideLoading()
+    wx.showToast({
+      title: '头像设置成功',
+      icon: 'success'
+    })
+  },
+
+  // 更新头像到服务器
+  updateAvatarToServer(avatarUrl) {
+    const { authAPI } = require('../../utils/api.js')
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+    
+    if (!userId) {
+      console.error('无法获取用户ID，跳过服务器更新')
+      return
+    }
+    
+    authAPI.updateAvatar(avatarUrl, userId)
+      .then(result => {
+        console.log('服务器头像更新成功')
+      })
+      .catch(error => {
+        console.error('服务器头像更新失败:', error)
+        // 不影响用户体验，静默失败
+      })
+  },
+
+  // 隐藏微信头像选择器
+  hideWechatAvatarPicker() {
+    this.setData({
+      showWechatAvatarPicker: false
+    })
+  },
+
+  // 隐藏微信昵称选择器
+  hideWechatNicknamePicker() {
+    this.setData({
+      showWechatNicknamePicker: false
+    })
+  },
+
   // 上传头像到服务器（旧方法，保留兼容性）
   uploadAvatarToServer(filePath) {
     const userId = app.globalData.userInfo?.id
@@ -476,7 +688,18 @@ Page({
 
   // 编辑昵称
   editNickname() {
-    this.openEditModal('nickname', this.data.userInfo.nickname)
+    wx.showActionSheet({
+      itemList: ['手动输入昵称', '使用微信昵称'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          // 手动输入昵称
+          this.openEditModal('nickname', this.data.userInfo.nickname)
+        } else if (res.tapIndex === 1) {
+          // 使用微信昵称
+          this.chooseWechatNickname()
+        }
+      }
+    })
   },
 
   // 编辑性别

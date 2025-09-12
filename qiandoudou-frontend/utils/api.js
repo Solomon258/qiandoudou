@@ -266,13 +266,13 @@ const walletAPI = {
   },
 
   // 获取公开钱包列表（用于兜圈圈）
-  getPublicWallets() {
-
-
+  getPublicWallets(page = 1, size = 10) {
+    console.log(`API调用: getPublicWallets, page: ${page}, size: ${size}`)
     
     return request({
       url: '/wallet/public',
       method: 'GET',
+      data: { page, size },
       debug: true, // 强制显示调试信息
       header: {
         'Accept': 'application/json'
@@ -541,13 +541,6 @@ const walletAPI = {
     })
   },
 
-  // 获取公开钱包列表（用于兜圈圈）
-  getPublicWallets() {
-    return request({
-      url: '/wallet/public',
-      method: 'GET'
-    })
-  },
 
   // 根据图片生成文字描述
   generateTextFromImage(imageBase64, prompt) {
@@ -748,77 +741,6 @@ const scriptAPI = {
   }
 }
 
-// 测试函数 - 用于诊断网络问题
-const testAPI = {
-  // 测试网络连接
-  testConnection() {
-
-
-    
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${BASE_URL}/wallet/public`,
-        method: 'GET',
-        header: {
-          'Content-Type': 'application/json'
-        },
-        success: (res) => {
-
-
-
-
-          resolve(res)
-        },
-        fail: (error) => {
-
-
-
-
-          reject(error)
-        }
-      })
-    })
-  },
-  
-  // 测试简单的GET请求
-  testSimpleRequest() {
-    return wx.request({
-      url: 'https://heartllo.cn/api/wallet/public',
-      method: 'GET',
-      success: (res) => console.log('简单请求成功:', res),
-      fail: (err) => console.error('简单请求失败:', err)
-    })
-  },
-  
-  // 测试域名连通性
-  testDomainConnectivity() {
-
-    
-    // 测试1: 直接访问域名根路径
-    wx.request({
-      url: 'https://heartllo.cn/',
-      method: 'GET',
-      success: (res) => {
-
-      },
-      fail: (err) => {
-
-      }
-    })
-    
-    // 测试2: 访问API路径
-    wx.request({
-      url: 'https://heartllo.cn/api/',
-      method: 'GET', 
-      success: (res) => {
-
-      },
-      fail: (err) => {
-
-      }
-    })
-  }
-}
 
 module.exports = {
   request,
@@ -827,6 +749,5 @@ module.exports = {
   shareImageAPI,
   uploadFile,
   uploadUserImage,
-  scriptAPI,
-  testAPI
+  scriptAPI
 }

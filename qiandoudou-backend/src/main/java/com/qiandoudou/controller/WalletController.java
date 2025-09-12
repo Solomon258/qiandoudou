@@ -7,6 +7,8 @@ import com.qiandoudou.service.AiService;
 import com.qiandoudou.service.OssService;
 import com.qiandoudou.service.TransactionService;
 import com.qiandoudou.service.WalletService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/wallet")
 public class WalletController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WalletController.class);
 
     @Autowired
     private WalletService walletService;
@@ -176,10 +180,12 @@ public class WalletController {
      * 获取公开钱包列表（用于兜圈圈）
      */
     @GetMapping("/public")
-    public Result<List<Map<String, Object>>> getPublicWallets() {
+    public Result<Map<String, Object>> getPublicWallets(
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         try {
-            List<Map<String, Object>> publicWallets = walletService.getPublicWallets();
-            return Result.success(publicWallets);
+            Map<String, Object> result = walletService.getPublicWallets(page, size);
+            return Result.success(result);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -191,12 +197,47 @@ public class WalletController {
     @PutMapping("/set-public")
     public Result<String> setWalletPublic(@RequestBody Map<String, Object> request) {
         try {
+            logger.info("设置钱包公开状态请求: {}", request);
+            
             Long walletId = Long.valueOf(request.get("walletId").toString());
             Integer isPublic = Integer.valueOf(request.get("isPublic").toString());
             
+            logger.info("解析参数 - walletId: {}, isPublic: {}", walletId, isPublic);
+            
             walletService.setWalletPublic(walletId, isPublic);
+            
+            logger.info("钱包公开状态设置成功 - walletId: {}, isPublic: {}", walletId, isPublic);
             return Result.success(isPublic == 1 ? "钱包已设为公开" : "钱包已设为私密");
         } catch (Exception e) {
+            logger.error("设置钱包公开状态失败", e);
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 测试接口：查询钱包公开状态
+     */
+    @GetMapping("/test/check-public-status")
+    public Result<Map<String, Object>> checkWalletPublicStatus(@RequestParam Long walletId) {
+        try {
+            Wallet wallet = walletService.getById(walletId);
+            if (wallet == null) {
+                return Result.error("钱包不存在");
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("walletId", wallet.getId());
+            result.put("walletName", wallet.getName());
+            result.put("isPublic", wallet.getIsPublic());
+            result.put("userId", wallet.getUserId());
+            result.put("updateTime", wallet.getUpdateTime());
+            
+            logger.info("查询钱包公开状态 - walletId: {}, isPublic: {}, updateTime: {}", 
+                       walletId, wallet.getIsPublic(), wallet.getUpdateTime());
+            
+            return Result.success(result);
+        } catch (Exception e) {
+            logger.error("查询钱包公开状态失败", e);
             return Result.error(e.getMessage());
         }
     }

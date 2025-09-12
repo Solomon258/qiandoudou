@@ -119,6 +119,42 @@
 <!-- 隐藏的canvas用于图片处理 -->
 <canvas canvas-id="avatarCanvas" style="position: absolute; left: -9999px; top: -9999px; width: 200px; height: 200px;"></canvas>
 
+<!-- 隐藏的微信头像选择器 -->
+<view wx:if="{{showWechatAvatarPicker}}" class="wechat-picker-overlay">
+  <view class="wechat-picker-content">
+    <view class="picker-header">
+      <text class="picker-title">选择微信头像</text>
+      <view class="picker-close" bindtap="hideWechatAvatarPicker">×</view>
+    </view>
+    <view class="picker-body">
+      <text class="picker-desc">点击下方按钮选择您的微信头像</text>
+      <button id="wechat-avatar-picker"
+              class="wechat-avatar-picker-btn" 
+              open-type="chooseAvatar" 
+              bind:chooseavatar="onWechatAvatarSelected">
+        选择微信头像
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- 隐藏的微信昵称选择器 -->
+<view wx:if="{{showWechatNicknamePicker}}" class="wechat-picker-overlay">
+  <view class="wechat-picker-content">
+    <view class="picker-header">
+      <text class="picker-title">获取微信昵称</text>
+      <view class="picker-close" bindtap="hideWechatNicknamePicker">×</view>
+    </view>
+    <view class="picker-body">
+      <text class="picker-desc">点击下方输入框获取您的微信昵称</text>
+      <input class="wechat-nickname-picker-input" 
+             type="nickname" 
+             placeholder="点击获取微信昵称"
+             bind:input="onWechatNicknameSelected" />
+    </view>
+  </view>
+</view>
+
 <!-- 编辑弹窗 -->
 <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
   <view class="modal-content" catchtap="stopPropagation">

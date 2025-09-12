@@ -2821,3 +2821,28 @@
 .content {
   padding: 20rpx;
 }
+
+/* 加载更多提示样式 */
+.loading-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #999;
+}
+
+.loading-text {
+  font-size: 14px;
+}
+
+.no-more-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #ccc;
+}
+
+.no-more-text {
+  font-size: 14px;
+}

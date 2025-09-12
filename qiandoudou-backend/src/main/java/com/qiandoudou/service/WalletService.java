@@ -40,7 +40,7 @@ public interface WalletService extends IService<Wallet> {
     /**
      * 获取公开钱包列表（用于兜圈圈）
      */
-    List<Map<String, Object>> getPublicWallets();
+    Map<String, Object> getPublicWallets(Integer page, Integer size);
 
     /**
      * 设置钱包公开状态

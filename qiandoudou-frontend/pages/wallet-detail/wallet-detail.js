@@ -169,6 +169,12 @@ Page({
     walletAPI.getWalletDetail(walletId)
       .then(result => {
         const wallet = result.data
+        
+        // 调试：检查关键字段
+        if (wallet.isPublic !== wallet.is_public && (wallet.isPublic !== null && wallet.isPublic !== undefined)) {
+          console.warn('字段映射问题:', { isPublic: wallet.isPublic, is_public: wallet.is_public })
+        }
+        
         if (!wallet) {
           wx.showToast({
             title: '钱包不存在',
@@ -238,11 +244,16 @@ Page({
           this.loadSocialStats()
         }
         
-        // 确保钱包公开状态有正确的默认值
-        if (wallet.is_public === null || wallet.is_public === undefined) {
-
-          wallet.is_public = 1
+        // 确保钱包公开状态有正确的默认值 - 处理字段名映射问题
+        // 后端可能返回isPublic（驼峰）或is_public（下划线）
+        if (wallet.isPublic !== null && wallet.isPublic !== undefined) {
+          wallet.is_public = wallet.isPublic
+        } else if (wallet.is_public === null || wallet.is_public === undefined) {
+          // 如果两个字段都没有设置，默认为私密状态
+          wallet.is_public = 0
         }
+        
+        console.log('最终is_public值:', wallet.is_public)
 
         this.setData({
           wallet,
@@ -2270,30 +2281,51 @@ Page({
   toggleWalletPublic(e) {
     const isPublic = e.detail.value ? 1 : 0
     const walletId = this.data.walletId
+    const originalStatus = this.data.wallet.is_public
 
-    // 先更新UI状态
-    const wallet = { ...this.data.wallet }
-    wallet.is_public = isPublic
-    this.setData({ wallet })
+    // 显示加载状态
+    wx.showLoading({
+      title: '设置中...',
+      mask: true
+    })
 
     // 调用API更新后端状态
     walletAPI.setWalletPublic(walletId, isPublic)
       .then(result => {
-
+        wx.hideLoading()
+        
+        // API成功后才更新UI状态
+        const wallet = { ...this.data.wallet }
+        wallet.is_public = isPublic
+        this.setData({ wallet })
+        
         wx.showToast({
           title: isPublic ? '已设为公开' : '已设为私密',
           icon: 'success'
         })
+        
+        // 触发全局事件通知其他页面数据已更新
+        const app = getApp()
+        if (app.globalData.eventBus) {
+          app.globalData.eventBus.emit('walletPublicStatusChanged', {
+            walletId: walletId,
+            isPublic: isPublic
+          })
+        }
       })
       .catch(error => {
-
-        // 恢复原状态
-        wallet.is_public = isPublic ? 0 : 1
+        wx.hideLoading()
+        
+        // 恢复开关状态到原来的位置
+        const wallet = { ...this.data.wallet }
+        wallet.is_public = originalStatus
         this.setData({ wallet })
         
-        wx.showToast({
-          title: '设置失败，请重试',
-          icon: 'none'
+        // 显示详细错误信息
+        wx.showModal({
+          title: '设置失败',
+          content: `无法更新钱包公开状态，请检查网络连接后重试。\n错误: ${error.message || '网络错误'}`,
+          showCancel: false
         })
       })
   },

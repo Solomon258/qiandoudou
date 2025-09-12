@@ -385,11 +385,11 @@ Page({
   loadPublicWallets() {
 
     
-    walletAPI.getPublicWallets()
+    walletAPI.getPublicWallets(1, 20)
       .then(response => {
 
-        if (response.success && response.data) {
-          const publicWallets = response.data
+        if (response.success && response.data && response.data.list) {
+          const publicWallets = response.data.list
           
           // 将后端数据转换为前端需要的格式
           const posts = publicWallets.map((wallet, index) => {

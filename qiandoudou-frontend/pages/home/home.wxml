@@ -101,10 +101,6 @@
       <view wx:if="{{posts.length === 0}}" class="social-empty-state">
         <text class="empty-icon">💬</text>
         <text class="empty-text">还没有动态，快来分享你的理财心得吧！</text>
-        <!-- 调试按钮 -->
-        <button bindtap="testAPICall" style="margin-top: 20px; background: #007aff; color: white;">测试API调用</button>
-        <button bindtap="forceRefreshSocial" style="margin-top: 10px; background: #ff3b30; color: white;">强制刷新</button>
-        <button bindtap="clearStorage" style="margin-top: 10px; background: #ff9500; color: white;">清理存储</button>
       </view>
 
       <view wx:for="{{posts}}" wx:key="id" class="social-post-card" bindtap="goToWalletDetail" data-wallet-id="{{item.wallet_id}}" data-index="{{index}}">
@@ -128,23 +124,32 @@
           
           <!-- 标签和描述 -->
           <view class="post-tags-desc">
-            <text class="tag" wx:for="{{item.tags}}" wx:key="*this">#{{item}}</text>
+            <text class="tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">#{{tag}}</text>
             <text class="description">{{item.description}}</text>
           </view>
           
           <!-- 最新两笔账单 -->
           <view class="recent-transactions">
-            <view wx:for="{{item.recent_transactions}}" wx:key="id" class="transaction-item">
+            <view wx:for="{{item.recent_transactions}}" wx:for-item="transaction" wx:key="id" class="transaction-item">
               <view class="transaction-user-avatar">
-                <text class="avatar-text">{{item.user_nickname.charAt(0)}}</text>
+                <text class="avatar-text">{{transaction.user_nickname.charAt(0)}}</text>
               </view>
               <view class="transaction-content">
-                <text class="transaction-desc">{{item.user_nickname}}：{{item.comment}}</text>
-                <text wx:if="{{item.amount > 0}}" class="amount-change">+¥{{item.amount}}</text>
+                <text class="transaction-desc">{{transaction.user_nickname}}：{{transaction.comment}}</text>
+                <text wx:if="{{transaction.amount > 0}}" class="amount-change">+¥{{transaction.amount}}</text>
               </view>
             </view>
           </view>
         </view>
+      </view>
+      
+      <!-- 加载更多提示 -->
+      <view wx:if="{{loadingMore}}" class="loading-more">
+        <text class="loading-text">加载中...</text>
+      </view>
+      
+      <view wx:elif="{{!hasMorePosts && posts.length > 0}}" class="no-more-data">
+        <text class="no-more-text">没有更多数据了</text>
       </view>
     </scroll-view>
   </view>

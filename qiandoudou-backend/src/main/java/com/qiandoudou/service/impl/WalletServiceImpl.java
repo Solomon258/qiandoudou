@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         
         wallet.setBackgroundImage(backgroundImage);
         wallet.setAiPartnerId(aiPartnerId);
-        wallet.setIsPublic(1); // 修改：默认公开到社交圈
+        wallet.setIsPublic(0); // 修改：默认为私密状态，由用户自主选择是否公开
 
         save(wallet);
         return wallet;
@@ -192,19 +193,53 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     }
 
     @Override
-    public List<Map<String, Object>> getPublicWallets() {
-        return baseMapper.getPublicWalletsWithRecentTransactions();
+    public Map<String, Object> getPublicWallets(Integer page, Integer size) {
+        // 计算偏移量
+        int offset = (page - 1) * size;
+        
+        // 获取分页数据
+        List<Map<String, Object>> wallets = baseMapper.getPublicWalletsWithRecentTransactions(offset, size);
+        
+        // 获取总数
+        Long total = baseMapper.getPublicWalletsCount();
+        
+        // 计算是否还有更多数据
+        boolean hasMore = (long) offset + size < total;
+        
+        // 构建返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", wallets);
+        result.put("total", total);
+        result.put("page", page);
+        result.put("size", size);
+        result.put("hasMore", hasMore);
+        
+        return result;
     }
 
     @Override
     public void setWalletPublic(Long walletId, Integer isPublic) {
+        logger.info("开始设置钱包公开状态 - walletId: {}, isPublic: {}", walletId, isPublic);
+        
         Wallet wallet = getById(walletId);
         if (wallet == null) {
+            logger.error("钱包不存在 - walletId: {}", walletId);
             throw new RuntimeException("钱包不存在");
         }
         
+        Integer oldStatus = wallet.getIsPublic();
+        logger.info("钱包原状态 - walletId: {}, 原is_public: {}, 新is_public: {}", walletId, oldStatus, isPublic);
+        
         wallet.setIsPublic(isPublic);
-        updateById(wallet);
+        boolean updateResult = updateById(wallet);
+        
+        logger.info("钱包状态更新结果 - walletId: {}, updateResult: {}", walletId, updateResult);
+        
+        // 验证更新结果
+        Wallet updatedWallet = getById(walletId);
+        if (updatedWallet != null) {
+            logger.info("验证更新结果 - walletId: {}, 当前is_public: {}", walletId, updatedWallet.getIsPublic());
+        }
     }
 
     @Override
