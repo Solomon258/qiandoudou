@@ -3,9 +3,8 @@ const app = getApp()
 
 // 后端API基础地址
 // const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-// const BASE_URL = 'http://192.168.43.188:8080/api'  // IP访问（用于微信小程序调试）
+const BASE_URL = 'https:xcx22.dawoa.com/api'  // IP访问（用于微信小程序调试）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
-const BASE_URL = 'https:xcx22.dawoa.com/api'
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
 
@@ -51,8 +50,7 @@ function request(options) {
         
         // 只在开发模式下输出详细日志
         if (options.debug !== false) {
-
-
+          // 调试日志已移除，避免无关日志输出
         }
         
         if (res.statusCode === 200) {
@@ -614,7 +612,6 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
       formData: formData,
       header: header,
       success: (res) => {
-
         try {
           const data = JSON.parse(res.data)
           if (data.code === 200) {
@@ -627,7 +624,6 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
         }
       },
       fail: (error) => {
-
         reject(new Error('文件上传失败'))
       }
     })

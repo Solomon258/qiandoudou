@@ -21,8 +21,11 @@ Page({
     isUserTyping: false
   },
 
-  onLoad(options) {
-    const walletId = options.id || options.walletId
+  onLoad(options) {
+
+    const walletId = options.id || options.walletId
+
+
     
     this.setData({
       walletId: walletId
@@ -34,7 +37,8 @@ Page({
   // 加载钱包信息
   loadWalletInfo() {
     const walletId = this.data.walletId
-    if (!walletId) {
+    if (!walletId) {
+
       return
     }
 
@@ -50,13 +54,15 @@ Page({
             wx.navigateBack()
           }, 1500)
           return
-        }
+        }
+
         this.setData({
           wallet: wallet,
           availableAmount: wallet.balance
         })
       })
-      .catch(error => {
+      .catch(error => {
+
         wx.showToast({
           title: error.message || '加载钱包信息失败',
           icon: 'none'
@@ -100,14 +106,16 @@ Page({
   },
 
   // 备注获得焦点
-  onNoteFocus(e) {
+  onNoteFocus(e) {
+
     this.setData({
       isUserTyping: true
     })
   },
 
   // 备注失去焦点
-  onNoteBlur(e) {
+  onNoteBlur(e) {
+
     this.setData({
       isUserTyping: false
     })
@@ -201,7 +209,8 @@ Page({
         })
       })
       .catch(error => {
-        wx.hideLoading()
+        wx.hideLoading()
+
         wx.showToast({
           title: error.message || '生成文案失败',
           icon: 'none'
@@ -271,17 +280,21 @@ Page({
                 title: '图片上传成功',
                 icon: 'success'
               })
+            } else {
+              // 响应格式不正确，视为失败
+              throw new Error('图片上传失败：服务器响应格式错误')
             }
           })
           .catch(error => {
-            wx.hideLoading()
+            wx.hideLoading()
+            // 清除本地图片路径，防止误导用户
+            this.setData({
+              uploadedImageLocal: '',
+              uploadedImage: ''
+            })
             wx.showToast({
               title: error.message || '图片上传失败',
               icon: 'error'
-            })
-            // 失败时使用本地路径作为显示备用
-            this.setData({
-              uploadedImage: tempFilePath
             })
           })
       },
@@ -362,7 +375,8 @@ Page({
 
         this.setData({ transferLoading: false })
       })
-      .catch(error => {
+      .catch(error => {
+
         wx.showToast({
           title: error.message || '转出失败',
           icon: 'none'

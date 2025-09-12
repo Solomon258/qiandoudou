@@ -118,13 +118,14 @@ Page({
         this.loadTransactions()
       }, 500)
     }
-    // 延迟加载社交数据，优化首次加载速度
-    setTimeout(() => {
-      if (this.data.currentTab === 'social') {
-        this.loadPosts(true) // 首次加载使用刷新模式
+    // 如果当前在社交页面，立即加载数据避免闪烁
+    if (this.data.currentTab === 'social' && !this.data.socialDataLoaded) {
+      // 稍微延迟以确保页面结构已渲染
+      setTimeout(() => {
+        this.loadPosts(true)
         this.setData({ socialDataLoaded: true })
-      }
-    }, 1000)
+      }, 100)
+    }
   },
 
   // 加载钱兜兜列表
@@ -457,11 +458,10 @@ Page({
 
   // 加载社交动态（公开钱包）
   loadPosts(isRefresh = false) {
-    // 如果是刷新，重置分页数据
+    // 如果是刷新，重置分页数据但不立即清空posts避免闪烁
     if (isRefresh) {
       this.setData({
         currentPage: 1,
-        posts: [],
         hasMorePosts: true
       })
     }
@@ -572,7 +572,7 @@ Page({
 
         // 处理分页数据
         const isFirstPage = this.data.currentPage === 1
-        const currentPosts = isFirstPage ? [] : this.data.posts
+        const currentPosts = isFirstPage && isRefresh ? [] : this.data.posts
         const newPosts = [...currentPosts, ...socialPosts]
         
         console.log('分页数据处理:', {
@@ -714,13 +714,26 @@ Page({
   // 切换标签页
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab
+    const previousTab = this.data.currentTab
+    
     wx.setNavigationBarTitle({
       title: tab === 'social' ? '兜圈圈' : '钱兜兜'
     })
     this.setData({
       currentTab: tab
     })
-    this.loadData()
+    
+    // 只在标签页真正切换时才加载数据，避免重复加载
+    if (previousTab !== tab) {
+      if (tab === 'social' && !this.data.socialDataLoaded) {
+        // 切换到兜圈圈页面且数据未加载时才加载
+        this.loadPosts(true)
+        this.setData({ socialDataLoaded: true })
+      } else if (tab === 'wallet') {
+        // 切换到钱兜兜页面时刷新钱包数据
+        this.loadWallets()
+      }
+    }
   },
 
   // 发布动态

@@ -1,17 +1,17 @@
 <!--pages/transfer-out/transfer-out.wxml-->
 <view class="container">
   <!-- 顶部导航 -->
-  <view class="top-nav">
+  <!-- <view class="top-nav">
     <view class="nav-left">
       <view class="back-btn" bindtap="goBack">
         <text class="back-arrow">‹</text>
       </view>
     </view>
-    <view class="nav-center">
+     <view class="nav-center">
       <text class="nav-title">转出</text>
-    </view>
+    </view> 
     <view class="nav-right"></view>
-  </view>
+  </view> -->
 
   <!-- 转出至区域 -->
   <view class="transfer-to-section">

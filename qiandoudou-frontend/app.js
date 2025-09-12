@@ -17,7 +17,7 @@ App({
   globalData: {
     userInfo: null,
     token: null,
-    baseUrl: 'http://localhost:8080/api', // 后端API地址
+    baseUrl: 'https:xcx22.dawoa.com/api', // 后端API地址
     // 简单的事件总线
     eventBus: {
       events: {},

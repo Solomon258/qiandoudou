@@ -7,13 +7,6 @@ spring:
   application:
     name: qiandoudou-backend
 
-  # 数据库配置
-  datasource:
-    url: jdbc:mysql://localhost:3306/qiandoudou?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
   # 文件上传配置
   servlet:
     multipart:
@@ -21,45 +14,4 @@ spring:
       max-request-size: 10MB
       enabled: true
 
-# AI服务配置
-ai:
-  api:
-    base-url: http://localhost:8081  # AI服务基础URL，可根据实际情况修改
-    api-key: your-api-key-here       # AI服务API密钥，可根据实际情况修改
-
-  # 字节跳动API配置
-  bytedance:
-    api-key: your-bytedance-api-key  # 字节跳动API密钥
-    model: doubao-vision-pro         # 字节跳动模型名称
-    enabled: true                    # 是否启用字节跳动API
-
-  # 图生文服务配置
-  image-to-text:
-    api-url: http://113.45.231.186:1236/generate  # 图生文API地址
-
-# MyBatis Plus配置
-mybatis-plus:
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.qiandoudou.entity
-  configuration:
-    map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-# JWT配置
-jwt:
-  secret: qiandoudou-secret-key-for-jwt-token-generation-2024  # JWT密钥，至少32位
-  expiration: 604800000  # Token过期时间，7天（毫秒）
-
-# 微信小程序配置
-wechat:
-  miniprogram:
-    appid: your_wx_appid        # 微信小程序AppID
-    secret: your_wx_secret      # 微信小程序Secret
-    dev-mode: true              # 开发模式，设为true使用演示模式
-
-# 日志配置
-logging:
-  level:
-    com.qiandoudou: DEBUG
-    org.springframework.web: DEBUG
-
+  #

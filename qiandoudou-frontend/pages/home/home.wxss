@@ -1324,6 +1324,30 @@
   color: #999;
 }
 
+/* 社交页面加载状态 */
+.social-loading-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.social-loading-state .loading-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.social-loading-state .loading-text {
+  font-size: 14px;
+  color: #666;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
 /* 动态卡片 */
 .social-post-card {
   position: relative;

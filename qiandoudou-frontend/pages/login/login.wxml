@@ -49,7 +49,7 @@
         <!-- <view class="logo-icon">💰</view>
         <text class="app-name">钱兜兜</text>
         <text class="app-slogan">和AI一起攒钱</text> -->
-        <image class="baground-image" src="/static/icon/login_back.png" />
+        <image class="baground-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/login_back.png" />
         <view class="login-hi">
           <text>您好，</text>
           <view class="login-hi-title">

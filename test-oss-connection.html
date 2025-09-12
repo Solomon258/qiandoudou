@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSS连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OSS连接和图片上传测试</h1>
+        
+        <!-- OSS连接测试 -->
+        <div class="test-section">
+            <h3>1. OSS连接状态测试</h3>
+            <p>测试后端OSS服务是否正常初始化和连接</p>
+            <button onclick="testOssConnection()">测试OSS连接</button>
+            <div id="ossResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- 图片上传测试 -->
+        <div class="test-section">
+            <h3>2. 图片上传测试</h3>
+            <p>选择一张图片测试上传功能</p>
+            <input type="file" id="imageFile" accept="image/*">
+            <br>
+            <button onclick="uploadImage()">上传图片</button>
+            <div id="uploadResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- 网络请求日志 -->
+        <div class="test-section">
+            <h3>3. 网络请求日志</h3>
+            <button onclick="clearLogs()">清空日志</button>
+            <div id="requestLogs" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://xcx22.dawoa.com/api';
+        let logs = [];
+
+        function logRequest(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] ${message}`);
+            document.getElementById('requestLogs').textContent = logs.join('\n');
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('requestLogs').textContent = '';
+        }
+
+        async function testOssConnection() {
+            const resultDiv = document.getElementById('ossResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在测试OSS连接...';
+            
+            logRequest('开始测试OSS连接状态');
+
+            try {
+                const response = await fetch(`${API_BASE}/wallet/test-oss`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                logRequest(`OSS测试响应状态: ${response.status}`);
+                
+                const data = await response.json();
+                logRequest(`OSS测试响应数据: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.code === 200) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✓ OSS连接成功!\n\n响应数据:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `✗ OSS连接失败!\n\n错误信息: ${data.message}\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                logRequest(`OSS测试请求失败: ${error.message}`);
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `✗ 请求失败: ${error.message}`;
+            }
+        }
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageFile');
+            const resultDiv = document.getElementById('uploadResult');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('请先选择一张图片');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+
+            // 检查文件大小 (5MB限制)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过5MB');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '正在上传图片...';
+
+            logRequest(`开始上传图片: ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', 'test');
+
+                const response = await fetch(`${API_BASE}/wallet/upload-user-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                logRequest(`图片上传响应状态: ${response.status}`);
+                
+                const data = await response.json();
+                logRequest(`图片上传响应数据: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.code === 200) {
+                    resultDiv.className = 'result success';
+                    const imageUrl = data.data.imageUrl;
+                    resultDiv.innerHTML = `✓ 图片上传成功!<br><br>
+                        图片URL: <a href="${imageUrl}" target="_blank">${imageUrl}</a><br><br>
+                        <img src="${imageUrl}" style="max-width: 300px; max-height: 200px; border: 1px solid #ddd; border-radius: 5px;"><br><br>
+                        完整响应:<br>${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `✗ 图片上传失败!\n\n错误信息: ${data.message}\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                logRequest(`图片上传请求失败: ${error.message}`);
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `✗ 上传请求失败: ${error.message}`;
+            }
+        }
+
+        // 页面加载时自动测试OSS连接
+        window.onload = function() {
+            logRequest('页面加载完成，准备进行测试');
+        };
+    </script>
+</body>
+</html>

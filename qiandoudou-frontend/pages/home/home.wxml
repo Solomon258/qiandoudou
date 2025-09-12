@@ -113,7 +113,14 @@
 
     <!-- 动态列表 -->
     <scroll-view class="social-posts-scroll" scroll-y="true" bindscrolltolower="loadMorePosts">
-      <view wx:if="{{posts.length === 0}}" class="social-empty-state">
+      <!-- 加载中状态 -->
+      <view wx:if="{{currentTab === 'social' && !socialDataLoaded && posts.length === 0}}" class="social-loading-state">
+        <text class="loading-icon">⏳</text>
+        <text class="loading-text">正在加载兜圈圈数据...</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view wx:elif="{{posts.length === 0}}" class="social-empty-state">
         <text class="empty-icon">💬</text>
         <text class="empty-text">还没有动态，快来分享你的理财心得吧！</text>
       </view>
