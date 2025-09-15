@@ -358,7 +358,7 @@
   position: fixed;
   bottom: 164rpx;
   /* width: 92%; */
-  min-width: 702rpx;
+  /* min-width: 702rpx; */
   width: 92%;
 }
 

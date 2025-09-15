@@ -144,12 +144,12 @@
           <view class="transaction-info">
             <!-- 标题单独一行，加粗 - 显示AI伴侣名称或钱兜兜名称 -->
             <view class="title-row">
-              <text class="transaction-title">{{item.isAiTransaction ? item.aiPartnerName : (wallet.name || '钱兜兜')}}</text>
-              <view class="transaction-amount">
-                <text class="amount-display {{item.type === 1 ? 'income' : 'expense'}}">
+              <view class="transaction-title">{{item.isAiTransaction ? item.aiPartnerName : (wallet.name || '钱兜兜')}}</view>
+              <!-- <view class="transaction-amount"> -->
+                <view class="amount-display {{item.type === 1 ? 'income' : 'expense'}}">
                   {{item.type === 1 ? '+' : ''}}{{item.amount}}
-                </text>
-              </view>
+                </view>
+              <!-- </view> -->
             </view>
             <!-- 流水类型单独一行 -->
             <view class="subtitle-row">
