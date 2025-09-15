@@ -216,18 +216,40 @@
         <!-- 评论列表（显示在流水下面） -->
         <view wx:if="{{item.comments && item.comments.length > 0}}" class="transaction-comments">
           <view wx:for="{{item.comments}}" wx:key="id" wx:for-item="comment" class="comment-item-inline">
-            <view class="comment-user-inline">
-              <text class="comment-username-inline">{{comment.userName}}：</text>
-            </view>
-            <text class="comment-content-inline">{{comment.content}}</text>
-            <!-- AI情侣评论的语音播放按钮 -->
-            <view wx:if="{{comment.isAiComment && comment.voiceUrl}}" class="comment-voice-play">
-              <view class="voice-play-btn-small {{comment.isPlayingVoice ? 'playing' : ''}}" 
-                    bindtap="playCommentVoice" 
-                    data-comment="{{comment}}">
-                <!-- <text class="voice-icon-small">🎵</text> -->
-                <image class="action-icon" src="/static/icon/voice.svg"/>
+            <!-- AI评论特殊样式 -->
+            <view wx:if="{{comment.isAiComment}}" class="ai-comment-wrapper">
+              <image class="ai-comment-avatar" src="{{comment.aiPartnerAvatar}}" mode="aspectFill"/>
+              <view class="ai-comment-content">
+                <view class="ai-comment-header">
+                  <text class="ai-comment-name">{{comment.aiPartnerName || comment.userName}}</text>
+                  <text class="ai-label">AI</text>
+                </view>
+                <text class="ai-comment-text">{{comment.content}}</text>
               </view>
+              <view class="ai-comment-actions">
+                <!-- 点赞按钮 -->
+                <view class="like-btn {{comment.isLiked ? 'liked' : ''}}" 
+                      bindtap="likeAiComment" 
+                      data-comment="{{comment}}">
+                  <image class="action-icon" src="{{comment.isLiked ? '/static/icon/like_active.svg' : '/static/icon/like.svg'}}"/>
+                  <text class="like-count">{{comment.likeCount || 0}}</text>
+                </view>
+                <!-- 语音播放按钮 -->
+                <view wx:if="{{comment.voiceUrl}}" 
+                      class="voice-play-btn {{comment.isPlayingVoice ? 'playing' : ''}}" 
+                      bindtap="playAiCommentVoice" 
+                      data-comment="{{comment}}">
+                  <image class="action-icon" src="/static/icon/voice.svg"/>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 普通用户评论 -->
+            <view wx:else class="user-comment-wrapper">
+              <view class="comment-user-inline">
+                <text class="comment-username-inline">{{comment.userName}}：</text>
+              </view>
+              <text class="comment-content-inline">{{comment.content}}</text>
             </view>
           </view>
         </view>

@@ -2,8 +2,8 @@
 const app = getApp()
 
 // 后端API基础地址
-// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（用于微信小程序调试）
+const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+// const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（用于微信小程序调试）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
@@ -540,6 +540,15 @@ const walletAPI = {
     })
   },
 
+  // 获取交易的详细评论列表（包括AI评论和语音URL）
+  getTransactionCommentsDetail(transactionId) {
+    return request({
+      url: '/social/transaction/comments-detail',
+      method: 'GET',
+      data: { transactionId }
+    })
+  },
+
 
   // 根据图片生成文字描述
   generateTextFromImage(imageBase64, prompt) {
@@ -556,6 +565,19 @@ const walletAPI = {
       url: '/wallet/monthly-stats',
       method: 'GET',
       data: { walletId, year, month }
+    })
+  },
+
+  // 生成AI情侣自动评论
+  generateAiAutoComment(transactionId, walletId) {
+    return request({
+      url: '/ai/auto-comment',
+      method: 'POST',
+      data: { 
+        transactionId, 
+        walletId,
+        userId: app.globalData.userInfo?.id 
+      }
     })
   }
 }

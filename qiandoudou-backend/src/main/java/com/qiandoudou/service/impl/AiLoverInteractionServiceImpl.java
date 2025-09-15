@@ -7,7 +7,6 @@ import com.qiandoudou.service.AiLoverInteractionService;
 import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.service.SocialService;
 import com.qiandoudou.service.AiService;
-import com.qiandoudou.service.TtsService;
 import com.qiandoudou.service.AiPartnerService;
 import com.qiandoudou.mapper.TransactionMapper;
 import org.slf4j.Logger;
@@ -33,9 +32,6 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
     
     @Autowired
     private AiService aiService;
-    
-    @Autowired
-    private TtsService ttsService;
     
     @Autowired
     private AiPartnerService aiPartnerService;
@@ -87,8 +83,9 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
             String transactionType = getTransactionTypeText(transaction.getType());
             String description = transaction.getDescription();
             Double amount = transaction.getAmount().doubleValue();
+            String imageUrl = transaction.getImageUrl();
             
-            String commentText = aiService.generatePartnerComment(transactionType, description, amount);
+            String commentText = aiService.generatePartnerComment(transactionType, description, amount, imageUrl);
             logger.info("AI情侣生成评论: {}", commentText);
             
             // 自动评论
@@ -167,12 +164,16 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
                 return null;
             }
             
-            // 使用TTS服务生成语音
-            byte[] voiceData = ttsService.generateVoice(commentText, aiPartner.getVoiceType());
-            // 这里应该将语音数据保存到文件或上传到OSS，然后返回URL
-            // 暂时返回模拟的URL
-            String voiceUrl = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/voice/ai_comment_" + System.currentTimeMillis() + ".mp3";
-            logger.info("AI情侣评论语音生成成功，AI伴侣ID: {}, 语音URL: {}", aiPartnerId, voiceUrl);
+            logger.info("开始生成AI情侣评论语音，AI伴侣: {}, 文本: {}", aiPartner.getName(), commentText);
+            
+            // 使用与AI伴侣转账相同的语音生成方法
+            String voiceUrl = aiService.generatePartnerVoiceByCharacterName(aiPartner.getName(), commentText);
+            
+            if (voiceUrl != null) {
+                logger.info("AI情侣评论语音生成成功，AI伴侣ID: {}, 语音URL: {}", aiPartnerId, voiceUrl);
+            } else {
+                logger.warn("AI情侣评论语音生成失败，返回null");
+            }
             
             return voiceUrl;
             

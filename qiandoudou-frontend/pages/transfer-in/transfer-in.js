@@ -394,28 +394,21 @@ Page({
           icon: 'success'
         })
 
-        // 返回钱包详情页并刷新
-        setTimeout(() => {
-          const pages = getCurrentPages()
-          if (pages.length > 1) {
-            const prevPage = pages[pages.length - 2]
-            if (prevPage && prevPage.loadWalletDetail) {
-              prevPage.loadWalletDetail()
-            }
-            if (prevPage && prevPage.loadTransactions) {
-              prevPage.loadTransactions()
-            }
-          }
-          // 同时刷新首页数据
-          const homePage = pages.find(page => page.route === 'pages/home/home' || page.__route__ === 'pages/home/home')
-          if (homePage && homePage.loadWallets) {
-            homePage.loadWallets()
-          }
-          
-          wx.navigateBack({
-            delta: 1
+        // 自动生成AI评论，并在完成后刷新页面
+        if (result.data && result.data.id) {
+          this.generateAiAutoComment(result.data.id).then(() => {
+            // AI评论生成完成后，刷新页面
+            this.refreshAndGoBack()
+          }).catch(() => {
+            // AI评论生成失败，也要刷新页面
+            this.refreshAndGoBack()
           })
-        }, 1500)
+        } else {
+          // 没有交易ID，直接刷新
+          setTimeout(() => {
+            this.refreshAndGoBack()
+          }, 1500)
+        }
 
         this.setData({ transferLoading: false })
       })
@@ -477,6 +470,61 @@ Page({
 
   // 返回上一页
   goBack() {
+    wx.navigateBack({
+      delta: 1
+    })
+  },
+
+  // 生成AI自动评论
+  generateAiAutoComment(transactionId) {
+    console.log('开始生成AI评论，交易ID:', transactionId)
+    
+    return new Promise((resolve, reject) => {
+      // 设置超时，避免无限等待
+      const timeout = setTimeout(() => {
+        console.log('AI评论生成超时')
+        resolve() // 超时也算完成，不阻塞页面刷新
+      }, 8000) // 8秒超时
+      
+      walletAPI.generateAiAutoComment(transactionId, this.data.walletId)
+        .then(response => {
+          clearTimeout(timeout)
+          console.log('AI评论生成成功:', response.data)
+          // 显示AI评论生成成功的提示
+          wx.showToast({
+            title: 'AI伴侣已评论',
+            icon: 'none',
+            duration: 1500
+          })
+          resolve(response)
+        })
+        .catch(error => {
+          clearTimeout(timeout)
+          console.log('AI评论生成失败:', error)
+          // 静默失败，不影响用户体验
+          resolve() // 失败也算完成，继续刷新页面
+        })
+    })
+  },
+
+  // 刷新页面并返回
+  refreshAndGoBack() {
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      const prevPage = pages[pages.length - 2]
+      if (prevPage && prevPage.loadWalletDetail) {
+        prevPage.loadWalletDetail()
+      }
+      if (prevPage && prevPage.loadTransactions) {
+        prevPage.loadTransactions()
+      }
+    }
+    // 同时刷新首页数据
+    const homePage = pages.find(page => page.route === 'pages/home/home' || page.__route__ === 'pages/home/home')
+    if (homePage && homePage.loadWallets) {
+      homePage.loadWallets()
+    }
+    
     wx.navigateBack({
       delta: 1
     })

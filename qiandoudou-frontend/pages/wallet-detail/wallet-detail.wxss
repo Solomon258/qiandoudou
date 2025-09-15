@@ -1602,3 +1602,136 @@
     opacity: 1;
   }
 }
+
+/* AI评论样式 */
+.ai-comment-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 20rpx;
+  background: #f8f9ff;
+  border-radius: 16rpx;
+  margin: 16rpx 0;
+  border-left: 6rpx solid #409eff;
+  position: relative;
+}
+
+.ai-comment-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ai-comment-content {
+  flex: 1;
+  position: relative;
+}
+
+.ai-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.ai-comment-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #409eff;
+}
+
+.ai-label {
+  font-size: 20rpx;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4rpx 8rpx;
+  border-radius: 8rpx;
+}
+
+.ai-comment-text {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+  display: block;
+}
+
+.ai-comment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.like-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s;
+}
+
+.like-btn.liked {
+  color: #ff6b6b;
+}
+
+.like-count {
+  font-size: 20rpx;
+  color: #666;
+}
+
+.voice-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+  background: #409eff;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.voice-play-btn.playing {
+  background: #ff6b6b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.action-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+/* 普通用户评论样式 */
+.user-comment-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8rpx;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.comment-user-inline {
+  flex-shrink: 0;
+}
+
+.comment-username-inline {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.comment-content-inline {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.5;
+  flex: 1;
+}

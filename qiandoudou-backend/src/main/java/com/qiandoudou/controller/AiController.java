@@ -1,6 +1,7 @@
 package com.qiandoudou.controller;
 
 import com.qiandoudou.common.Result;
+import com.qiandoudou.service.AiAutoCommentService;
 import com.qiandoudou.service.AiService;
 import com.qiandoudou.service.TtsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class AiController {
 
     @Autowired
     private TtsService ttsService;
+
+    @Autowired
+    private AiAutoCommentService aiAutoCommentService;
 
     /**
      * 生成AI文案
@@ -92,6 +96,28 @@ public class AiController {
             return Result.success("语音生成成功", voiceUrl);
         } catch (Exception e) {
             return Result.error("语音生成失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 生成AI情侣自动评论
+     */
+    @PostMapping("/auto-comment")
+    public Result<Map<String, Object>> generateAutoComment(@RequestBody Map<String, Object> request) {
+        try {
+            Long transactionId = Long.valueOf(request.get("transactionId").toString());
+            Long walletId = Long.valueOf(request.get("walletId").toString());
+            Long userId = Long.valueOf(request.get("userId").toString());
+
+            Map<String, Object> comment = aiAutoCommentService.generateAutoComment(transactionId, walletId, userId);
+            
+            if (comment == null) {
+                return Result.error("该钱包未关联AI伴侣，无法生成AI评论");
+            }
+
+            return Result.success("AI评论生成成功", comment);
+        } catch (Exception e) {
+            return Result.error("AI评论生成失败: " + e.getMessage());
         }
     }
 }

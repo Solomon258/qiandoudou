@@ -479,23 +479,40 @@ Page({
   loadTransactionsSocialData(transactions) {
     const currentUserId = app.globalData.userInfo?.id
     
-    // 为每个交易并行加载社交数据
+    // 为每个交易并行加载社交数据和评论详情
     const socialDataPromises = transactions.map(transaction => {
-      return walletAPI.getTransactionSocialData(transaction.id, currentUserId)
+      const socialDataPromise = walletAPI.getTransactionSocialData(transaction.id, currentUserId)
         .then(response => {
-
+          console.log(`交易 ${transaction.id} 社交数据响应:`, response)
           if (response.success && response.data) {
-            return {
-              transactionId: transaction.id,
-              socialData: response.data
-            }
+            return response.data
           }
-          return null
+          return { likeCount: 0, commentCount: 0, isLiked: false }
         })
         .catch(error => {
-
-          return null
+          console.log(`获取交易 ${transaction.id} 社交数据失败:`, error)
+          return { likeCount: 0, commentCount: 0, isLiked: false }
         })
+
+      const commentsPromise = walletAPI.getTransactionCommentsDetail(transaction.id)
+        .then(response => {
+          console.log(`交易 ${transaction.id} 评论详情响应:`, response)
+          if (response.success && response.data) {
+            return response.data
+          }
+          return []
+        })
+        .catch(error => {
+          console.log(`获取交易 ${transaction.id} 评论详情失败:`, error)
+          return []
+        })
+
+      return Promise.all([socialDataPromise, commentsPromise])
+        .then(([socialData, comments]) => ({
+          transactionId: transaction.id,
+          socialData: socialData,
+          comments: comments
+        }))
     })
     
     // 等待所有社交数据加载完成
@@ -510,12 +527,29 @@ Page({
             updatedTransactions[transactionIndex].likeCount = result.socialData.likeCount || 0
             updatedTransactions[transactionIndex].commentCount = result.socialData.commentCount || 0
             updatedTransactions[transactionIndex].isLiked = result.socialData.isLiked || false
+            
+            // 更新评论列表，处理AI评论
+            const processedComments = result.comments.map(comment => ({
+              ...comment,
+              isAiComment: comment.isAiComment || false,
+              aiPartnerName: comment.aiPartnerName || comment.user_nickname,
+              aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
+              userName: comment.userName || comment.user_nickname || '匿名用户',
+              voiceUrl: comment.voiceUrl || comment.voice_url,
+              isPlayingVoice: false,
+              isLiked: false,
+              likeCount: 0
+            }))
+            updatedTransactions[transactionIndex].comments = processedComments
+            
+            console.log(`交易 ${result.transactionId} 处理后的评论:`, processedComments)
           }
         } else {
           // 如果获取失败，将对应的交易数据设置为默认值
           if (index < updatedTransactions.length && updatedTransactions[index].likeCount === null) {
             updatedTransactions[index].likeCount = 0
             updatedTransactions[index].commentCount = 0
+            updatedTransactions[index].comments = []
           }
         }
       })
@@ -2671,6 +2705,135 @@ Page({
         url: `/pages/user-social-profile/user-social-profile?userId=${walletOwnerId}`
       })
     }
+  },
+
+  // AI评论点赞
+  likeAiComment(e) {
+    const comment = e.currentTarget.dataset.comment
+    const userId = app.globalData.userInfo?.id
+    
+    if (!userId) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+
+    console.log('点赞AI评论:', comment)
+    
+    // 这里可以调用点赞AI评论的API
+    // 暂时先更新UI状态
+    const transactions = this.data.transactions
+    for (let i = 0; i < transactions.length; i++) {
+      if (transactions[i].comments) {
+        for (let j = 0; j < transactions[i].comments.length; j++) {
+          if (transactions[i].comments[j].id === comment.id) {
+            transactions[i].comments[j].isLiked = !transactions[i].comments[j].isLiked
+            transactions[i].comments[j].likeCount = transactions[i].comments[j].likeCount || 0
+            if (transactions[i].comments[j].isLiked) {
+              transactions[i].comments[j].likeCount++
+            } else {
+              transactions[i].comments[j].likeCount--
+            }
+            break
+          }
+        }
+      }
+    }
+    
+    this.setData({ transactions })
+    
+    wx.showToast({
+      title: comment.isLiked ? '已取消点赞' : '点赞成功',
+      icon: 'none',
+      duration: 1000
+    })
+  },
+
+  // 播放AI评论语音
+  playAiCommentVoice(e) {
+    const comment = e.currentTarget.dataset.comment
+    const voiceUrl = comment.voiceUrl
+    
+    console.log('播放AI评论语音:', voiceUrl)
+    
+    if (!voiceUrl) {
+      wx.showToast({
+        title: '语音文件不存在',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 停止当前播放的语音
+    if (this.data.voiceContext) {
+      this.data.voiceContext.destroy()
+    }
+    
+    // 更新播放状态
+    this.updateCommentPlayingState(comment.id, true)
+    
+    // 创建音频上下文并播放
+    const voiceContext = wx.createInnerAudioContext()
+    voiceContext.src = voiceUrl
+    voiceContext.autoplay = true
+    
+    voiceContext.onPlay(() => {
+      console.log('AI评论语音开始播放')
+      wx.showToast({
+        title: '语音播放中...',
+        icon: 'none',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onEnded(() => {
+      console.log('AI评论语音播放结束')
+      this.updateCommentPlayingState(comment.id, false)
+      voiceContext.destroy()
+      this.setData({ voiceContext: null })
+      
+      wx.showToast({
+        title: '播放完成',
+        icon: 'success',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onError((error) => {
+      console.error('AI评论语音播放失败:', error)
+      this.updateCommentPlayingState(comment.id, false)
+      voiceContext.destroy()
+      this.setData({ voiceContext: null })
+      
+      wx.showToast({
+        title: '语音播放失败',
+        icon: 'error'
+      })
+    })
+    
+    this.setData({ voiceContext })
+  },
+
+  // 更新评论播放状态
+  updateCommentPlayingState(commentId, isPlaying) {
+    const transactions = this.data.transactions
+    
+    for (let i = 0; i < transactions.length; i++) {
+      if (transactions[i].comments) {
+        for (let j = 0; j < transactions[i].comments.length; j++) {
+          if (transactions[i].comments[j].id === commentId) {
+            transactions[i].comments[j].isPlayingVoice = isPlaying
+          } else {
+            // 确保其他评论的播放状态为false
+            transactions[i].comments[j].isPlayingVoice = false
+          }
+        }
+      }
+    }
+    
+    this.setData({ transactions })
   }
 
 })
