@@ -252,6 +252,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  position: relative;
 }
 
 .wallet-header {
@@ -2788,10 +2789,10 @@
 /* 分享按钮样式 */
 .share-btn {
   position: absolute;
-  top: -9px;
-  right: -12px;
-  width: 80px;
-  height: 80px;
+  /* top: -9px ; */
+  /* right: -12px ; */
+  /* width: 80px ; */
+  /* height: 80px ; */
   background-color: transparent;
   border-radius: 50%;
   display: flex;
@@ -2799,6 +2800,8 @@
   justify-content: center;
   z-index: 10;
   transition: all 0.2s ease;
+  top: 14px;
+  right: 7px;
 }
 
 .share-btn:active {

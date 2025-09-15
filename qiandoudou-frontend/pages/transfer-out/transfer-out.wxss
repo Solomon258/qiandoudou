@@ -75,7 +75,6 @@
 /* 转出至区域 */
 .transfer-to-section {
   margin: 20px 16px 0 16px;
-  background: #fff;
   padding: 16px 16px 0;
   border-radius: 12px;
 }

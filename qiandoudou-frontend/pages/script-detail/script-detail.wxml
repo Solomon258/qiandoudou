@@ -71,13 +71,29 @@
                  src="{{chapterContent.videoUrl}}"
                  controls
                  show-fullscreen-btn="{{false}}"
-                 object-fit="contain"
+                 play-btn-position="center"
+                 object-fit="cover"
                  autoplay="true"
                  initial-time="0"
+                 direction="0"
                  binderror="onVideoError"
                  bindloadeddata="onVideoLoaded"
+                 bindended="onVideoEnd"
                  bindcanplay="onVideoCanPlay">
           </video>
+          <view wx:if="{{chapterContent && chapterContent.choices && playVideoEnd}}" class="choices-section">
+            <view class="choices-container">
+                <block wx:for="{{chapterContent.choicesList}}" wx:key="selection">
+                  <image class="bg-image  {{selectedChoice === item.selection ? 'selected' : ''}}" src="/static/icon/video_choose_bg.png" mode="aspectFill"></image>
+                  <view class="choice-button {{selectedChoice === item.selection ? 'selected' : ''}}"
+                        bindtap="transferToWallet"
+                        data-choice="{{item.selection}}">
+                    <text class="choice-cost">¥ {{item.cost}}.00</text>
+                    <text class="choice-text">{{item.selection}}</text>
+                  </view>
+                </block>
+            </view>
+          </view>
           
           <!-- 自定义全屏按钮 - 已隐藏，使用大尺寸播放器 -->
           <!-- <view class="custom-fullscreen-btn {{isFullscreen ? 'exit-fullscreen' : 'enter-fullscreen'}}" 
@@ -122,9 +138,8 @@
           <text class="chapter-text">{{chapterContent.content || '视频播放遇到问题，请查看文字描述或重试视频播放。'}}</text>
         </view>
       </view>
-
-      <!-- 选择选项 -->
-      <!-- <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
+    </view>
+    <!-- <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
         <text class="choice-prompt">打算怎么做，你选择：</text>
         <view class="choices-container">
           <block wx:for="{{chapterContent.choicesList}}" wx:key="selection">
@@ -137,31 +152,17 @@
           </block>
         </view>
       </view> -->
-    </view>
-    <view wx:if="{{chapterContent && chapterContent.choices}}" class="choices-section">
-        <text class="choice-prompt">打算怎么做，你选择：</text>
-        <view class="choices-container">
-          <block wx:for="{{chapterContent.choicesList}}" wx:key="selection">
-            <view class="choice-button {{selectedChoice === item.selection ? 'selected' : ''}}"
-                  bindtap="selectChoice"
-                  data-choice="{{item.selection}}">
-              <text class="choice-cost">¥ {{item.cost}}.00</text>
-              <text class="choice-text">{{item.selection}}</text>
-            </view>
-          </block>
-        </view>
-      </view>
 
     <!-- 章节选择器已移除 - 改为基于选择跳转 -->
 
     <!-- 底部转入按钮 -->
-    <view wx:if="{{chapterContent && chapterContent.choices && showTransferButton}}" class="bottom-transfer">
+    <!-- <view wx:if="{{chapterContent && chapterContent.choices && showTransferButton}}" class="bottom-transfer">
       <button class="transfer-button {{transferButtonEnabled ? 'enabled' : 'disabled'}}"
               bindtap="transferToWallet"
               disabled="{{!transferButtonEnabled}}">
         向钱兜兜转入
       </button>
-    </view>
+    </view> -->
   </view>
 
   <!-- 分享弹窗 -->
