@@ -166,22 +166,58 @@ Page({
     // 检查是否为网络URL（微信头像）
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       console.log('检测到网络URL，需要先下载到本地')
+      
+      // 处理微信头像URL格式（确保使用HTTPS）
+      let processedUrl = imagePath
+      if (imagePath.startsWith('http://')) {
+        processedUrl = imagePath.replace('http://', 'https://')
+        console.log('转换HTTP为HTTPS:', processedUrl)
+      }
+      
       // 先下载微信头像到本地
       wx.downloadFile({
-        url: imagePath,
+        url: processedUrl,
+        timeout: 10000, // 设置10秒超时
         success: (res) => {
           console.log('微信头像下载成功:', res.tempFilePath)
-          // 使用下载的临时文件路径上传
-          this.uploadAvatarToOSS(res.tempFilePath)
+          console.log('下载响应状态码:', res.statusCode)
+          
+          // 验证下载的文件
+          wx.getFileInfo({
+            filePath: res.tempFilePath,
+            success: (fileInfo) => {
+              console.log('下载文件信息:', fileInfo)
+              if (fileInfo.size > 0) {
+                // 文件有效，开始上传
+                this.uploadAvatarToOSS(res.tempFilePath)
+              } else {
+                console.error('下载的文件大小为0')
+                this.handleAvatarError('下载的头像文件无效')
+              }
+            },
+            fail: (error) => {
+              console.error('获取文件信息失败:', error)
+              this.handleAvatarError('头像文件验证失败')
+            }
+          })
         },
         fail: (error) => {
           console.error('微信头像下载失败:', error)
-          wx.hideLoading()
-          this.setData({ isUploadingAvatar: false })
-          wx.showToast({
-            title: '头像下载失败',
-            icon: 'error'
-          })
+          console.error('错误详情:', JSON.stringify(error))
+          
+          // 根据不同的错误类型给出不同的提示
+          let errorMsg = '头像下载失败'
+          if (error.errMsg) {
+            if (error.errMsg.includes('network')) {
+              errorMsg = '网络连接失败，请检查网络'
+            } else if (error.errMsg.includes('timeout')) {
+              errorMsg = '下载超时，请重试'
+            } else if (error.errMsg.includes('argv error')) {
+              errorMsg = '头像地址无效'
+            }
+          }
+          
+          this.handleAvatarError(errorMsg)
         }
       })
     } else {
@@ -525,46 +561,86 @@ Page({
       return
     }
     
+    // 验证和处理微信头像URL
+    console.log('原始微信头像URL:', avatarUrl)
+    
+    // 检查URL是否有效
+    if (!avatarUrl || avatarUrl.trim() === '') {
+      console.error('微信头像URL为空')
+      wx.hideLoading()
+      wx.showToast({
+        title: '未获取到头像',
+        icon: 'error'
+      })
+      this.setData({ isUploadingAvatar: false })
+      return
+    }
+    
+    // 处理微信头像URL格式（确保使用HTTPS）
+    let processedUrl = avatarUrl
+    if (avatarUrl.startsWith('http://')) {
+      processedUrl = avatarUrl.replace('http://', 'https://')
+      console.log('转换HTTP为HTTPS:', processedUrl)
+    }
+    
     // 先下载微信头像到本地
-    console.log('开始下载微信头像:', avatarUrl)
+    console.log('开始下载微信头像:', processedUrl)
     wx.downloadFile({
-      url: avatarUrl,
+      url: processedUrl,
+      timeout: 10000, // 设置10秒超时
       success: (downloadRes) => {
         console.log('微信头像下载成功:', downloadRes.tempFilePath)
+        console.log('下载响应状态码:', downloadRes.statusCode)
         
-        // 上传头像到OSS
-        console.log('开始上传头像到OSS...')
-        const { uploadUserImage } = require('../../utils/api.js')
-        uploadUserImage(downloadRes.tempFilePath, 'avatar')
-          .then(response => {
-            console.log('头像上传OSS响应:', response)
-            if (response.data && response.data.imageUrl) {
-              const ossAvatarUrl = response.data.imageUrl
-              this.updateAvatarInfo(ossAvatarUrl)
+        // 验证下载的文件
+        wx.getFileInfo({
+          filePath: downloadRes.tempFilePath,
+          success: (fileInfo) => {
+            console.log('下载文件信息:', fileInfo)
+            if (fileInfo.size > 0) {
+              // 文件有效，开始上传
+              this.uploadAvatarToOSS(downloadRes.tempFilePath)
             } else {
-              throw new Error('头像上传失败')
+              console.error('下载的文件大小为0')
+              this.handleAvatarError('下载的头像文件无效')
             }
-          })
-          .catch(error => {
-            console.error('头像上传失败:', error)
-            wx.hideLoading()
-            wx.showToast({
-              title: '头像上传失败',
-              icon: 'error'
-            })
-            this.setData({ isUploadingAvatar: false })
-          })
+          },
+          fail: (error) => {
+            console.error('获取文件信息失败:', error)
+            this.handleAvatarError('头像文件验证失败')
+          }
+        })
       },
       fail: (error) => {
         console.error('微信头像下载失败:', error)
-        wx.hideLoading()
-        wx.showToast({
-          title: '头像下载失败',
-          icon: 'error'
-        })
-        this.setData({ isUploadingAvatar: false })
+        console.error('错误详情:', JSON.stringify(error))
+        
+        // 根据不同的错误类型给出不同的提示
+        let errorMsg = '头像下载失败'
+        if (error.errMsg) {
+          if (error.errMsg.includes('network')) {
+            errorMsg = '网络连接失败，请检查网络'
+          } else if (error.errMsg.includes('timeout')) {
+            errorMsg = '下载超时，请重试'
+          } else if (error.errMsg.includes('argv error')) {
+            errorMsg = '头像地址无效'
+          }
+        }
+        
+        this.handleAvatarError(errorMsg)
       }
     })
+  },
+  
+  // 处理头像错误的统一方法
+  handleAvatarError(message) {
+    wx.hideLoading()
+    wx.showToast({
+      title: message,
+      icon: 'error',
+      duration: 3000
+    })
+    this.setData({ isUploadingAvatar: false })
   },
 
   // 更新头像信息
