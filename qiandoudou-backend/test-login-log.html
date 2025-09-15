@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录记录测试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .section h3 { margin-top: 0; color: #333; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: inline-block; width: 120px; }
+        .form-group input, .form-group select { width: 200px; padding: 5px; }
+        button { padding: 8px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px; white-space: pre-wrap; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table th, table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table th { background-color: #f2f2f2; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>用户登录记录管理系统</h1>
+        
+        <!-- 登录概览 -->
+        <div class="section">
+            <h3>登录数据概览</h3>
+            <button onclick="getLoginOverview()">获取概览数据</button>
+            <div id="overviewResult" class="result"></div>
+        </div>
+
+        <!-- 分页查询登录记录 -->
+        <div class="section">
+            <h3>查询登录记录</h3>
+            <div class="form-group">
+                <label>用户ID:</label>
+                <input type="number" id="queryUserId" placeholder="可选">
+            </div>
+            <div class="form-group">
+                <label>登录类型:</label>
+                <select id="queryLoginType">
+                    <option value="">全部</option>
+                    <option value="USERNAME">用户名登录</option>
+                    <option value="PHONE">手机号登录</option>
+                    <option value="WECHAT">微信登录</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>登录账号:</label>
+                <input type="text" id="queryLoginAccount" placeholder="可选">
+            </div>
+            <div class="form-group">
+                <label>开始时间:</label>
+                <input type="datetime-local" id="queryStartTime">
+            </div>
+            <div class="form-group">
+                <label>结束时间:</label>
+                <input type="datetime-local" id="queryEndTime">
+            </div>
+            <div class="form-group">
+                <label>登录状态:</label>
+                <select id="queryLoginStatus">
+                    <option value="">全部</option>
+                    <option value="1">成功</option>
+                    <option value="0">失败</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>页码:</label>
+                <input type="number" id="pageNum" value="1" min="1">
+            </div>
+            <div class="form-group">
+                <label>页大小:</label>
+                <input type="number" id="pageSize" value="10" min="1">
+            </div>
+            <button onclick="queryLoginLogs()">查询</button>
+            <div id="queryResult" class="result"></div>
+        </div>
+
+        <!-- 用户登录历史 -->
+        <div class="section">
+            <h3>用户登录历史</h3>
+            <div class="form-group">
+                <label>用户ID:</label>
+                <input type="number" id="historyUserId" placeholder="必填" required>
+            </div>
+            <button onclick="getUserLoginHistory()">查询用户历史</button>
+            <div id="historyResult" class="result"></div>
+        </div>
+
+        <!-- 登录统计 -->
+        <div class="section">
+            <h3>登录统计</h3>
+            <div class="form-group">
+                <label>用户ID:</label>
+                <input type="number" id="statsUserId" placeholder="可选，不填表示全部用户">
+            </div>
+            <div class="form-group">
+                <label>开始时间:</label>
+                <input type="datetime-local" id="statsStartTime">
+            </div>
+            <div class="form-group">
+                <label>结束时间:</label>
+                <input type="datetime-local" id="statsEndTime">
+            </div>
+            <button onclick="getLoginStatistics()">获取统计</button>
+            <div id="statsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8080'; // 根据实际情况修改
+
+        async function apiCall(url, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(baseUrl + url, options);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('API调用错误:', error);
+                return { success: false, message: '网络错误: ' + error.message };
+            }
+        }
+
+        function formatResult(data) {
+            return JSON.stringify(data, null, 2);
+        }
+
+        async function getLoginOverview() {
+            const result = await apiCall('/login-log/overview');
+            document.getElementById('overviewResult').textContent = formatResult(result);
+            document.getElementById('overviewResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        async function queryLoginLogs() {
+            const params = new URLSearchParams();
+            
+            const userId = document.getElementById('queryUserId').value;
+            const loginType = document.getElementById('queryLoginType').value;
+            const loginAccount = document.getElementById('queryLoginAccount').value;
+            const startTime = document.getElementById('queryStartTime').value;
+            const endTime = document.getElementById('queryEndTime').value;
+            const loginStatus = document.getElementById('queryLoginStatus').value;
+            const pageNum = document.getElementById('pageNum').value;
+            const pageSize = document.getElementById('pageSize').value;
+
+            if (userId) params.append('userId', userId);
+            if (loginType) params.append('loginType', loginType);
+            if (loginAccount) params.append('loginAccount', loginAccount);
+            if (startTime) params.append('startTime', startTime.replace('T', ' ') + ':00');
+            if (endTime) params.append('endTime', endTime.replace('T', ' ') + ':00');
+            if (loginStatus) params.append('loginStatus', loginStatus);
+            params.append('pageNum', pageNum);
+            params.append('pageSize', pageSize);
+
+            const result = await apiCall('/login-log/page?' + params.toString());
+            document.getElementById('queryResult').textContent = formatResult(result);
+            document.getElementById('queryResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        async function getUserLoginHistory() {
+            const userId = document.getElementById('historyUserId').value;
+            if (!userId) {
+                alert('请输入用户ID');
+                return;
+            }
+
+            const result = await apiCall(`/login-log/user-history/${userId}`);
+            document.getElementById('historyResult').textContent = formatResult(result);
+            document.getElementById('historyResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        async function getLoginStatistics() {
+            const params = new URLSearchParams();
+            
+            const userId = document.getElementById('statsUserId').value;
+            const startTime = document.getElementById('statsStartTime').value;
+            const endTime = document.getElementById('statsEndTime').value;
+
+            if (userId) params.append('userId', userId);
+            if (startTime) params.append('startTime', startTime.replace('T', ' ') + ':00');
+            if (endTime) params.append('endTime', endTime.replace('T', ' ') + ':00');
+
+            const result = await apiCall('/login-log/statistics?' + params.toString());
+            document.getElementById('statsResult').textContent = formatResult(result);
+            document.getElementById('statsResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        // 页面加载时自动获取概览数据
+        window.onload = function() {
+            getLoginOverview();
+        };
+    </script>
+</body>
+</html>

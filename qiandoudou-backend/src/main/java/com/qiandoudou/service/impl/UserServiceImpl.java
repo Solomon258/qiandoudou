@@ -3,17 +3,23 @@ package com.qiandoudou.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiandoudou.entity.User;
+import com.qiandoudou.entity.UserLoginLog;
 import com.qiandoudou.entity.WeChatLoginResponse;
 import com.qiandoudou.config.WeChatConfig;
 import com.qiandoudou.mapper.UserMapper;
 import com.qiandoudou.service.UserService;
+import com.qiandoudou.service.UserLoginLogService;
 import com.qiandoudou.util.JwtUtil;
+import com.qiandoudou.util.HttpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,24 +38,87 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private WeChatConfig weChatConfig;
 
+    @Autowired
+    private UserLoginLogService userLoginLogService;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * 获取当前请求信息
+     */
+    private HttpServletRequest getCurrentRequest() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            return attributes != null ? attributes.getRequest() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 记录登录成功日志
+     */
+    private void recordSuccessLoginLog(Long userId, String loginType, String loginAccount) {
+        try {
+            HttpServletRequest request = getCurrentRequest();
+            String ipAddress = HttpUtil.getClientIpAddress(request);
+            String userAgent = HttpUtil.getSimplifiedUserAgent(request);
+            userLoginLogService.recordSuccessLogin(userId, loginType, loginAccount, ipAddress, userAgent);
+        } catch (Exception e) {
+            System.err.println("记录登录成功日志失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 记录登录失败日志
+     */
+    private void recordFailureLoginLog(Long userId, String loginType, String loginAccount, String failureReason) {
+        try {
+            HttpServletRequest request = getCurrentRequest();
+            String ipAddress = HttpUtil.getClientIpAddress(request);
+            String userAgent = HttpUtil.getSimplifiedUserAgent(request);
+            userLoginLogService.recordFailureLogin(userId, loginType, loginAccount, ipAddress, userAgent, failureReason);
+        } catch (Exception e) {
+            System.err.println("记录登录失败日志失败: " + e.getMessage());
+        }
+    }
+
     @Override
     public String login(String username, String password) {
-        // 根据用户名查找用户
-        User user = getUserByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("用户不存在");
-        }
+        User user = null;
+        try {
+            // 根据用户名查找用户
+            user = getUserByUsername(username);
+            if (user == null) {
+                // 记录失败日志 - 用户不存在
+                recordFailureLoginLog(null, UserLoginLog.LoginType.USERNAME.getCode(), username, "用户不存在");
+                throw new RuntimeException("用户不存在");
+            }
 
-        // 验证密码 (Demo版本使用明文比较)
-        if (!password.equals(user.getPassword())) {
-            throw new RuntimeException("密码错误");
-        }
+            // 验证密码 (Demo版本使用明文比较)
+            if (!password.equals(user.getPassword())) {
+                // 记录失败日志 - 密码错误
+                recordFailureLoginLog(user.getId(), UserLoginLog.LoginType.USERNAME.getCode(), username, "密码错误");
+                throw new RuntimeException("密码错误");
+            }
 
-        // 生成JWT token
-        return jwtUtil.generateToken(user.getId(), user.getUsername());
+            // 生成JWT token
+            String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+            
+            // 记录成功登录日志
+            recordSuccessLoginLog(user.getId(), UserLoginLog.LoginType.USERNAME.getCode(), username);
+            
+            return token;
+        } catch (RuntimeException e) {
+            throw e; // 重新抛出已知异常
+        } catch (Exception e) {
+            // 记录系统异常
+            if (user != null) {
+                recordFailureLoginLog(user.getId(), UserLoginLog.LoginType.USERNAME.getCode(), username, "系统异常: " + e.getMessage());
+            }
+            throw new RuntimeException("登录失败: " + e.getMessage());
+        }
     }
 
     @Override
@@ -165,17 +234,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     
     @Override
     public Map<String, Object> wechatLoginWithUser(String code) {
+        User user = null;
+        String openid = null;
         try {
             System.out.println("开始微信登录并获取用户信息，code: " + code);
             
             String token;
-            User user;
             
             // 检查是否启用开发模式
             if (weChatConfig.isDevMode()) {
                 System.out.println("开发模式已启用，使用演示模式跳过IP白名单限制");
                 token = handleDemoWeChatLogin(code);
-                String openid = "demo_wx_fixed_user";
+                openid = "demo_wx_fixed_user";
                 user = getUserByOpenid(openid);
             } else {
                 // 检查微信配置
@@ -184,14 +254,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     weChatConfig.getAppid().equals("your_wx_appid")) {
                     System.out.println("微信配置未正确设置，使用演示模式");
                     token = handleDemoWeChatLogin(code);
-                    String openid = "demo_wx_fixed_user";
+                    openid = "demo_wx_fixed_user";
                     user = getUserByOpenid(openid);
                 } else {
                     // 调用真实微信API - 使用统一处理方法
                     Map<String, Object> wechatResult = handleRealWeChatLogin(code);
                     token = (String) wechatResult.get("token");
                     user = (User) wechatResult.get("user");
+                    openid = user != null ? user.getOpenid() : null;
                 }
+            }
+            
+            // 记录成功登录日志
+            if (user != null && openid != null) {
+                recordSuccessLoginLog(user.getId(), UserLoginLog.LoginType.WECHAT.getCode(), openid);
             }
             
             Map<String, Object> result = new HashMap<>();
@@ -203,6 +279,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } catch (Exception e) {
             System.err.println("微信登录异常: " + e.getMessage());
             e.printStackTrace();
+            // 记录失败登录日志
+            if (user != null && openid != null) {
+                recordFailureLoginLog(user.getId(), UserLoginLog.LoginType.WECHAT.getCode(), openid, "微信登录异常: " + e.getMessage());
+            } else {
+                recordFailureLoginLog(null, UserLoginLog.LoginType.WECHAT.getCode(), code, "微信登录异常: " + e.getMessage());
+            }
             throw new RuntimeException("微信登录失败: " + e.getMessage());
         }
     }
@@ -319,11 +401,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Map<String, Object> phoneLogin(String phone, String code) {
+        User user = null;
         try {
             System.out.println("开始手机号登录，手机号: " + phone + ", 验证码: " + code);
             
             // 查找是否已有该手机号的用户
-            User user = getUserByPhone(phone);
+            user = getUserByPhone(phone);
             
             if (user == null) {
                 // 如果用户不存在，创建新用户（登录即注册）
@@ -342,6 +425,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 生成JWT token
             String token = jwtUtil.generateToken(user.getId(), user.getUsername());
             
+            // 记录成功登录日志
+            recordSuccessLoginLog(user.getId(), UserLoginLog.LoginType.PHONE.getCode(), phone);
+            
             Map<String, Object> result = new HashMap<>();
             result.put("token", token);
             result.put("user", user);
@@ -350,6 +436,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return result;
         } catch (Exception e) {
             System.err.println("手机号登录异常: " + e.getMessage());
+            // 记录失败登录日志
+            if (user != null) {
+                recordFailureLoginLog(user.getId(), UserLoginLog.LoginType.PHONE.getCode(), phone, "登录异常: " + e.getMessage());
+            } else {
+                recordFailureLoginLog(null, UserLoginLog.LoginType.PHONE.getCode(), phone, "登录异常: " + e.getMessage());
+            }
             throw new RuntimeException("手机号登录失败: " + e.getMessage());
         }
     }
