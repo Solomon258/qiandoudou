@@ -66,7 +66,7 @@ public class UserLoginLogServiceImpl extends ServiceImpl<UserLoginLogMapper, Use
     }
 
     @Override
-    public List<UserLoginLog> getRecentLoginLogs(Long userId, Integer limit) {
+    public List<Map<String, Object>> getRecentLoginLogs(Long userId, Integer limit) {
         if (limit == null || limit <= 0) {
             limit = 10; // 默认查询最近10条
         }

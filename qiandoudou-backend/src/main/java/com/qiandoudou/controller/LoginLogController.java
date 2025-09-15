@@ -2,7 +2,6 @@ package com.qiandoudou.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiandoudou.common.Result;
-import com.qiandoudou.entity.UserLoginLog;
 import com.qiandoudou.service.UserLoginLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -49,11 +48,11 @@ public class LoginLogController {
      * 获取用户最近的登录记录
      */
     @GetMapping("/recent/{userId}")
-    public Result<List<UserLoginLog>> getRecentLoginLogs(
+    public Result<List<Map<String, Object>>> getRecentLoginLogs(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "10") Integer limit) {
         try {
-            List<UserLoginLog> logs = userLoginLogService.getRecentLoginLogs(userId, limit);
+            List<Map<String, Object>> logs = userLoginLogService.getRecentLoginLogs(userId, limit);
             return Result.success("查询成功", logs);
         } catch (Exception e) {
             return Result.error("查询失败: " + e.getMessage());
@@ -160,7 +159,7 @@ public class LoginLogController {
             result.put("statistics", statistics);
             
             // 最近登录记录
-            List<UserLoginLog> recentLogs = userLoginLogService.getRecentLoginLogs(userId, 5);
+            List<Map<String, Object>> recentLogs = userLoginLogService.getRecentLoginLogs(userId, 5);
             result.put("recentLogs", recentLogs);
             
             return Result.success("查询成功", result);

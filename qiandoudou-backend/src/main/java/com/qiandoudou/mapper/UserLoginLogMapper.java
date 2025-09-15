@@ -22,13 +22,20 @@ public interface UserLoginLogMapper extends BaseMapper<UserLoginLog> {
      * 分页查询用户登录记录
      */
     @Select("<script>" +
-            "SELECT l.*, u.nickname, u.username, u.phone " +
+            "SELECT l.*, u.nickname, u.username, u.phone, " +
+            "CASE " +
+            "  WHEN l.login_type = 'USERNAME' THEN CONCAT('用户名: ', l.login_account) " +
+            "  WHEN l.login_type = 'PHONE' THEN CONCAT('手机号: ', l.login_account) " +
+            "  WHEN l.login_type = 'WECHAT' THEN CONCAT('微信用户: ', COALESCE(u.nickname, '未知用户')) " +
+            "  ELSE l.login_account " +
+            "END AS display_account, " +
+            "l.login_account as original_account " +
             "FROM user_login_logs l " +
             "LEFT JOIN users u ON l.user_id = u.id " +
             "WHERE 1=1 " +
             "<if test='userId != null'> AND l.user_id = #{userId} </if>" +
             "<if test='loginType != null and loginType != \"\"'> AND l.login_type = #{loginType} </if>" +
-            "<if test='loginAccount != null and loginAccount != \"\"'> AND l.login_account LIKE CONCAT('%', #{loginAccount}, '%') </if>" +
+            "<if test='loginAccount != null and loginAccount != \"\"'> AND (l.login_account LIKE CONCAT('%', #{loginAccount}, '%') OR u.nickname LIKE CONCAT('%', #{loginAccount}, '%') OR u.username LIKE CONCAT('%', #{loginAccount}, '%') OR u.phone LIKE CONCAT('%', #{loginAccount}, '%')) </if>" +
             "<if test='startTime != null'> AND l.login_time >= #{startTime} </if>" +
             "<if test='endTime != null'> AND l.login_time &lt;= #{endTime} </if>" +
             "<if test='loginStatus != null'> AND l.login_status = #{loginStatus} </if>" +
@@ -47,8 +54,19 @@ public interface UserLoginLogMapper extends BaseMapper<UserLoginLog> {
     /**
      * 查询用户最近的登录记录
      */
-    @Select("SELECT * FROM user_login_logs WHERE user_id = #{userId} AND login_status = 1 ORDER BY login_time DESC LIMIT #{limit}")
-    List<UserLoginLog> selectRecentLoginLogs(@Param("userId") Long userId, @Param("limit") Integer limit);
+    @Select("SELECT l.*, u.nickname, u.username, u.phone, " +
+            "CASE " +
+            "  WHEN l.login_type = 'USERNAME' THEN CONCAT('用户名: ', l.login_account) " +
+            "  WHEN l.login_type = 'PHONE' THEN CONCAT('手机号: ', l.login_account) " +
+            "  WHEN l.login_type = 'WECHAT' THEN CONCAT('微信用户: ', COALESCE(u.nickname, '未知用户')) " +
+            "  ELSE l.login_account " +
+            "END AS display_account, " +
+            "l.login_account as original_account " +
+            "FROM user_login_logs l " +
+            "LEFT JOIN users u ON l.user_id = u.id " +
+            "WHERE l.user_id = #{userId} AND l.login_status = 1 " +
+            "ORDER BY l.login_time DESC LIMIT #{limit}")
+    List<Map<String, Object>> selectRecentLoginLogs(@Param("userId") Long userId, @Param("limit") Integer limit);
 
     /**
      * 统计用户登录次数

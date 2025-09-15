@@ -41,7 +41,7 @@ public interface UserLoginLogService extends IService<UserLoginLog> {
     /**
      * 获取用户最近的登录记录
      */
-    List<UserLoginLog> getRecentLoginLogs(Long userId, Integer limit);
+    List<Map<String, Object>> getRecentLoginLogs(Long userId, Integer limit);
 
     /**
      * 获取登录统计数据

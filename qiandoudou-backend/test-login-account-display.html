@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录账号显示测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .section h3 { margin-top: 0; color: #333; }
+        button { padding: 8px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table th, table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table th { background-color: #f2f2f2; }
+        .error { color: red; }
+        .success { color: green; }
+        .highlight { background-color: yellow; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>登录账号显示测试</h1>
+        
+        <!-- 测试登录并查看记录 -->
+        <div class="section">
+            <h3>1. 测试登录（会自动记录登录日志）</h3>
+            <div style="margin: 10px 0;">
+                <label>用户名:</label>
+                <input type="text" id="testUsername" value="test_user" style="margin: 0 10px; padding: 5px;">
+                <label>密码:</label>
+                <input type="password" id="testPassword" value="123456" style="margin: 0 10px; padding: 5px;">
+                <button onclick="testLogin()">测试登录</button>
+            </div>
+            <div id="loginResult" class="result"></div>
+        </div>
+
+        <!-- 查看最新的登录记录 -->
+        <div class="section">
+            <h3>2. 查看最新登录记录（验证login_account字段）</h3>
+            <button onclick="getRecentLoginLogs()">获取最新10条登录记录</button>
+            <div id="recentLogsResult" class="result"></div>
+        </div>
+
+        <!-- 查看分页登录记录 -->
+        <div class="section">
+            <h3>3. 分页查看登录记录</h3>
+            <button onclick="getLoginLogPage()">获取第1页登录记录</button>
+            <div id="pageLogsResult" class="result"></div>
+        </div>
+
+        <!-- 数据库直查验证 -->
+        <div class="section">
+            <h3>4. 说明</h3>
+            <p>现在登录记录显示已优化：</p>
+            <ul>
+                <li>1. <span class="highlight">display_account</span> - 友好显示的账号信息：
+                    <ul>
+                        <li>用户名登录：显示 "用户名: xxx"</li>
+                        <li>手机号登录：显示 "手机号: 138xxxx"</li>
+                        <li>微信登录：显示 "微信用户: 用户昵称" (而不是OpenID)</li>
+                    </ul>
+                </li>
+                <li>2. <span style="color: #666;">original_account</span> - 原始账号信息（包括OpenID）</li>
+                <li>3. 现在微信登录不再显示难懂的OpenID，而是显示用户昵称</li>
+                <li>4. 支持通过用户昵称、用户名、手机号等进行搜索</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8080'; // 根据实际情况修改
+
+        async function apiCall(url, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(baseUrl + url, options);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('API调用错误:', error);
+                return { success: false, message: '网络错误: ' + error.message };
+            }
+        }
+
+        function formatResult(data) {
+            return JSON.stringify(data, null, 2);
+        }
+
+        function createTable(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                return '<p>没有数据</p>';
+            }
+
+            const headers = Object.keys(data[0]);
+            let table = '<table><thead><tr>';
+            headers.forEach(header => {
+                table += `<th>${header}</th>`;
+            });
+            table += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                table += '<tr>';
+            headers.forEach(header => {
+                let value = row[header];
+                if (header === 'display_account') {
+                    // 高亮显示友好的账号信息
+                    value = `<span class="highlight">${value || 'null'}</span>`;
+                } else if (header === 'original_account') {
+                    // 显示原始账号信息（较小字体）
+                    value = `<small style="color: #666;">${value || 'null'}</small>`;
+                } else if (header === 'login_account') {
+                    // 如果还有原始字段，用小字体显示
+                    value = `<small style="color: #999;">${value || 'null'}</small>`;
+                }
+                table += `<td>${value || ''}</td>`;
+            });
+                table += '</tr>';
+            });
+
+            table += '</tbody></table>';
+            return table;
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('testUsername').value;
+            const password = document.getElementById('testPassword').value;
+
+            if (!username || !password) {
+                alert('请输入用户名和密码');
+                return;
+            }
+
+            const result = await apiCall('/auth/login', 'POST', {
+                username: username,
+                password: password
+            });
+
+            document.getElementById('loginResult').innerHTML = formatResult(result);
+            document.getElementById('loginResult').className = 'result ' + (result.success ? 'success' : 'error');
+
+            if (result.success) {
+                // 登录成功后，稍等一下再查询登录记录
+                setTimeout(() => {
+                    getRecentLoginLogs();
+                }, 1000);
+            }
+        }
+
+        async function getRecentLoginLogs() {
+            const result = await apiCall('/login-log/page?pageNum=1&pageSize=10');
+            
+            let content = '<h4>API响应：</h4>';
+            content += '<pre>' + formatResult(result) + '</pre>';
+            
+            if (result.success && result.data && result.data.records) {
+                content += '<h4>登录记录表格（注意login_account字段）：</h4>';
+                content += createTable(result.data.records);
+            }
+
+            document.getElementById('recentLogsResult').innerHTML = content;
+            document.getElementById('recentLogsResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        async function getLoginLogPage() {
+            const result = await apiCall('/login-log/page?pageNum=1&pageSize=20');
+            
+            let content = '<h4>分页查询结果：</h4>';
+            content += '<pre>' + formatResult(result) + '</pre>';
+            
+            if (result.success && result.data && result.data.records) {
+                content += '<h4>登录记录详情（重点查看login_account字段）：</h4>';
+                content += createTable(result.data.records);
+            }
+
+            document.getElementById('pageLogsResult').innerHTML = content;
+            document.getElementById('pageLogsResult').className = 'result ' + (result.success ? 'success' : 'error');
+        }
+
+        // 页面加载时自动获取最新记录
+        window.onload = function() {
+            getRecentLoginLogs();
+        };
+    </script>
+</body>
+</html>
