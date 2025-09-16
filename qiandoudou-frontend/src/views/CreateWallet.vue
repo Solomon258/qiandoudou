@@ -291,7 +291,7 @@ export default {
 }
 
 .type-icon.personal {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
 }
 
 .type-icon.couple {
@@ -423,7 +423,7 @@ export default {
   color: white;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   background-size: cover;
   background-position: center;
 }

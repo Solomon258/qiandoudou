@@ -35,7 +35,8 @@ Page({
     posterUrl: 'https://example.com/poster.jpg',
     isFullscreen: false,
     showShareModal: false, // 是否显示分享弹窗
-    shareImageUrl: '' // 分享图片地址
+    shareImageUrl: '', // 分享图片地址
+    playVideoEnd: false
   },
   onReady() {
     this.videoContext = wx.createVideoContext('chapterVideo', this)
@@ -278,7 +279,7 @@ Page({
         // 检查是否为最后一集（没有选项或所有选项的nextId都为null）
         const isLastChapter = !choicesList || choicesList.length === 0 || 
                             choicesList.every(choice => choice.nextId === null || choice.nextId === undefined)
-        
+        console.log(chapterData,'返回的章节!!!')
         this.setData({
           chapterContent: chapterData,
           selectedChoice: null,
@@ -352,17 +353,22 @@ Page({
   // 章节选择功能已移除 - 改为基于选择跳转
 
   // 选择剧情选项
-  selectChoice(e) {
+  // selectChoice(e) {
+  //   const choice = e.currentTarget.dataset.choice
+  //   this.setData({
+  //     selectedChoice: choice,
+  //     transferButtonEnabled: true
+  //   })
+  // },
+
+  // 向钱兜兜转入
+  async transferToWallet(e) {
     const choice = e.currentTarget.dataset.choice
     this.setData({
       selectedChoice: choice,
-      transferButtonEnabled: true
+      // transferButtonEnabled: true
     })
-  },
-
-  // 向钱兜兜转入
-  async transferToWallet() {
-    const { selectedChoice, selectedScript, currentChapter, userId } = this.data
+    const { selectedChoice } = this.data
     
     if (!selectedChoice) {
       wx.showToast({
@@ -391,6 +397,11 @@ Page({
         success: async (res) => {
           if (res.confirm) {
             await this.processChoice(selectedChoice, amount)
+            this.setData(
+              {
+                playVideoEnd: false
+              }
+            )
           }
         }
       })
@@ -848,5 +859,13 @@ Page({
       }, 1000)
     }
   },
+  onVideoEnd(e) {
+    console.log(e,'视频播放结束!!')
+    this.setData(
+      {
+        playVideoEnd: true
+      }
+    )
+  }
 
 })

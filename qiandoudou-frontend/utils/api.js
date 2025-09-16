@@ -3,7 +3,7 @@ const app = getApp()
 
 // 后端API基础地址
 // const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-  const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（微信小程序不支持）
+const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（用于微信小程序调试）
 // const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 // const BASE_URL = 'https://ai-where.com/api'
 // https://heartllo.cn/api/scripts/2/chapters/2
@@ -27,16 +27,30 @@ function request(options) {
       header['Authorization'] = `Bearer ${token}`
     }
 
+    // 添加调试信息
+    if (options.url.includes('/auth/phone-login')) {
+      console.log('发起手机号登录请求', {
+        url: `${BASE_URL}${options.url}`,
+        method: options.method || 'GET',
+        data: options.data,
+        header: header
+      })
+    }
+
     wx.request({
       url: `${BASE_URL}${options.url}`,
       method: options.method || 'GET',
       data: options.data,
       header: header,
       success: (res) => {
+        // 添加调试信息
+        if (options.url.includes('/auth/phone-login')) {
+          console.log('手机号登录请求响应', res)
+        }
+        
         // 只在开发模式下输出详细日志
         if (options.debug !== false) {
-
-
+          // 调试日志已移除，避免无关日志输出
         }
         
         if (res.statusCode === 200) {
@@ -64,15 +78,16 @@ function request(options) {
         }
       },
       fail: (error) => {
+        // 添加调试信息
+        if (options.url.includes('/auth/phone-login')) {
+          console.error('手机号登录请求失败', error)
+        }
+        
         // 只在网络真正失败时输出错误
-
-
-
-
-
-
-
-
+        console.error('网络请求失败:', {
+          url: `${BASE_URL}${options.url}`,
+          error: error
+        })
         
         // 根据错误类型提供更具体的错误信息
         let errorMessage = '网络连接失败'
@@ -118,6 +133,7 @@ const authAPI = {
 
   // 手机号登录
   phoneLogin(phone, code) {
+    console.log('phoneLogin API调用', { phone, code })
     return request({
       url: '/auth/phone-login',
       method: 'POST',
@@ -140,6 +156,31 @@ const authAPI = {
       url: '/auth/update-avatar',
       method: 'POST',
       data: { 
+        avatarUrl: avatarUrl,
+        userId: userId
+      }
+    })
+  },
+
+  // 更新用户昵称
+  updateNickname(nickname, userId) {
+    return request({
+      url: '/auth/update-nickname',
+      method: 'POST',
+      data: { 
+        nickname: nickname,
+        userId: userId
+      }
+    })
+  },
+
+  // 同时更新用户头像和昵称
+  updateProfile(nickname, avatarUrl, userId) {
+    return request({
+      url: '/auth/update-profile',
+      method: 'POST',
+      data: { 
+        nickname: nickname,
         avatarUrl: avatarUrl,
         userId: userId
       }
@@ -224,13 +265,13 @@ const walletAPI = {
   },
 
   // 获取公开钱包列表（用于兜圈圈）
-  getPublicWallets() {
-
-
+  getPublicWallets(page = 1, size = 10) {
+    console.log(`API调用: getPublicWallets, page: ${page}, size: ${size}`)
     
     return request({
       url: '/wallet/public',
       method: 'GET',
+      data: { page, size },
       debug: true, // 强制显示调试信息
       header: {
         'Accept': 'application/json'
@@ -499,13 +540,15 @@ const walletAPI = {
     })
   },
 
-  // 获取公开钱包列表（用于兜圈圈）
-  getPublicWallets() {
+  // 获取交易的详细评论列表（包括AI评论和语音URL）
+  getTransactionCommentsDetail(transactionId) {
     return request({
-      url: '/wallet/public',
-      method: 'GET'
+      url: '/social/transaction/comments-detail',
+      method: 'GET',
+      data: { transactionId }
     })
   },
+
 
   // 根据图片生成文字描述
   generateTextFromImage(imageBase64, prompt) {
@@ -522,6 +565,19 @@ const walletAPI = {
       url: '/wallet/monthly-stats',
       method: 'GET',
       data: { walletId, year, month }
+    })
+  },
+
+  // 生成AI情侣自动评论
+  generateAiAutoComment(transactionId, walletId) {
+    return request({
+      url: '/ai/auto-comment',
+      method: 'POST',
+      data: { 
+        transactionId, 
+        walletId,
+        userId: app.globalData.userInfo?.id 
+      }
     })
   }
 }
@@ -578,7 +634,6 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
       formData: formData,
       header: header,
       success: (res) => {
-
         try {
           const data = JSON.parse(res.data)
           if (data.code === 200) {
@@ -591,7 +646,6 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
         }
       },
       fail: (error) => {
-
         reject(new Error('文件上传失败'))
       }
     })
@@ -706,77 +760,6 @@ const scriptAPI = {
   }
 }
 
-// 测试函数 - 用于诊断网络问题
-const testAPI = {
-  // 测试网络连接
-  testConnection() {
-
-
-    
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `${BASE_URL}/wallet/public`,
-        method: 'GET',
-        header: {
-          'Content-Type': 'application/json'
-        },
-        success: (res) => {
-
-
-
-
-          resolve(res)
-        },
-        fail: (error) => {
-
-
-
-
-          reject(error)
-        }
-      })
-    })
-  },
-  
-  // 测试简单的GET请求
-  testSimpleRequest() {
-    return wx.request({
-      url: 'https://heartllo.cn/api/wallet/public',
-      method: 'GET',
-      success: (res) => console.log('简单请求成功:', res),
-      fail: (err) => console.error('简单请求失败:', err)
-    })
-  },
-  
-  // 测试域名连通性
-  testDomainConnectivity() {
-
-    
-    // 测试1: 直接访问域名根路径
-    wx.request({
-      url: 'https://heartllo.cn/',
-      method: 'GET',
-      success: (res) => {
-
-      },
-      fail: (err) => {
-
-      }
-    })
-    
-    // 测试2: 访问API路径
-    wx.request({
-      url: 'https://heartllo.cn/api/',
-      method: 'GET', 
-      success: (res) => {
-
-      },
-      fail: (err) => {
-
-      }
-    })
-  }
-}
 
 module.exports = {
   request,
@@ -785,6 +768,5 @@ module.exports = {
   shareImageAPI,
   uploadFile,
   uploadUserImage,
-  scriptAPI,
-  testAPI
+  scriptAPI
 }

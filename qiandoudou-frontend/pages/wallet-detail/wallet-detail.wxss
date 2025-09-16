@@ -11,8 +11,8 @@
 
 .wallet-background {
   position: relative;
-  height: 254px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 220px;
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -29,7 +29,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.195);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* 背景点击提示 */
@@ -130,7 +130,7 @@
 }
 
 .user-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #ffffff;
   line-height: 22px;
@@ -139,7 +139,7 @@
 }
 
 .user-tags {
-  font-size: 12px;
+  font-size: 14px;
   color: #ffffff;
   line-height: 17px;
   margin-bottom: 4px;
@@ -147,7 +147,7 @@
 }
 
 .user-desc {
-  font-size: 12px;
+  font-size: 14px;
   color: #ffffff;
   line-height: 17px;
   display: block;
@@ -163,6 +163,7 @@
   align-items: center;
   padding: 20px 16px;
   gap: 28px;
+  margin-left: 48px;
 }
 
 .stat-item {
@@ -172,16 +173,16 @@
 }
 
 .stat-number {
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 600;
   color: #ffffff;
   line-height: 22px;
   margin-bottom: 2px;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: #ffffff;
+.stat-item .stat-label {
+  font-size: 14px;
+  color: #fff;
   line-height: 17px;
 }
 
@@ -226,31 +227,36 @@
 /* 总金额卡片 */
 .total-amount-card {
   position: relative;
-  margin: 20px 16px;
+  /* padding: 20px 16px ; */
   height: 102px;
   background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* border-radius: 12px ; */
+  /* padding: 20px ; */
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   z-index: 20;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin: 0 16px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .amount-label {
-  font-size: 12px;
-  color: #00000099;
+  font-size: 28rpx;
+  color: rgba(0, 0, 0, 0.6);
   line-height: 17px;
   margin-bottom: 8px;
+  font-family:PingFang SC;
 }
 
 .amount-value {
-  font-size: 32px;
-  font-weight: 800;
-  color: #000000e6;
-  line-height: 45px;
+  font-family:PingFang SC;
+  font-weight:600;
+  color:rgba(0, 0, 0, 0.9);
+  font-size:48rpx;  
+  line-height: 33px;
 }
 
 .wallet-info {
@@ -265,11 +271,24 @@
 
 /* 操作按钮区域 */
 .operation-section {
-  margin-top: 20px;
-  padding: 0 16px;
-  margin-bottom: 20px;
+    /* margin-top: 20px ; */
+    /* padding: 0 16px ; */
+    padding-bottom: 20px;
+    background: #fff;
+    /* padding: 20px ; */
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+    margin: 0 16px;
+    padding: 0 16px 16px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
-
+.count_view {
+  /* border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+  position: absolute;
+  top: 206px;
+  width: 100%;
+}
 .operation-buttons {
   display: flex;
   gap: 12px;
@@ -279,7 +298,7 @@
 .operation-btn {
   flex: 1;
   height: 48px;
-  background: #e8e8e8;
+  background: rgba(250, 100, 2, 0.1);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -292,7 +311,7 @@
 
 .btn-text {
   font-size: 16px;
-  color: #333;
+  color: #fa6402;
   font-weight: 500;
 }
 
@@ -302,13 +321,13 @@
 }
 
 .script-btn-full {
-  width: 100%;
-  height: 48px;
-  background: #4A90E2;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 48px;
+  background: #fa6402;
+  border-radius: 24px;
+  line-height: 48px;
 }
 
 .script-btn-full:active {
@@ -318,22 +337,24 @@
 .script-btn-text {
   font-size: 16px;
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* 剧本推广卡片 */
 .script-promotion {
-  margin: 20px 16px;
+  margin: 20px 16px 12px 16px;
+  margin-top: 222px;
 }
 
 .promo-card {
   background: #ffffff;
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .promo-image-placeholder {
@@ -375,6 +396,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-right: 40rpx;
 }
 
 .close-btn {
@@ -383,6 +405,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  right: 4px;
+  top: 0px;
 }
 
 .close-icon {
@@ -392,8 +417,8 @@
 
 .action-btn-promo {
   padding: 0px 16px;
-  background: #FF6B35;
-  border-radius: 14px;
+  background: #FA6402;
+  border-radius: 16px;
   line-height: 60rpx;
   text-align: center;
   color: #ffffff;
@@ -401,16 +426,15 @@
 
 .action-text {
   font-size: 24rpx;
-  font-weight: 600;
 }
 
 /* 账单统计区域 */
 .bill-section {
   background: #ffffff;
-  margin: 20px 16px 20px 16px;
+  margin: 12px 16px 20px 16px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 /* 标签栏 */
@@ -427,7 +451,8 @@
 }
 
 .tab-item.active {
-  color: #f6721e;
+  color: #fa6402;
+  font-weight: 600;
 }
 
 .tab-item.active::after {
@@ -437,13 +462,13 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #f6721e;
+  background: #fa6402;
   border-radius: 1px;
 }
 
 .tab-text {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  /* font-weight: 600; */
   color: inherit;
   line-height: 20px;
 }
@@ -467,7 +492,7 @@
 
 /* 账单列表（社交动态流水） */
 .bill-list {
-  padding: 0 20px 20px;
+  padding: 10px 20px 20px;
 }
 
 .social-bill-item {
@@ -487,15 +512,15 @@
 }
 
 .user-avatar-small {
-  width: 40px;
-  height: 40px;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  border: 2px solid #ffffff;
+  margin-right: 24rpx;
+  border: 4rpx solid #ffffff;
   overflow: hidden;
 }
 
@@ -532,21 +557,21 @@
   font-weight: 700;
   color: #000000;
   line-height: 22px;
-  flex: 1;
+  /* flex: 1; */
 }
 
-.transaction-amount {
+/* .transaction-amount {
   flex-shrink: 0;
-}
+} */
 
 .amount-display {
   font-size: 16px;
   font-weight: 700;
-  line-height: 22px;
+  /* line-height: 22px; */
 }
 
 .amount-display.income {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 .amount-display.expense {
@@ -567,7 +592,7 @@
 
 /* 交易时间 - 空一行后显示 */
 .transaction-time {
-  margin-left: 52px;
+  margin-left: 110rpx;
   margin-bottom: 8px;
   margin-top: 8px;
 }
@@ -580,8 +605,8 @@
 
 /* 备注内容 */
 .transaction-note {
-  margin-left: 52px;
-  margin-bottom: 12px;
+  margin-left: 110rpx;
+  margin-bottom: 24rpx;
 }
 
 .note-text {
@@ -617,12 +642,12 @@
 
 /* AI伴侣消息内容 */
 .ai-message-content {
-  margin-left: 52px;
-  margin-bottom: 12px;
-  background: #f8f9fa;
+  margin-left: 110rpx;
+  margin-bottom: 24rpx;
+  /* background: #f8f9fa; */
   border-radius: 12px;
-  padding: 12px 16px;
-  border-left: 3px solid #ff6b9d;
+  padding: 12px 0px;
+  /* border-left: 3px solid #FA6402; */
 }
 
 .ai-message-text {
@@ -650,6 +675,7 @@
   border-radius: 20px;
   padding: 6px 12px;
   transition: all 0.2s ease;
+  margin-top: 10rpx;
 }
 
 .voice-play-btn:active {
@@ -658,8 +684,9 @@
 }
 
 .voice-play-btn.playing {
-  background: #ff6b9d;
-  border-color: #ff6b9d;
+  background:#edf5ff;
+  border:1px solid;
+  border-color:#b7d2ff;
 }
 
 .voice-play-btn.playing .voice-icon {
@@ -677,10 +704,12 @@
 .voice-duration {
   font-size: 12px;
   color: #666666;
+  margin-left: 40rpx;
 }
 
 .voice-play-btn.playing .voice-duration {
   color: #ffffff;
+  color:rgba(59, 116, 255, 0.9);
 }
 
 
@@ -734,19 +763,20 @@
 
 /* 社交互动按钮 */
 .social-actions {
-  margin-left: 52px;
+  margin-left: 110rpx;
   display: flex;
   align-items: center;
   gap: 20px;
+  justify-content: flex-end;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  /* padding: 4px 8px;
   border-radius: 16px;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease; */
 }
 
 .action-btn:active {
@@ -754,20 +784,18 @@
 }
 
 .action-btn.liked {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
-.action-icon {
-  font-size: 14px;
-}
+/* .action-icon {
+  text-align: left;
+  width: 40rpx;
+  height: 40rpx;
+} */
 
-.action-text {
-  font-size: 24rpx;
-  color: #666;
-}
 
 .action-btn.liked .action-text {
-  color: #FF6B35;
+  color: #FA6402;
 }
 
 /* 交易流水下的评论显示 */
@@ -941,7 +969,7 @@
 /* 统计标签 */
 .stat-label {
   font-size: 14px;
-  color: #ffffff;
+  color: rgba(0,0,0,0.6);
   margin-bottom: 8px;
   font-weight: 500;
 }
@@ -949,7 +977,7 @@
 /* 统计数值 */
 .stat-value {
   font-size: 30px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -1154,7 +1182,7 @@
 }
 
 .follow-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   color: white;
   padding: 24rpx 80rpx;
   border-radius: 50rpx;
@@ -1342,6 +1370,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* 钱包所有者头像 */
+.wallet-owner-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .comment-avatar .avatar-text {
@@ -1362,12 +1400,53 @@
   margin-left: auto;
 }
 
+.ai-comment-tag {
+  font-size: 9px;
+  color: #409EFF;
+  background: rgba(64, 158, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+}
+
 .comment-content {
   font-size: 14px;
   color: #333;
   line-height: 1.4;
   margin-left: 32px; /* 使用margin-left而不是padding-left，与头像对齐 */
   margin-top: 4px; /* 稍微降低一点位置 */
+}
+
+/* 评论语音播放区域 */
+.comment-voice-section {
+  margin-left: 32px;
+  margin-top: 8px;
+}
+
+.comment-voice-section .voice-play-btn {
+  display: flex;
+  align-items: center;
+  background: rgba(64, 158, 255, 0.1);
+  border-radius: 16px;
+  padding: 6px 12px;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.comment-voice-section .voice-play-btn.playing {
+  background: rgba(64, 158, 255, 0.2);
+}
+
+.comment-voice-section .voice-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+.comment-voice-section .voice-duration {
+  font-size: 11px;
+  color: #409EFF;
+  font-weight: 500;
 }
 
 /* 无评论提示 */
@@ -1547,7 +1626,7 @@
   width: 48px;
   height: 30px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 24px;
   font-size: 12px;
   color: #fff;
 }
@@ -1566,4 +1645,121 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* AI评论样式 */
+.ai-comment-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 20rpx;
+  /* background: #f8f9ff; */
+  border-radius: 16rpx;
+  margin: 16rpx 0;
+  /* border-left: 6rpx solid #409eff; */
+  position: relative;
+}
+
+.ai-comment-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ai-comment-content {
+  flex: 1;
+  position: relative;
+}
+
+.ai-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.ai-comment-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #409eff;
+}
+
+.ai-label {
+  font-size: 30rpx;
+  color: #999;
+}
+
+.ai-comment-text {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+  display: block;
+}
+
+.ai-comment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.like-btn {
+  display: flex;
+  /* flex-direction: column; */
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s;
+}
+
+.like-btn.liked {
+  color: #ff6b6b;
+}
+
+.like-count {
+  font-size: 20rpx;
+  color: #666;
+}
+
+
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.action-icon {
+  width: 32rpx;
+  height: 32rpx;
+  /* margin-right: 40rpx; */
+}
+
+/* 普通用户评论样式 */
+.user-comment-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8rpx;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.comment-user-inline {
+  flex-shrink: 0;
+}
+
+.comment-username-inline {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.comment-content-inline {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.5;
+  flex: 1;
 }

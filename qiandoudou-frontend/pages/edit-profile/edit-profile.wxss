@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: #f2f3f7;
   padding-bottom: 40rpx;
+  padding-top: 32rpx;
 }
 
 /* 顶部导航栏 */
@@ -334,4 +335,205 @@
 
 .cancel-btn::after, .confirm-btn::after {
   border: none;
+}
+
+/* 微信头像选择按钮样式 */
+.wechat-avatar-section {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.wechat-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 20rpx;
+  background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
+  border-radius: 20rpx;
+  border: none;
+  font-size: 24rpx;
+  color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+  transition: all 0.2s ease;
+  min-width: 140rpx;
+  height: 60rpx;
+}
+
+.wechat-avatar-btn::after {
+  border: none;
+}
+
+.wechat-avatar-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.4);
+}
+
+.wechat-avatar-btn[disabled] {
+  background: #cccccc;
+  box-shadow: none;
+  transform: none;
+}
+
+.wechat-avatar-btn .wechat-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.wechat-avatar-btn .btn-text {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+/* 微信昵称输入框样式 */
+.wechat-nickname-section {
+  display: flex;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.wechat-nickname-input {
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
+  border-radius: 16rpx;
+  border: none;
+  font-size: 24rpx;
+  color: #ffffff;
+  min-width: 160rpx;
+  height: 50rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+}
+
+.wechat-nickname-input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 22rpx;
+}
+
+.wechat-nickname-input[disabled] {
+  background: #cccccc;
+  box-shadow: none;
+}
+
+/* 昵称显示区域样式调整 */
+.nickname-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 微信选择器弹窗样式 */
+.wechat-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-picker-content {
+  background: #ffffff;
+  border-radius: 32rpx;
+  width: 600rpx;
+  max-width: 90%;
+  overflow: hidden;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 40rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+  background: #fafafa;
+}
+
+.picker-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.picker-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #999999;
+  cursor: pointer;
+}
+
+.picker-close:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+}
+
+.picker-body {
+  padding: 48rpx 40rpx;
+  text-align: center;
+}
+
+.picker-desc {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 40rpx;
+  display: block;
+}
+
+.wechat-avatar-picker-btn {
+  width: 54rpx !important;
+  height: 88rpx;
+  line-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  background: #fff !important;
+  color: rgba(0, 0, 0, 0.4) !important;
+  /* width: 300rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #07c160 0%, #00ae55 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.3); */
+}
+
+.wechat-avatar-picker-btn::after {
+  border: none;
+}
+
+.wechat-avatar-picker-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
+}
+
+.wechat-nickname-picker-input {
+  /* width: 400rpx; */
+  height: 80rpx;
+  background: rgba(0, 0, 0, 0.02);
+  /* border: 2rpx solid #e9ecef;
+  border-radius: 16rpx; */
+  border-radius: 16rpx;
+  padding: 0 32rpx;
+  font-size: 30rpx;
+  color: #495057;
+  text-align: right;
+  transition: all 0.3s ease;
+}
+
+.wechat-nickname-picker-input:focus {
+  border-color: #07c160;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.1);
 }

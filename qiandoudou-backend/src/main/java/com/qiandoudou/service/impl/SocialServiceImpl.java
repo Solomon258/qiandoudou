@@ -11,6 +11,7 @@ import com.qiandoudou.mapper.TransactionMapper;
 import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.mapper.WalletViewMapper;
 import com.qiandoudou.service.AiPartnerService;
+import com.qiandoudou.service.AudioDurationService;
 import com.qiandoudou.entity.WalletView;
 import com.qiandoudou.service.SocialService;
 import org.slf4j.Logger;
@@ -57,6 +58,9 @@ public class SocialServiceImpl implements SocialService {
     
     @Autowired
     private AiPartnerService aiPartnerService;
+    
+    @Autowired
+    private AudioDurationService audioDurationService;
 
     @Override
     public Map<String, Object> getUserSocialStats(Long userId) {
@@ -282,9 +286,17 @@ public class SocialServiceImpl implements SocialService {
             postComment.setUserId(aiPartnerId); // 使用AI伴侣ID作为用户ID
             postComment.setContent(content);
             postComment.setIsAiComment(1); // 标记为AI评论
+            postComment.setAiPartnerId(aiPartnerId); // 设置AI伴侣ID
+            postComment.setVoiceUrl(voiceUrl); // 设置语音URL
             
             postCommentMapper.insert(postComment);
-            logger.info("AI评论记录插入成功");
+            logger.info("AI评论记录插入成功，评论ID: {}", postComment.getId());
+            
+            // 异步解析语音时长并更新数据库
+            if (voiceUrl != null && !voiceUrl.trim().isEmpty()) {
+                logger.info("启动异步音频时长解析任务，评论ID: {}", postComment.getId());
+                audioDurationService.parseAndUpdateDurationAsync(postComment.getId(), voiceUrl);
+            }
             
             // 2. 返回新创建的AI评论信息
             Map<String, Object> comment = new HashMap<>();
@@ -315,60 +327,6 @@ public class SocialServiceImpl implements SocialService {
         }
     }
 
-    @Override
-    public List<Map<String, Object>> getTransactionComments(Long transactionId) {
-        try {
-            System.out.println("查询交易 " + transactionId + " 的评论列表");
-            
-            // 从数据库查询真实的评论数据
-            List<Map<String, Object>> comments = postCommentMapper.getTransactionComments(transactionId);
-            
-            // 处理评论数据格式
-            for (Map<String, Object> comment : comments) {
-                // 检查是否为AI评论
-                Object isAiCommentObj = comment.get("is_ai_comment");
-                boolean isAiComment = isAiCommentObj != null && (Integer.valueOf(isAiCommentObj.toString()) == 1);
-                comment.put("isAiComment", isAiComment);
-                
-                if (isAiComment) {
-                    // 如果是AI评论，获取AI伴侣信息
-                    Long aiPartnerId = Long.valueOf(comment.get("user_id").toString());
-                    try {
-                        com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
-                        if (aiPartner != null) {
-                            comment.put("user_nickname", aiPartner.getName());
-                            comment.put("userName", aiPartner.getName());
-                            comment.put("user_avatar", aiPartner.getAvatar());
-                            comment.put("userAvatar", aiPartner.getAvatar());
-                            // 添加语音URL（如果有的话）
-                            comment.put("voiceUrl", comment.get("voice_url"));
-                        }
-                    } catch (Exception e) {
-                        System.err.println("获取AI伴侣信息失败: " + e.getMessage());
-                    }
-                } else {
-                    // 普通用户评论，使用原有逻辑
-                    comment.put("userName", comment.get("user_nickname"));
-                }
-                
-                // 处理时间格式
-                Object createTimeObj = comment.get("create_time");
-                if (createTimeObj != null) {
-                    comment.put("createTime", createTimeObj.toString());
-                }
-                
-                System.out.println("评论数据: " + comment);
-            }
-            
-            System.out.println("获取交易 " + transactionId + " 的评论，返回 " + comments.size() + " 条真实数据");
-            
-            return comments;
-        } catch (Exception e) {
-            System.err.println("查询评论失败: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
 
     @Override
     public List<Map<String, Object>> getUserInteractionMessages(Long userId, Integer page, Integer pageSize) {
@@ -658,6 +616,56 @@ public class SocialServiceImpl implements SocialService {
         }
         
         return socialData;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTransactionComments(Long transactionId) {
+        try {
+            logger.info("获取交易评论详情，交易ID: {}", transactionId);
+            
+            // 从post_comments表获取所有评论（包括AI评论）
+            List<Map<String, Object>> comments = postCommentMapper.getTransactionComments(transactionId);
+            
+            // 处理每个评论，添加AI伴侣信息和语音URL
+            for (Map<String, Object> comment : comments) {
+                Object isAiCommentObj = comment.get("is_ai_comment");
+                boolean isAiComment = isAiCommentObj != null && 
+                    (isAiCommentObj.equals(1) || isAiCommentObj.equals(true) || "1".equals(isAiCommentObj.toString()));
+                
+                comment.put("isAiComment", isAiComment);
+                
+                if (isAiComment) {
+                    // 如果是AI评论，获取AI伴侣信息
+                    Object userIdObj = comment.get("user_id");
+                    if (userIdObj != null) {
+                        Long aiPartnerId = Long.valueOf(userIdObj.toString());
+                        com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
+                        if (aiPartner != null) {
+                            comment.put("aiPartnerName", aiPartner.getName());
+                            comment.put("aiPartnerAvatar", aiPartner.getAvatar());
+                            comment.put("userName", aiPartner.getName());
+                            comment.put("user_nickname", aiPartner.getName());
+                        }
+                    }
+                    
+                    // 检查是否有语音URL（从数据库获取）
+                    Object voiceUrlObj = comment.get("voice_url");
+                    if (voiceUrlObj != null) {
+                        comment.put("voiceUrl", voiceUrlObj.toString());
+                        logger.info("AI评论 {} 包含语音URL: {}", comment.get("id"), voiceUrlObj);
+                    } else {
+                        logger.warn("AI评论 {} 没有语音URL", comment.get("id"));
+                    }
+                }
+            }
+            
+            logger.info("获取到 {} 条评论", comments.size());
+            return comments;
+            
+        } catch (Exception e) {
+            logger.error("获取交易评论详情失败: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
     }
 
     @Override

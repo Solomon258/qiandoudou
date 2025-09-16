@@ -1,0 +1,53 @@
+[33m8e1e059[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev[m[33m, [m[1;31morigin/dev[m[33m)[m HEAD@{0}: pull origin dev: Fast-forward
+[33mfb2e54f[m HEAD@{1}: reset: moving to HEAD
+[33mfb2e54f[m HEAD@{2}: commit: 修复点击别人的头像，回到自己主页的问题
+[33m344facf[m HEAD@{3}: commit (amend): 增加登录的功能
+[33m1c26840[m HEAD@{4}: commit: 增加登录的功能
+[33m95ebbb3[m HEAD@{5}: pull: Fast-forward
+[33m1c09742[m HEAD@{6}: commit: 获取微信首次登录用户头像和昵称
+[33me14de5f[m HEAD@{7}: commit: 修改头像问题
+[33m425e956[m HEAD@{8}: commit: 修改登录页的bug
+[33m33ce2a8[m HEAD@{9}: commit: 修复钱包详情页面广告位的bug
+[33m91a0a6e[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{10}: checkout: moving from master to dev
+[33m91a0a6e[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{11}: commit: feat: 完成demo2
+[33mbfa9195[m HEAD@{12}: reset: moving to HEAD~2
+[33m4bb5a5d[m HEAD@{13}: commit: 完成demo
+[33m35ce998[m HEAD@{14}: commit: 加入分享手账
+[33mbfa9195[m HEAD@{15}: pull: Fast-forward
+[33m1803844[m HEAD@{16}: rebase (finish): returning to refs/heads/master
+[33m1803844[m HEAD@{17}: commit (amend): 修改剧本
+[33m4a4f199[m HEAD@{18}: commit (amend): 修改剧本
+[33m183a0b8[m HEAD@{19}: rebase (edit): 修改剧本
+[33m8347feb[m HEAD@{20}: rebase (start): checkout origin/master
+[33mce97387[m HEAD@{21}: reset: moving to HEAD~1
+[33maef9a0e[m HEAD@{22}: pull origin master: Merge made by the 'ort' strategy.
+[33mce97387[m HEAD@{23}: commit: 微信登录，修复所有bug
+[33m6d24cff[m HEAD@{24}: pull: Merge made by the 'ort' strategy.
+[33ma85ca4d[m HEAD@{25}: commit: 修改剧本
+[33m744bb6b[m HEAD@{26}: commit: 前端加入一个json文件
+[33m18c9216[m HEAD@{27}: commit: feat: 整合所有修改并彻底移除敏感信息2
+[33mee0f026[m HEAD@{28}: reset: moving to ee0f026
+[33md8c6d7a[m HEAD@{29}: rebase (abort): returning to refs/heads/master
+[33mf3d3d67[m HEAD@{30}: commit: feat: 整合近期功能并彻底移除敏感信息
+[33mee0f026[m HEAD@{31}: reset: moving to ee0f026
+[33m592eae8[m HEAD@{32}: commit (amend): 更新项目功能：增加OSS云存储、AI聊天、头像上传、钱包功能等多项改进
+[33m5087bde[m HEAD@{33}: rebase: fast-forward
+[33mee0f026[m HEAD@{34}: rebase (start): checkout 5087bde34611f5a96c8c9827ad06059fecd470aa^
+[33md8c6d7a[m HEAD@{35}: rebase (finish): returning to refs/heads/master
+[33md8c6d7a[m HEAD@{36}: rebase (pick): 重新养小时候自己剧本、修复视频的问题、其它问题
+[33m5087bde[m HEAD@{37}: commit (amend): 更新项目功能：增加OSS云存储、AI聊天、头像上传、钱包功能等多项改进
+[33md74a8cb[m HEAD@{38}: rebase: fast-forward
+[33mee0f026[m HEAD@{39}: rebase (start): checkout d74a8cbc2ea1708f23118ad9e88f1d154c65e3a6^
+[33mf63f1d3[m HEAD@{40}: rebase (abort): returning to refs/heads/master
+[33m54bb6d2[m HEAD@{41}: commit (amend): 更新项目功能：增加OSS云存储、AI聊天、头像上传、钱包功能等多项改进
+[33md74a8cb[m HEAD@{42}: rebase: fast-forward
+[33mee0f026[m HEAD@{43}: rebase (start): checkout HEAD~2
+[33mf63f1d3[m HEAD@{44}: commit: 重新养小时候自己剧本、修复视频的问题、其它问题
+[33md74a8cb[m HEAD@{45}: reset: moving to d74a8cb
+[33mee0f026[m HEAD@{46}: reset: moving to origin/master
+[33m0f11ed6[m HEAD@{47}: commit: 安全修复：移除敏感的AccessKey信息，使用环境变量配置
+[33md74a8cb[m HEAD@{48}: commit: 更新项目功能：增加OSS云存储、AI聊天、头像上传、钱包功能等多项改进
+[33mee0f026[m HEAD@{49}: commit: 清理images路径
+[33me855df5[m HEAD@{50}: commit: 删除很多图片和说明文档
+[33mb305d85[m HEAD@{51}: commit: feat: 添加剧本攒功能和字节跳动图生文API集成
+[33mae2fce8[m HEAD@{52}: commit (initial): Initial commit: 钱兜兜项目首次提交

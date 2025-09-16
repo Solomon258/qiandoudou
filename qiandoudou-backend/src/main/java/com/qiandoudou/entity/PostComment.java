@@ -66,6 +66,12 @@ public class PostComment implements Serializable {
     private Long aiPartnerId;
 
     /**
+     * 语音时长
+     */
+    @TableField("voice_duration")
+    private String voiceDuration;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

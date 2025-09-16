@@ -157,6 +157,19 @@ public class SocialController {
     }
 
     /**
+     * 获取交易的详细评论列表（包括AI评论和语音URL）
+     */
+    @GetMapping("/transaction/comments-detail")
+    public Result<List<Map<String, Object>>> getTransactionCommentsDetail(@RequestParam Long transactionId) {
+        try {
+            List<Map<String, Object>> comments = socialService.getTransactionComments(transactionId);
+            return Result.success(comments);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * 获取用户未读消息数量
      */
     @GetMapping("/user/unread-count")

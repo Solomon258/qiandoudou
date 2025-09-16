@@ -52,7 +52,7 @@ Page({
     },
     statsLoading: false, // 统计数据加载状态
     backgroundOptions: [
-      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' },
+      { value: 'gradient1', name: '蓝紫渐变', gradient: 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);' },
       { value: 'gradient2', name: '粉红渐变', gradient: 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' },
       { value: 'gradient3', name: '绿色渐变', gradient: 'background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);' },
       { value: 'gradient4', name: '橙色渐变', gradient: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);' },
@@ -61,7 +61,12 @@ Page({
     ],
     showWalletSettings: false, // 显示钱包设置模态框
     userScriptProgress: null, // 用户在"重新养小时候的自己"剧本的进度
-    scriptInfo: null // "重新养小时候的自己"剧本信息
+    scriptInfo: null, // "重新养小时候的自己"剧本信息
+    walletOwnerInfo: { // 钱包所有者信息
+      nickname: '用户',
+      avatar: '',
+      hasCustomAvatar: false
+    }
   },
 
   onLoad(options) {
@@ -164,6 +169,12 @@ Page({
     walletAPI.getWalletDetail(walletId)
       .then(result => {
         const wallet = result.data
+        
+        // 调试：检查关键字段
+        if (wallet.isPublic !== wallet.is_public && (wallet.isPublic !== null && wallet.isPublic !== undefined)) {
+          console.warn('字段映射问题:', { isPublic: wallet.isPublic, is_public: wallet.is_public })
+        }
+        
         if (!wallet) {
           wx.showToast({
             title: '钱包不存在',
@@ -233,17 +244,25 @@ Page({
           this.loadSocialStats()
         }
         
-        // 确保钱包公开状态有正确的默认值
-        if (wallet.is_public === null || wallet.is_public === undefined) {
-
-          wallet.is_public = 1
+        // 确保钱包公开状态有正确的默认值 - 处理字段名映射问题
+        // 后端可能返回isPublic（驼峰）或is_public（下划线）
+        if (wallet.isPublic !== null && wallet.isPublic !== undefined) {
+          wallet.is_public = wallet.isPublic
+        } else if (wallet.is_public === null || wallet.is_public === undefined) {
+          // 如果两个字段都没有设置，默认为私密状态
+          wallet.is_public = 0
         }
+        
+        console.log('最终is_public值:', wallet.is_public)
 
         this.setData({
           wallet,
           selectedBackground: wallet.backgroundImage || 'gradient1',
           isOwnWallet: isOwnWallet
         })
+        
+        // 加载钱包所有者的头像信息
+        this.loadWalletOwnerAvatar(wallet.userId || wallet.user_id)
         
         // 更新背景样式
         this.updateBackgroundStyle()
@@ -335,6 +354,9 @@ Page({
           transactions: formattedTransactions
         })
         
+        // 加载每个交易的用户头像信息
+        this.loadTransactionsUserData(formattedTransactions)
+        
         // 加载每个交易的真实社交数据（点赞状态、评论数等）
         this.loadTransactionsSocialData(formattedTransactions)
       })
@@ -347,27 +369,150 @@ Page({
       })
   },
 
-  // 加载交易的社交数据
-  loadTransactionsSocialData(transactions) {
-    const currentUserId = app.globalData.userInfo?.id
+  // 加载钱包所有者头像信息
+  loadWalletOwnerAvatar(userId) {
+    if (!userId) {
+      return
+    }
     
-    // 为每个交易并行加载社交数据
-    const socialDataPromises = transactions.map(transaction => {
-      return walletAPI.getTransactionSocialData(transaction.id, currentUserId)
-        .then(response => {
+    const { authAPI } = require('../../utils/api.js')
+    
+    authAPI.getCurrentUser(userId)
+      .then(response => {
+        if (response.code === 200 && response.data) {
+          const ownerInfo = {
+            nickname: response.data.nickname || '用户',
+            avatar: response.data.avatar,
+            hasCustomAvatar: !!(response.data.avatar && response.data.avatar.startsWith('http'))
+          }
+          
+          this.setData({
+            walletOwnerInfo: ownerInfo
+          })
+        }
+      })
+      .catch(error => {
+        console.error('获取钱包所有者信息失败:', error)
+        // 设置默认值
+        this.setData({
+          walletOwnerInfo: {
+            nickname: '用户',
+            avatar: '',
+            hasCustomAvatar: false
+          }
+        })
+      })
+  },
 
-          if (response.success && response.data) {
+  // 加载交易的用户数据（头像等）
+  loadTransactionsUserData(transactions) {
+    const { authAPI } = require('../../utils/api.js')
+    const userCache = new Map() // 缓存用户信息，避免重复请求
+    
+    // 为每个交易并行加载用户数据
+    const userDataPromises = transactions.map(transaction => {
+      // 如果是AI交易，不需要加载用户头像
+      if (transaction.isAiTransaction) {
+        return Promise.resolve(null)
+      }
+      
+      const userId = transaction.userId || transaction.user_id
+      if (!userId) {
+        return Promise.resolve(null)
+      }
+      
+      // 检查缓存
+      if (userCache.has(userId)) {
+        return Promise.resolve({
+          transactionId: transaction.id,
+          userData: userCache.get(userId)
+        })
+      }
+      
+      return authAPI.getCurrentUser(userId)
+        .then(response => {
+          if (response.code === 200 && response.data) {
+            const userData = {
+              nickname: response.data.nickname || '用户',
+              avatar: response.data.avatar,
+              hasCustomAvatar: !!(response.data.avatar && response.data.avatar.startsWith('http'))
+            }
+            // 缓存用户信息
+            userCache.set(userId, userData)
+            
             return {
               transactionId: transaction.id,
-              socialData: response.data
+              userData: userData
             }
           }
           return null
         })
         .catch(error => {
-
+          console.error('获取用户信息失败:', error)
           return null
         })
+    })
+    
+    // 等待所有用户数据加载完成
+    Promise.all(userDataPromises).then(results => {
+      const updatedTransactions = [...this.data.transactions]
+      
+      results.forEach(result => {
+        if (result) {
+          const transactionIndex = updatedTransactions.findIndex(t => t.id === result.transactionId)
+          if (transactionIndex !== -1) {
+            // 更新交易的用户头像信息
+            updatedTransactions[transactionIndex].userNickname = result.userData.nickname
+            updatedTransactions[transactionIndex].userAvatar = result.userData.avatar
+            updatedTransactions[transactionIndex].hasCustomAvatar = result.userData.hasCustomAvatar
+          }
+        }
+      })
+
+      this.setData({
+        transactions: updatedTransactions
+      })
+    })
+  },
+
+  // 加载交易的社交数据
+  loadTransactionsSocialData(transactions) {
+    const currentUserId = app.globalData.userInfo?.id
+    
+    // 为每个交易并行加载社交数据和评论详情
+    const socialDataPromises = transactions.map(transaction => {
+      const socialDataPromise = walletAPI.getTransactionSocialData(transaction.id, currentUserId)
+        .then(response => {
+          console.log(`交易 ${transaction.id} 社交数据响应:`, response)
+          if (response.success && response.data) {
+            return response.data
+          }
+          return { likeCount: 0, commentCount: 0, isLiked: false }
+        })
+        .catch(error => {
+          console.log(`获取交易 ${transaction.id} 社交数据失败:`, error)
+          return { likeCount: 0, commentCount: 0, isLiked: false }
+        })
+
+      const commentsPromise = walletAPI.getTransactionCommentsDetail(transaction.id)
+        .then(response => {
+          console.log(`交易 ${transaction.id} 评论详情响应:`, response)
+          if (response.success && response.data) {
+            return response.data
+          }
+          return []
+        })
+        .catch(error => {
+          console.log(`获取交易 ${transaction.id} 评论详情失败:`, error)
+          return []
+        })
+
+      return Promise.all([socialDataPromise, commentsPromise])
+        .then(([socialData, comments]) => ({
+          transactionId: transaction.id,
+          socialData: socialData,
+          comments: comments
+        }))
     })
     
     // 等待所有社交数据加载完成
@@ -382,12 +527,45 @@ Page({
             updatedTransactions[transactionIndex].likeCount = result.socialData.likeCount || 0
             updatedTransactions[transactionIndex].commentCount = result.socialData.commentCount || 0
             updatedTransactions[transactionIndex].isLiked = result.socialData.isLiked || false
+            
+            // 更新评论列表，处理AI评论
+            const processedComments = result.comments.map(comment => {
+              const processedComment = {
+                ...comment,
+                isAiComment: comment.isAiComment || false,
+                aiPartnerName: comment.aiPartnerName || comment.user_nickname,
+                aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
+                userName: comment.userName || comment.user_nickname || '匿名用户',
+                voiceUrl: comment.voiceUrl || comment.voice_url,
+                voiceDuration: comment.voiceDuration || comment.voice_duration, // 优先使用数据库中的真实时长
+                isPlayingVoice: false,
+                isLiked: false,
+                likeCount: 0
+              }
+              
+              // 为AI评论语音添加时长信息（只有在没有真实时长时才估算）
+              if (processedComment.isAiComment && processedComment.voiceUrl && !processedComment.voiceDuration) {
+                // 根据评论内容长度估算语音时长（作为降级方案）
+                const contentLength = processedComment.content ? processedComment.content.length : 20
+                const estimatedSeconds = Math.max(3, Math.min(Math.ceil(contentLength * 0.15), 15))
+                processedComment.voiceDuration = estimatedSeconds + 's'
+                console.log(`评论 ${comment.id} 使用估算时长: ${processedComment.voiceDuration}`)
+              } else if (processedComment.voiceDuration) {
+                console.log(`评论 ${comment.id} 使用数据库真实时长: ${processedComment.voiceDuration}`)
+              }
+              
+              return processedComment
+            })
+            updatedTransactions[transactionIndex].comments = processedComments
+            
+            console.log(`交易 ${result.transactionId} 处理后的评论:`, processedComments)
           }
         } else {
           // 如果获取失败，将对应的交易数据设置为默认值
           if (index < updatedTransactions.length && updatedTransactions[index].likeCount === null) {
             updatedTransactions[index].likeCount = 0
             updatedTransactions[index].commentCount = 0
+            updatedTransactions[index].comments = []
           }
         }
       })
@@ -411,7 +589,7 @@ Page({
       // 没有背景设置，使用默认背景
       backgroundStyle = wallet.type === 2 ? 
         'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-        'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+        'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
     } else if (currentBackground.startsWith('http')) {
       // OSS图片URL背景
       backgroundStyle = `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
@@ -432,7 +610,7 @@ Page({
 
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
       }
     } else {
       // 预设渐变背景
@@ -445,7 +623,7 @@ Page({
 
         backgroundStyle = wallet.type === 2 ? 
           'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
+          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
       }
     }
     
@@ -1161,13 +1339,34 @@ Page({
 
         if (response.success && response.data) {
           // 处理评论数据格式
-          const comments = response.data.map(comment => ({
-            id: comment.id,
-            userName: comment.user_nickname || comment.userName || '匿名用户',
-            content: comment.content,
-            time: this.formatTime(comment.create_time || comment.createTime),
-            userId: comment.user_id || comment.userId
-          }))
+          const comments = response.data.map(comment => {
+            const processedComment = {
+              id: comment.id,
+              userName: comment.user_nickname || comment.userName || '匿名用户',
+              content: comment.content,
+              time: this.formatTime(comment.create_time || comment.createTime),
+              userId: comment.user_id || comment.userId,
+              // AI评论相关字段
+              isAiComment: comment.isAiComment || comment.is_ai_comment || false,
+              aiPartnerName: comment.aiPartnerName || comment.user_nickname,
+              aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
+              voiceUrl: comment.voiceUrl || comment.voice_url,
+              voiceDuration: comment.voiceDuration || comment.voice_duration, // 优先使用数据库中的真实时长
+              isPlayingVoice: false
+            }
+            
+            // 如果是AI评论但没有时长，进行估算
+            if (processedComment.isAiComment && processedComment.voiceUrl && !processedComment.voiceDuration) {
+              const contentLength = processedComment.content ? processedComment.content.length : 20
+              const estimatedSeconds = Math.max(3, Math.min(Math.ceil(contentLength * 0.15), 15))
+              processedComment.voiceDuration = estimatedSeconds + 's'
+              console.log(`评论弹窗 - 评论 ${comment.id} 使用估算时长: ${processedComment.voiceDuration}`)
+            } else if (processedComment.voiceDuration) {
+              console.log(`评论弹窗 - 评论 ${comment.id} 使用数据库真实时长: ${processedComment.voiceDuration}`)
+            }
+            
+            return processedComment
+          })
           
           this.setData({
             currentComments: comments
@@ -1659,6 +1858,121 @@ Page({
   // 关注钱包（只读模式下使用）- 保持向后兼容
   followWallet() {
     this.toggleFollow()
+  },
+
+  // 评论语音播放功能
+  playCommentVoice(e) {
+    console.log('播放评论语音')
+    
+    // 检查事件对象
+    if (!e || !e.currentTarget) {
+      console.warn('评论语音播放：事件对象无效')
+      return
+    }
+    
+    // 检查数据绑定
+    const dataset = e.currentTarget.dataset
+    if (!dataset || !dataset.comment) {
+      console.warn('评论语音播放：评论数据无效')
+      return
+    }
+    
+    const comment = dataset.comment
+    console.log('播放评论语音，评论数据:', comment)
+    
+    // 检查是否有语音URL
+    if (!comment.voiceUrl) {
+      console.warn('评论语音播放：没有语音URL')
+      wx.showToast({
+        title: '该评论没有语音',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 停止当前播放的语音
+    if (this.data.currentPlayingVoice) {
+      this.stopCurrentVoice()
+    }
+    
+    // 更新播放状态
+    const updatedComments = this.data.currentComments.map(c => {
+      if (c.id === comment.id) {
+        return { ...c, isPlayingVoice: true }
+      }
+      return { ...c, isPlayingVoice: false }
+    })
+    
+    this.setData({
+      currentComments: updatedComments,
+      currentPlayingVoice: comment.id
+    })
+    
+    console.log('开始播放评论语音:', comment.voiceUrl)
+    
+    // 创建音频上下文
+    const audioContext = wx.createInnerAudioContext()
+    audioContext.src = comment.voiceUrl
+    
+    // 播放结束处理
+    audioContext.onEnded(() => {
+      console.log('评论语音播放结束')
+      this.resetCommentVoiceState(comment.id)
+    })
+    
+    // 播放错误处理
+    audioContext.onError((err) => {
+      console.error('评论语音播放错误:', err)
+      this.resetCommentVoiceState(comment.id)
+      wx.showToast({
+        title: '语音播放失败',
+        icon: 'none'
+      })
+    })
+    
+    // 开始播放
+    audioContext.play()
+    
+    // 保存音频上下文
+    this.commentAudioContext = audioContext
+  },
+  
+  // 重置评论语音播放状态
+  resetCommentVoiceState(commentId) {
+    const updatedComments = this.data.currentComments.map(c => {
+      if (c.id === commentId) {
+        return { ...c, isPlayingVoice: false }
+      }
+      return c
+    })
+    
+    this.setData({
+      currentComments: updatedComments,
+      currentPlayingVoice: null
+    })
+    
+    if (this.commentAudioContext) {
+      this.commentAudioContext.destroy()
+      this.commentAudioContext = null
+    }
+  },
+  
+  // 停止当前播放的语音
+  stopCurrentVoice() {
+    if (this.commentAudioContext) {
+      this.commentAudioContext.stop()
+      this.commentAudioContext.destroy()
+      this.commentAudioContext = null
+    }
+    
+    if (this.data.voiceContext) {
+      this.data.voiceContext.stop()
+      this.data.voiceContext.destroy()
+    }
+    
+    this.setData({
+      currentPlayingVoice: null
+    })
   },
 
   // AI语音播放功能
@@ -2153,30 +2467,51 @@ Page({
   toggleWalletPublic(e) {
     const isPublic = e.detail.value ? 1 : 0
     const walletId = this.data.walletId
+    const originalStatus = this.data.wallet.is_public
 
-    // 先更新UI状态
-    const wallet = { ...this.data.wallet }
-    wallet.is_public = isPublic
-    this.setData({ wallet })
+    // 显示加载状态
+    wx.showLoading({
+      title: '设置中...',
+      mask: true
+    })
 
     // 调用API更新后端状态
     walletAPI.setWalletPublic(walletId, isPublic)
       .then(result => {
-
+        wx.hideLoading()
+        
+        // API成功后才更新UI状态
+        const wallet = { ...this.data.wallet }
+        wallet.is_public = isPublic
+        this.setData({ wallet })
+        
         wx.showToast({
           title: isPublic ? '已设为公开' : '已设为私密',
           icon: 'success'
         })
+        
+        // 触发全局事件通知其他页面数据已更新
+        const app = getApp()
+        if (app.globalData.eventBus) {
+          app.globalData.eventBus.emit('walletPublicStatusChanged', {
+            walletId: walletId,
+            isPublic: isPublic
+          })
+        }
       })
       .catch(error => {
-
-        // 恢复原状态
-        wallet.is_public = isPublic ? 0 : 1
+        wx.hideLoading()
+        
+        // 恢复开关状态到原来的位置
+        const wallet = { ...this.data.wallet }
+        wallet.is_public = originalStatus
         this.setData({ wallet })
         
-        wx.showToast({
-          title: '设置失败，请重试',
-          icon: 'none'
+        // 显示详细错误信息
+        wx.showModal({
+          title: '设置失败',
+          content: `无法更新钱包公开状态，请检查网络连接后重试。\n错误: ${error.message || '网络错误'}`,
+          showCancel: false
         })
       })
   },
@@ -2384,30 +2719,78 @@ Page({
       success: (res) => {
 
         if (res.data && res.data.code === 200 && res.data.data) {
+          const progressData = res.data.data
           this.setData({
-            userScriptProgress: res.data.data
+            userScriptProgress: progressData
           })
+          
+          // 获取当前章节的标题信息
+          this.loadCurrentChapterTitle(scriptId, progressData.currentChapter || 1)
         } else {
           // 如果没有进度记录，设置默认值
+          const defaultProgress = {
+            currentChapter: 1,
+            status: 1
+          }
           this.setData({
-            userScriptProgress: {
-              currentChapter: 1,
-              status: 1
-            }
+            userScriptProgress: defaultProgress
           })
+          
+          // 获取第1集的标题信息
+          this.loadCurrentChapterTitle(scriptId, 1)
         }
       },
       fail: (error) => {
 
         // 设置默认值
+        const defaultProgress = {
+          currentChapter: 1,
+          status: 1
+        }
         this.setData({
-          userScriptProgress: {
-            currentChapter: 1,
-            status: 1
-          }
+          userScriptProgress: defaultProgress
         })
+        
+        // 获取第1集的标题信息
+        this.loadCurrentChapterTitle(scriptId, 1)
       }
     })
+  },
+
+  // 加载当前章节标题
+  async loadCurrentChapterTitle(scriptId, chapterNumber) {
+    const userId = app.globalData.userInfo?.id
+    const walletId = this.data.walletId
+    
+    if (!userId || !walletId) {
+      return
+    }
+
+    try {
+      // 引入scriptAPI
+      const { scriptAPI } = require('../../utils/api.js')
+      
+      // 使用正确的API方法获取章节内容
+      const response = await scriptAPI.getChapterContent(scriptId, chapterNumber, userId, walletId)
+      
+      if (response.code === 200 && response.data) {
+        const chapterData = response.data.chapter || response.data
+        this.setData({
+          currentChapterTitle: chapterData.title || ''
+        })
+      } else {
+        // 如果获取失败，使用默认标题
+        this.setData({
+          currentChapterTitle: ''
+        })
+      }
+    } catch (error) {
+      console.error('获取章节标题失败:', error)
+      // 如果获取失败，使用默认标题
+      this.setData({
+        currentChapterTitle: ''
+      })
+    }
   },
 
   // 跳转到剧本当前集
@@ -2416,6 +2799,193 @@ Page({
     wx.navigateTo({
       url: `/pages/script-detail/script-detail?walletId=${this.data.walletId}&autoPlay=3`
     })
+  },
+
+  // 跳转到用户兜圈圈个人主页
+  goToUserProfile(e) {
+    const userId = e.currentTarget.dataset.userId
+    const transaction = e.currentTarget.dataset.transaction
+    
+    // 如果是AI交易，不跳转
+    if (transaction && transaction.isAiTransaction) {
+      return
+    }
+    
+    // 如果是自己的交易，跳转到自己的兜圈圈个人主页
+    const currentUserId = app.globalData.userInfo?.id
+    if (userId && userId == currentUserId) {
+      wx.navigateTo({
+        url: '/pages/user-social-profile/user-social-profile'
+      })
+      return
+    }
+    
+    // 如果是其他用户的交易，跳转到对应用户的兜圈圈个人主页
+    if (userId) {
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${userId}`
+      })
+    } else {
+      wx.showToast({
+        title: '用户信息不可用',
+        icon: 'none'
+      })
+    }
+  },
+
+  // 跳转到钱包所有者的兜圈圈个人主页
+  goToWalletOwnerProfile() {
+    const walletOwnerId = this.data.wallet?.userId || this.data.wallet?.user_id
+    const currentUserId = app.globalData.userInfo?.id
+    
+    if (!walletOwnerId) {
+      wx.showToast({
+        title: '用户信息不可用',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 如果是自己的钱包，跳转到自己的兜圈圈个人主页
+    if (walletOwnerId == currentUserId) {
+      wx.navigateTo({
+        url: '/pages/user-social-profile/user-social-profile'
+      })
+    } else {
+      // 如果是其他用户的钱包，跳转到对应用户的兜圈圈个人主页
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${walletOwnerId}`
+      })
+    }
+  },
+
+  // AI评论点赞
+  likeAiComment(e) {
+    const comment = e.currentTarget.dataset.comment
+    const userId = app.globalData.userInfo?.id
+    
+    if (!userId) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+
+    console.log('点赞AI评论:', comment)
+    
+    // 这里可以调用点赞AI评论的API
+    // 暂时先更新UI状态
+    const transactions = this.data.transactions
+    for (let i = 0; i < transactions.length; i++) {
+      if (transactions[i].comments) {
+        for (let j = 0; j < transactions[i].comments.length; j++) {
+          if (transactions[i].comments[j].id === comment.id) {
+            transactions[i].comments[j].isLiked = !transactions[i].comments[j].isLiked
+            transactions[i].comments[j].likeCount = transactions[i].comments[j].likeCount || 0
+            if (transactions[i].comments[j].isLiked) {
+              transactions[i].comments[j].likeCount++
+            } else {
+              transactions[i].comments[j].likeCount--
+            }
+            break
+          }
+        }
+      }
+    }
+    
+    this.setData({ transactions })
+    
+    wx.showToast({
+      title: comment.isLiked ? '已取消点赞' : '点赞成功',
+      icon: 'none',
+      duration: 1000
+    })
+  },
+
+  // 播放AI评论语音
+  playAiCommentVoice(e) {
+    const comment = e.currentTarget.dataset.comment
+    const voiceUrl = comment.voiceUrl
+    
+    console.log('播放AI评论语音:', voiceUrl)
+    
+    if (!voiceUrl) {
+      wx.showToast({
+        title: '语音文件不存在',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 停止当前播放的语音
+    if (this.data.voiceContext) {
+      this.data.voiceContext.destroy()
+    }
+    
+    // 更新播放状态
+    this.updateCommentPlayingState(comment.id, true)
+    
+    // 创建音频上下文并播放
+    const voiceContext = wx.createInnerAudioContext()
+    voiceContext.src = voiceUrl
+    voiceContext.autoplay = true
+    
+    voiceContext.onPlay(() => {
+      console.log('AI评论语音开始播放')
+      wx.showToast({
+        title: '语音播放中...',
+        icon: 'none',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onEnded(() => {
+      console.log('AI评论语音播放结束')
+      this.updateCommentPlayingState(comment.id, false)
+      voiceContext.destroy()
+      this.setData({ voiceContext: null })
+      
+      wx.showToast({
+        title: '播放完成',
+        icon: 'success',
+        duration: 1000
+      })
+    })
+    
+    voiceContext.onError((error) => {
+      console.error('AI评论语音播放失败:', error)
+      this.updateCommentPlayingState(comment.id, false)
+      voiceContext.destroy()
+      this.setData({ voiceContext: null })
+      
+      wx.showToast({
+        title: '语音播放失败',
+        icon: 'error'
+      })
+    })
+    
+    this.setData({ voiceContext })
+  },
+
+  // 更新评论播放状态
+  updateCommentPlayingState(commentId, isPlaying) {
+    const transactions = this.data.transactions
+    
+    for (let i = 0; i < transactions.length; i++) {
+      if (transactions[i].comments) {
+        for (let j = 0; j < transactions[i].comments.length; j++) {
+          if (transactions[i].comments[j].id === commentId) {
+            transactions[i].comments[j].isPlayingVoice = isPlaying
+          } else {
+            // 确保其他评论的播放状态为false
+            transactions[i].comments[j].isPlayingVoice = false
+          }
+        }
+      }
+    }
+    
+    this.setData({ transactions })
   }
 
 })

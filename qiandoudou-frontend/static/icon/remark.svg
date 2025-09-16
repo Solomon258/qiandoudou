@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="17px" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>备注</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="个人钱兜兜" transform="translate(-66, -540)">
+            <g id="编组-14" transform="translate(24, 460)">
+                <g id="编组-12" transform="translate(0, 80.2661)">
+                    <g id="编组-11" transform="translate(42.5, 0)">
+                        <g id="备注" transform="translate(0, 0.5)">
+                            <rect id="image-(Background)" opacity="0" x="0" y="0" width="16" height="16"></rect>
+                            <path d="M12,6 C12,4.89543056 11.1045694,4 10,4 C8.89543056,4 8,4.89543056 8,6 C8,7.10456944 8.89543056,8 10,8 C11.1045694,8 12,7.10456944 12,6 Z M11,6 C11,5.44771528 10.5522842,5 10,5 C9.44771528,5 9,5.44771528 9,6 C9,6.55228472 9.44771528,7 10,7 C10.5522842,7 11,6.55228472 11,6 Z M3,14 L13,14 C13.5522842,14 14,13.5522861 14,13 L14,3 C14,2.44771731 13.5522871,2 13,2 L3,2 C2.44771683,2 2,2.44771481 2,3 L2,13 C2,13.5522842 2.44771504,14 3,14 Z M3,13 L10.2928944,13 L6,8.70710659 L3,11.7071066 L3,13 Z M6,7.29289341 L11.7071095,13 L13,13 L13,3 L3,3 L3,10.2928925 L6,7.29289341 Z" id="image" fill-opacity="0.9" fill="#000000"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

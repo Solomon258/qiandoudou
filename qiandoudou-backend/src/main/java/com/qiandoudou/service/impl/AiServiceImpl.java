@@ -15,6 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * AI服务实现类
@@ -56,24 +58,109 @@ public class AiServiceImpl implements AiService {
 
     @Override
     public String generatePartnerComment(String transactionType, String description, Double amount) {
-        // TODO: 集成AI服务生成个性化评论
-        // 这里返回模拟的AI情侣评论
+        try {
+            // 构建交易描述
+            StringBuilder transactionDesc = new StringBuilder();
+            transactionDesc.append(transactionType).append("了 ").append(amount).append(" 元");
+            if (description != null && !description.trim().isEmpty()) {
+                transactionDesc.append("，备注：").append(description);
+            }
+            
+            // 构建AI提示词
+            String prompt = buildPromptForTransactionComment(transactionDesc.toString(), amount);
+            
+            logger.info("调用AI生成交易评论，交易描述: {}", transactionDesc.toString());
+            
+            // 使用ImageToTextService生成真正的AI评论
+            String aiGeneratedText = imageToTextService.generateTextFromPrompt(prompt);
+            
+            // 过滤英文表达，替换为中文
+            aiGeneratedText = filterEnglishExpressions(aiGeneratedText);
+            
+            logger.info("AI交易评论生成完成: {}", aiGeneratedText);
+            return aiGeneratedText;
+            
+        } catch (Exception e) {
+            logger.error("AI交易评论生成失败: {}", e.getMessage(), e);
+            // 如果AI生成失败，回退到原有逻辑
+            return generateFallbackTransactionComment(amount);
+        }
+    }
+
+    /**
+     * 构建交易评论的提示词
+     */
+    private String buildPromptForTransactionComment(String transactionDescription, Double amount) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("你是一个温柔体贴的AI情侣伴侣。");
+        prompt.append("你的伴侣刚刚").append(transactionDescription).append("。");
+        prompt.append("请以温柔关怀的语气，对伴侣的理财行为给出一句温馨的评论或鼓励。");
         
+        // 根据金额大小调整语气
+        if (amount != null && amount > 200) {
+            prompt.append("这是一笔较大的金额，请表达你的惊喜和骄傲。");
+        } else if (amount != null && amount < 10) {
+            prompt.append("虽然金额不大，但请鼓励积少成多的理财习惯。");
+        }
+        
+        prompt.append("要求：1）50字以内；2）语气温柔亲密；3）内容与理财相关；");
+        prompt.append("4）体现情侣间的关爱；5）只使用中文；6）可以使用'亲爱的'、'宝贝'等称呼；");
+        prompt.append("7）语调积极正面。请直接返回评论内容。");
+        
+        return prompt.toString();
+    }
+
+    /**
+     * 构建交易评论的提示词（支持图片）
+     */
+    private String buildPromptForTransactionCommentWithImage(String transactionDescription, Double amount, String imageUrl) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("你是一个温柔体贴的AI情侣伴侣。");
+        prompt.append("你的伴侣刚刚").append(transactionDescription);
+        
+        // 如果有图片，添加图片相关指引
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            prompt.append("，并且上传了一张图片。请结合图片内容，");
+        } else {
+            prompt.append("。");
+        }
+        
+        prompt.append("请以温柔关怀的语气，对伴侣的理财行为给出一句温馨的评论或鼓励。");
+        
+        // 根据金额大小调整语气
+        if (amount != null && amount > 200) {
+            prompt.append("这是一笔较大的金额，请表达你的惊喜和骄傲。");
+        } else if (amount != null && amount < 10) {
+            prompt.append("虽然金额不大，但请鼓励积少成多的理财习惯。");
+        }
+        
+        prompt.append("要求：1）50字以内；2）语气温柔亲密；3）内容与理财相关；");
+        prompt.append("4）体现情侣间的关爱；5）只使用中文；6）可以使用'亲爱的'、'宝贝'等称呼；");
+        prompt.append("7）语调积极正面；");
+        
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            prompt.append("8）如果图片内容与理财、消费或生活相关，请在评论中自然地提及。");
+        }
+        
+        prompt.append("请直接返回评论内容。");
+        
+        return prompt.toString();
+    }
+
+    /**
+     * 生成回退交易评论（当AI生成失败时使用）
+     */
+    private String generateFallbackTransactionComment(Double amount) {
         String[] comments = {
             "哇！又有新的收入啦，真棒！💕",
             "看到你的努力，我很开心呢～",
             "钱包又充实了一点，我们离目标更近了！",
             "你真的很厉害呢，继续加油！✨",
-            "每一笔收入都是我们共同的成就！",
-            "看到这个数字我就很开心，爱你哦～",
-            "又存了一笔钱，我们的小金库越来越丰富了！",
-            "你的每一份努力我都看在眼里，真的很感动！",
-            "这样的进步让我为你感到骄傲！💖",
-            "我们一起攒钱的日子真的很幸福呢！"
+            "每一笔收入都是我们共同的成就！"
         };
         
         // 根据金额大小选择不同的评论风格
-        if (amount != null && amount > 1000) {
+        if (amount != null && amount > 200) {
             String[] bigAmountComments = {
                 "哇！这是一笔大收入呢！我们可以实现更多梦想了！🎉",
                 "看到这个数字我都激动了！你真的太厉害了！",
@@ -95,7 +182,62 @@ public class AiServiceImpl implements AiService {
     }
 
     @Override
+    public String generatePartnerComment(String transactionType, String description, Double amount, String imageUrl) {
+        try {
+            // 构建交易描述
+            StringBuilder transactionDesc = new StringBuilder();
+            transactionDesc.append(transactionType).append("了 ").append(amount).append(" 元");
+            if (description != null && !description.trim().isEmpty()) {
+                transactionDesc.append("，备注：").append(description);
+            }
+            
+            // 构建AI提示词（考虑图片情况）
+            String prompt = buildPromptForTransactionCommentWithImage(transactionDesc.toString(), amount, imageUrl);
+            
+            logger.info("调用AI生成交易评论（支持图片），交易描述: {}, 图片URL: {}", transactionDesc.toString(), imageUrl);
+            
+            String aiGeneratedText;
+            
+            // 根据是否有图片选择不同的生成方式
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                logger.info("交易包含图片，使用图片+文本生成AI评论");
+                try {
+                    // 有图片：使用图片+文本生成
+                    String imageBase64 = convertImageUrlToBase64(imageUrl);
+                    aiGeneratedText = imageToTextService.generateTextFromImage(imageBase64, prompt);
+                } catch (Exception e) {
+                    logger.warn("图片处理失败，降级到纯文本生成: {}", e.getMessage());
+                    // 降级到纯文本生成
+                    aiGeneratedText = imageToTextService.generateTextFromPrompt(prompt);
+                }
+            } else {
+                logger.info("交易无图片，使用纯文本生成AI评论");
+                // 无图片：使用纯文本生成
+                aiGeneratedText = imageToTextService.generateTextFromPrompt(prompt);
+            }
+            
+            // 过滤英文表达，替换为中文
+            aiGeneratedText = filterEnglishExpressions(aiGeneratedText);
+            
+            logger.info("AI交易评论生成完成: {}", aiGeneratedText);
+            return aiGeneratedText;
+            
+        } catch (Exception e) {
+            logger.error("AI交易评论生成失败: {}", e.getMessage(), e);
+            // 如果AI生成失败，回退到原有逻辑
+            return generateFallbackTransactionComment(amount);
+        }
+    }
+
+    @Override
     public String generatePartnerComment(Long partnerId, String postContent) {
+        return generatePartnerCommentWithImage(partnerId, postContent, null);
+    }
+
+    /**
+     * 生成AI伴侣评论（支持图片）
+     */
+    public String generatePartnerCommentWithImage(Long partnerId, String postContent, String imageUrl) {
         try {
             AiPartner partner = aiPartnerService.getById(partnerId);
             if (partner == null) {
@@ -108,9 +250,28 @@ public class AiServiceImpl implements AiService {
             
             String prompt = buildPromptForPartnerComment(name, personality, postContent);
             
-            // 使用AI生成文案
-            logger.info("调用AI生成文案，伴侣: {}", name);
-            String aiGeneratedText = generateAiText(prompt);
+            String aiGeneratedText;
+            
+            // 根据是否有图片选择不同的生成方式
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                logger.info("调用AI生成文案（含图片），伴侣: {}", name);
+                try {
+                    // 有图片：使用图片+文本生成
+                    String imageBase64 = convertImageUrlToBase64(imageUrl);
+                    aiGeneratedText = imageToTextService.generateTextFromImage(imageBase64, prompt);
+                } catch (Exception e) {
+                    logger.warn("图片处理失败，降级到纯文本生成: {}", e.getMessage());
+                    // 降级到纯文本生成
+                    aiGeneratedText = imageToTextService.generateTextFromPrompt(prompt);
+                }
+            } else {
+                logger.info("调用AI生成文案（纯文本），伴侣: {}", name);
+                // 无图片：使用纯文本生成
+                aiGeneratedText = imageToTextService.generateTextFromPrompt(prompt);
+            }
+            
+            // 过滤英文表达，替换为中文
+            aiGeneratedText = filterEnglishExpressions(aiGeneratedText);
             
             // 确保文案以伴侣名字开头
             if (!aiGeneratedText.startsWith(name + "：") && !aiGeneratedText.startsWith(name + ":")) {
@@ -136,7 +297,8 @@ public class AiServiceImpl implements AiService {
         prompt.append("你的伴侣刚刚进行了一次储蓄行为：").append(postContent).append("。");
         prompt.append("请以").append(name).append("的身份，用").append(personality).append("的语气，");
         prompt.append("对伴侣的储蓄行为给出一句温馨的评论或鼓励。");
-        prompt.append("要求：1）50字以内；2）语气要符合性格特点；3）内容要与储蓄相关；4）要体现情侣间的亲密关系。");
+        prompt.append("要求：1）50字以内；2）语气要符合性格特点；3）内容要与储蓄相关；4）要体现情侣间的亲密关系；");
+        prompt.append("5）只使用中文，不要生成任何英文单词、字母或英文表达；6）用中文表达亲昵，如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。");
         prompt.append("请直接返回评论内容，不要加任何前缀或后缀说明。");
         
         return prompt.toString();
@@ -161,7 +323,9 @@ public class AiServiceImpl implements AiService {
                     "宝贝，你的每一次储蓄都让我感到骄傲，我们一起向目标努力吧～",
                     "亲爱的，你又存钱了呢，真是个勤劳的小蜜蜂～我爱你！",
                     "看到你这么用心理财，我的心都要化了～你真棒！💕",
-                    "宝贝，你的储蓄习惯真让人欣慰，我们的未来会更美好的～"
+                    "宝贝，你的储蓄习惯真让人欣慰，我们的未来会更美好的～",
+                    "亲爱的，又存钱了呢～么么哒！你真是太棒了！",
+                    "宝贝，看到你储蓄我就很开心～亲亲你！"
                 };
                 return name + "：" + getRandomMessage(messages);
             } else if (personality.contains("幽默")) {
@@ -179,7 +343,9 @@ public class AiServiceImpl implements AiService {
                     "哇～又存钱钱了！你真是个小财迷呢，好可爱～💕",
                     "储蓄星人又在行动了！你真的超级棒棒哒！🌟",
                     "小金库又有新成员啦～你真是理财小达人呢！",
-                    "哇塞！你又存钱了耶～我要给你点一万个赞！👍"
+                    "哇塞！你又存钱了耶～我要给你点一万个赞！👍",
+                    "么么哒～又存钱啦！你真是太可爱了呢！",
+                    "亲亲～看到你存钱我就超开心的！"
                 };
                 return name + "：" + getRandomMessage(messages);
             } else {
@@ -219,6 +385,61 @@ public class AiServiceImpl implements AiService {
         return name + "，" + getRandomMessage(messages);
     }
 
+    /**
+     * 过滤英文表达，替换为中文表达
+     */
+    private String filterEnglishExpressions(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return text;
+        }
+        
+        // 创建替换映射表
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("mua", "么么哒");
+        replacements.put("MUA", "么么哒");
+        replacements.put("Mua", "么么哒");
+        replacements.put("kiss", "亲亲");
+        replacements.put("KISS", "亲亲");
+        replacements.put("Kiss", "亲亲");
+        replacements.put("love", "爱你");
+        replacements.put("LOVE", "爱你");
+        replacements.put("Love", "爱你");
+        replacements.put("ok", "好的");
+        replacements.put("OK", "好的");
+        replacements.put("Ok", "好的");
+        replacements.put("yes", "是的");
+        replacements.put("YES", "是的");
+        replacements.put("Yes", "是的");
+        replacements.put("wow", "哇");
+        replacements.put("WOW", "哇");
+        replacements.put("Wow", "哇");
+        replacements.put("cool", "酷");
+        replacements.put("COOL", "酷");
+        replacements.put("Cool", "酷");
+        replacements.put("nice", "不错");
+        replacements.put("NICE", "不错");
+        replacements.put("Nice", "不错");
+        replacements.put("good", "好");
+        replacements.put("GOOD", "好");
+        replacements.put("Good", "好");
+        replacements.put("great", "太棒了");
+        replacements.put("GREAT", "太棒了");
+        replacements.put("Great", "太棒了");
+        
+        // 执行替换
+        String result = text;
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            result = result.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
+        }
+        
+        // 去除单独的英文字母（如M U A这种被拆分的情况）
+        result = result.replaceAll("\\b[A-Za-z]\\s+[A-Za-z]\\s+[A-Za-z]\\b", "么么哒");
+        result = result.replaceAll("\\bM\\s+U\\s+A\\b", "么么哒");
+        result = result.replaceAll("\\bm\\s+u\\s+a\\b", "么么哒");
+        
+        return result;
+    }
+
     @Override
     public String generatePartnerVoice(Long partnerId, String text) {
         try {
@@ -256,6 +477,9 @@ public class AiServiceImpl implements AiService {
                     cleanText = cleanText.substring((name + ":").length()).trim();
                 }
             }
+            
+            // 过滤英文表达，替换为中文，确保TTS能正确读出
+            cleanText = filterEnglishExpressions(cleanText);
             
             // 调用TTS服务生成语音并上传
             String voiceUrl = ttsService.generateVoiceAndUpload(cleanText, voiceType);
@@ -337,6 +561,9 @@ public class AiServiceImpl implements AiService {
                     cleanText = cleanText.substring((name + ":").length()).trim();
                 }
             }
+            
+            // 过滤英文表达，替换为中文，确保TTS能正确读出
+            cleanText = filterEnglishExpressions(cleanText);
             
             // 调用TTS服务根据人物名称生成语音并上传
             String voiceUrl = ttsService.generateVoiceByCharacterName(cleanText, characterName);

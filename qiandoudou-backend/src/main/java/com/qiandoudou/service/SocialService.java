@@ -44,7 +44,7 @@ public interface SocialService {
     Map<String, Object> aiCommentTransaction(Long transactionId, String content, Long aiPartnerId, String voiceUrl);
     
     /**
-     * 获取交易评论列表
+     * 获取交易评论列表（包括普通评论和AI评论，含语音URL）
      */
     List<Map<String, Object>> getTransactionComments(Long transactionId);
     
@@ -82,4 +82,5 @@ public interface SocialService {
      * 获取交易的社交数据（点赞数、评论数、用户是否已点赞）
      */
     Map<String, Object> getTransactionSocialData(Long transactionId, Long userId);
+
 }

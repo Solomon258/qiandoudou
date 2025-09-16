@@ -63,9 +63,74 @@ Page({
 
   // 加载用户资料
   loadUserProfile() {
-    const userId = parseInt(this.data.userId)
+    const userId = parseInt(this.data.userId)
+    const currentLoginUserId = app.globalData.userInfo?.id
     
-    // 首先尝试从本地存储获取用户信息（包括头像）
+    console.log('用户主页加载用户资料, 目标用户ID:', userId, '当前登录用户ID:', currentLoginUserId)
+    
+    // 如果是查看别人的主页，使用模拟数据
+    if (userId && userId !== currentLoginUserId) {
+      // 根据userId使用不同的模拟数据
+      const mockUsers = {
+        101: {
+          id: 101,
+          nickname: '宝儿',
+          avatar: '',
+          description: '一年每天自动存一块已到期（说真的，突然…',
+          tags: ['生活', '攒钱']
+        },
+        102: {
+          id: 102,
+          nickname: '朱敏',
+          avatar: '',
+          description: '给发哥攒钱买车',
+          tags: ['情感', '校园']
+        },
+        103: {
+          id: 103,
+          nickname: '小王',
+          avatar: '',
+          description: '小王的理财之路',
+          tags: ['理财', '成长']
+        },
+        201: {
+          id: 201,
+          nickname: '冲动的',
+          avatar: '',
+          description: '一个冲动的投资者，喜欢尝试新的理财方式',
+          tags: ['投资', '理财']
+        },
+        202: {
+          id: 202,
+          nickname: '足呱呱',
+          avatar: '',
+          description: '专注于日常记账和小额投资',
+          tags: ['记账', '投资']
+        },
+        203: {
+          id: 203,
+          nickname: '朱敏多',
+          avatar: '',
+          description: '善于发现生活中的小确幸和小收获',
+          tags: ['生活', '理财']
+        }
+      }
+      
+      const userInfo = mockUsers[userId] || {
+        id: userId,
+        nickname: `用户${userId}`,
+        avatar: '',
+        description: '这个人很懒，什么都没留下',
+        hasCustomAvatar: false,
+        tags: ['成长', '生活']
+      }
+
+      console.log('显示其他用户的资料:', userInfo)
+      this.setData({ userInfo })
+      return
+    }
+    
+    // 查看自己的主页，首先尝试从本地存储获取用户信息（包括头像）
     const localUserInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
     
     if (localUserInfo && localUserInfo.avatar) {
@@ -77,52 +142,34 @@ Page({
         description: localUserInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(localUserInfo.avatar && localUserInfo.hasCustomAvatar),
         tags: ['成长', '生活']
-      }
+      }
+
+      console.log('显示自己的资料:', userInfo)
       this.setData({ userInfo })
       return
     }
     
-    // 根据userId使用不同的模拟数据
-    const mockUsers = {
-      101: {
-        id: 101,
-        nickname: '宝儿',
-        avatar: '',
-        description: '一年每天自动存一块已到期（说真的，突然…',
-        tags: ['生活', '攒钱']
-      },
-      102: {
-        id: 102,
-        nickname: '朱敏',
-        avatar: '',
-        description: '给发哥攒钱买车',
-        tags: ['情感', '校园']
-      },
-      103: {
-        id: 103,
-        nickname: '小王',
-        avatar: '',
-        description: '小王的理财之路',
-        tags: ['理财', '成长']
-      }
-    }
-    
-    const userInfo = mockUsers[userId] || {
-      id: userId,
+    // 如果没有本地用户信息，使用默认信息
+    const userInfo = {
+      id: userId || currentLoginUserId,
       nickname: '07年小女生攒钱',
       avatar: '',
       description: '07年小女生从2025.2.1开始存钱 目标…',
       hasCustomAvatar: false,
       tags: ['成长', '生活']
-    }
+    }
+
+    console.log('使用默认用户资料:', userInfo)
     this.setData({ userInfo })
   },
 
   // 加载钱包详情
   loadWalletDetail() {
-    if (!this.data.walletId) {
+    if (!this.data.walletId) {
+
       return
-    }
+    }
+
 
     // 根据walletId使用不同的模拟数据
     const mockWallets = {
@@ -160,7 +207,8 @@ Page({
       type: 1,
       backgroundImage: 'gradient1',
       description: '07年小女生从2025.2.1开始存钱 目标…'
-    }
+    }
+
     
     this.setData({ wallet: mockWallet })
     this.updateWalletBackgroundStyle()
@@ -209,12 +257,14 @@ Page({
 
   // 加载社交统计数据
   loadSocialStats() {
-    const walletId = parseInt(this.data.walletId)
+    const walletId = parseInt(this.data.walletId)
+
     
     // 根据钱包ID生成固定的社交数据（与social页面保持一致）
     // 移除硬编码的测试数据，统一使用真实的0值
     const defaultStats = { fansCount: 0, likesCount: 0, viewsCount: 0 }
-    const socialStats = defaultStats
+    const socialStats = defaultStats
+
     
     this.setData({ 
       socialStats: socialStats,
@@ -292,7 +342,8 @@ Page({
         icon: 'none'
       })
       return
-    }
+    }
+
     
     // 先获取钱包所有者ID，然后进行关注操作
     walletAPI.getWalletOwnerId(walletId)
@@ -317,7 +368,8 @@ Page({
         
         return apiCall
       })
-      .then(result => {
+      .then(result => {
+
         
         // 重新加载社交统计数据
         this.loadSocialStats()
@@ -329,7 +381,8 @@ Page({
           duration: 1500
         })
       })
-      .catch(error => {
+      .catch(error => {
+
         
         // 恢复之前的状态
         this.setData({ isFollowing: currentFollowing })
@@ -383,10 +436,12 @@ Page({
       .then(result => {
         if (result) {
           const isFollowing = result.data || false
-          this.setData({ isFollowing })
+          this.setData({ isFollowing })
+
         }
       })
-      .catch(error => {
+      .catch(error => {
+
         this.setData({ isFollowing: false })
       })
   },

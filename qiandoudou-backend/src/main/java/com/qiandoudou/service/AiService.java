@@ -26,6 +26,11 @@ public interface AiService {
     String generatePartnerComment(String transactionType, String description, Double amount);
 
     /**
+     * 生成AI伴侣评论（基于交易信息，支持图片）
+     */
+    String generatePartnerComment(String transactionType, String description, Double amount, String imageUrl);
+
+    /**
      * 生成AI伴侣语音
      */
     String generatePartnerVoice(Long partnerId, String text);

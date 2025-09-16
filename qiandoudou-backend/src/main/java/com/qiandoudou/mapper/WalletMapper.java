@@ -29,7 +29,7 @@ public interface WalletMapper extends BaseMapper<Wallet> {
     List<Map<String, Object>> getUserWalletsWithPartner(@Param("userId") Long userId);
 
     /**
-     * 获取公开钱包列表及其最新交易记录（用于兜圈圈）
+     * 获取公开钱包列表及其最新交易记录（用于兜圈圈）- 分页版本
      */
     @Select("SELECT w.id, w.user_id, w.name, CAST(w.type AS UNSIGNED) as type, w.balance, " +
             "w.background_image as backgroundImage, w.create_time, " +
@@ -56,8 +56,14 @@ public interface WalletMapper extends BaseMapper<Wallet> {
             "LEFT JOIN ai_partners ap ON w.ai_partner_id = ap.id " +
             "WHERE w.is_public = 1 AND w.deleted = 0 " +
             "ORDER BY w.update_time DESC " +
-            "LIMIT 20")
-    List<Map<String, Object>> getPublicWalletsWithRecentTransactions();
+            "LIMIT #{size} OFFSET #{offset}")
+    List<Map<String, Object>> getPublicWalletsWithRecentTransactions(@Param("offset") int offset, @Param("size") int size);
+
+    /**
+     * 获取公开钱包总数
+     */
+    @Select("SELECT COUNT(*) FROM wallets w WHERE w.is_public = 1 AND w.deleted = 0")
+    Long getPublicWalletsCount();
 
     /**
      * 获取钱包所有者ID

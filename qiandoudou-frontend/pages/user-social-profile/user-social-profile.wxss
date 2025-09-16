@@ -101,7 +101,7 @@
   width: 144rpx;
   height: 144rpx;
   border-radius: 72rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -447,5 +447,8 @@
   font-size: 28rpx;
   color: #999;
   font-weight: 500;
+}
+.do_btn {
+  display: flex;
 }
 

@@ -1,4 +1,5 @@
 {
   "backgroundTextStyle": "dark",
-  "backgroundColor": "#f2f3f7"
+  "backgroundColor": "#f2f3f7",
+  "navigationBarTitleText": "编辑账号信息"
 }

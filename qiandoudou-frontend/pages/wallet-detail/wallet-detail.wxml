@@ -13,8 +13,12 @@
       
       <!-- 用户信息 -->
       <view class="user-info" catchtap="stopPropagation">
-        <view class="user-avatar">
-          <text class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
+        <view class="user-avatar" bindtap="goToWalletOwnerProfile">
+          <image wx:if="{{walletOwnerInfo.hasCustomAvatar && walletOwnerInfo.avatar}}" 
+                 class="wallet-owner-avatar-image" 
+                 src="{{walletOwnerInfo.avatar}}" 
+                 mode="aspectFill"/>
+          <text wx:else class="avatar-text">{{walletOwnerInfo.nickname ? walletOwnerInfo.nickname.charAt(0) : (wallet.name ? wallet.name.charAt(0) : 'U')}}</text>
         </view>
         <view class="user-details">
           <text class="user-title" bindtap="{{isOwnWallet ? 'editWalletName' : ''}}">{{wallet.name || '钱兜兜'}}💗</text>
@@ -54,30 +58,30 @@
       </view>
       
     </view>
-    
-    <!-- 总金额卡片 -->
-    <view class="total-amount-card" catchtap="stopPropagation">
-      <text class="amount-label">总金额（元）</text>
-      <text class="amount-value">{{wallet.balance !== undefined ? wallet.balance : '0.00'}}</text>
-    </view>
-  </view>
-
-  <!-- 操作按钮区域 -->
-  <view wx:if="{{isOwnWallet}}" class="operation-section" catchtap="stopPropagation">
-    <!-- 第一行：转入和转出 -->
-    <view class="operation-buttons">
-      <view class="operation-btn" bindtap="goToTransferIn">
-        <text class="btn-text">转入</text>
+    <view class="count_view">
+        <!-- 总金额卡片 -->
+        <view class="total-amount-card" catchtap="stopPropagation">
+        <text class="amount-label">总金额（元）</text>
+        <text class="amount-value">{{wallet.balance !== undefined ? wallet.balance : '0.00'}}</text>
       </view>
-      <view class="operation-btn" bindtap="goToTransferOut">
-        <text class="btn-text">转出</text>
-      </view>
-    </view>
-    
-    <!-- 第二行：剧本攒 -->
-    <view class="script-button-row">
-      <view class="script-btn-full" bindtap="goToScripts">
-        <text class="script-btn-text">剧本攒</text>
+        <!-- 操作按钮区域 -->
+      <view wx:if="{{isOwnWallet}}" class="operation-section" catchtap="stopPropagation">
+        <!-- 第一行：转入和转出 -->
+        <view class="operation-buttons">
+          <view class="operation-btn" bindtap="goToTransferIn">
+            <text class="btn-text">转入</text>
+          </view>
+          <view class="operation-btn" bindtap="goToTransferOut">
+            <text class="btn-text">转出</text>
+          </view>
+        </view>
+        
+        <!-- 第二行：剧本攒 -->
+        <view class="script-button-row">
+          <view class="script-btn-full" bindtap="goToScripts">
+            <text class="script-btn-text">剧本攒</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -92,7 +96,7 @@
       </view>
       <view class="promo-content">
         <text class="promo-title">{{scriptInfo.title || '重新养小时候的自己'}}</text>
-        <text class="promo-desc">第{{userScriptProgress.currentChapter || 1}}集已更新，问谁日常</text>
+        <text class="promo-desc">第{{userScriptProgress.currentChapter || 1}}集已更新，{{currentChapterTitle || '问谁日常'}}</text>
       </view>
       <view class="promo-action">
         <view class="close-btn" bindtap="closePromo">
@@ -126,22 +130,26 @@
         <!-- 用户头像和基本信息 -->
         <view class="user-header">
           <!-- AI伴侣头像或用户头像 -->
-          <view class="user-avatar-small">
+          <view class="user-avatar-small" bindtap="goToUserProfile" data-user-id="{{item.userId}}" data-transaction="{{item}}">
             <image wx:if="{{item.isAiTransaction && item.aiPartnerAvatar}}" 
                    class="ai-avatar-image" 
                    src="{{item.aiPartnerAvatar}}" 
                    mode="aspectFill"></image>
-            <text wx:else class="avatar-text">{{wallet.name ? wallet.name.charAt(0) : 'U'}}</text>
+            <image wx:elif="{{!item.isAiTransaction && item.hasCustomAvatar && item.userAvatar}}" 
+                   class="user-avatar-image" 
+                   src="{{item.userAvatar}}" 
+                   mode="aspectFill"></image>
+            <text wx:else class="avatar-text">{{item.isAiTransaction ? (item.aiPartnerName ? item.aiPartnerName.charAt(0) : 'A') : (item.userNickname ? item.userNickname.charAt(0) : (wallet.name ? wallet.name.charAt(0) : 'U'))}}</text>
           </view>
           <view class="transaction-info">
             <!-- 标题单独一行，加粗 - 显示AI伴侣名称或钱兜兜名称 -->
             <view class="title-row">
-              <text class="transaction-title">{{item.isAiTransaction ? item.aiPartnerName : (wallet.name || '钱兜兜')}}</text>
-              <view class="transaction-amount">
-                <text class="amount-display {{item.type === 1 ? 'income' : 'expense'}}">
+              <view class="transaction-title">{{item.isAiTransaction ? item.aiPartnerName : (wallet.name || '钱兜兜')}}</view>
+              <!-- <view class="transaction-amount"> -->
+                <view class="amount-display {{item.type === 1 ? 'income' : 'expense'}}">
                   {{item.type === 1 ? '+' : ''}}{{item.amount}}
-                </text>
-              </view>
+                </view>
+              <!-- </view> -->
             </view>
             <!-- 流水类型单独一行 -->
             <view class="subtitle-row">
@@ -173,7 +181,8 @@
             <view class="voice-play-btn {{item.isPlaying ? 'playing' : ''}}" 
                   bindtap="playAiVoice" 
                   data-transaction="{{item}}">
-              <text class="voice-icon">🎵</text>
+              <!-- <text class="voice-icon">🎵</text> -->
+              <image class="action-icon" src="/static/icon/voice.svg"/>
               <text class="voice-duration">{{item.voiceDuration || '12s'}}</text>
             </view>
             
@@ -194,11 +203,12 @@
         <!-- 社交互动按钮（在所有钱包详情页显示） -->
         <view class="social-actions">
           <view class="action-btn {{item.isLiked ? 'liked' : ''}}" bindtap="toggleLike" data-transaction="{{item}}">
-            <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
+            <image wx:if="{{item.isLiked}}" class="action-icon" src="/static/icon/like_active.svg"/>
+            <image wx:else class="action-icon" src="/static/icon/like.svg"/>
             <text class="action-text">{{item.likeCount === null ? '...' : (item.likeCount || 0)}}</text>
           </view>
           <view class="action-btn" bindtap="showComments" data-transaction="{{item}}">
-            <text class="action-icon">💬</text>
+            <image class="action-icon" src="/static/icon/comment.svg"/>
             <text class="action-text">{{item.commentCount === null ? '...' : (item.commentCount || 0)}}</text>
           </view>
         </view>
@@ -206,17 +216,46 @@
         <!-- 评论列表（显示在流水下面） -->
         <view wx:if="{{item.comments && item.comments.length > 0}}" class="transaction-comments">
           <view wx:for="{{item.comments}}" wx:key="id" wx:for-item="comment" class="comment-item-inline">
-            <view class="comment-user-inline">
-              <text class="comment-username-inline">{{comment.userName}}：</text>
-            </view>
-            <text class="comment-content-inline">{{comment.content}}</text>
-            <!-- AI情侣评论的语音播放按钮 -->
-            <view wx:if="{{comment.isAiComment && comment.voiceUrl}}" class="comment-voice-play">
-              <view class="voice-play-btn-small {{comment.isPlayingVoice ? 'playing' : ''}}" 
-                    bindtap="playCommentVoice" 
-                    data-comment="{{comment}}">
-                <text class="voice-icon-small">🎵</text>
+            <!-- AI评论特殊样式 -->
+            <view wx:if="{{comment.isAiComment}}" class="ai-comment-wrapper">
+              <image class="ai-comment-avatar" src="{{comment.aiPartnerAvatar}}" mode="aspectFill"/>
+              <view class="ai-comment-content">
+                <view class="ai-comment-header">
+                  <text class="ai-comment-name">{{comment.aiPartnerName || comment.userName}}</text>
+                  <!-- <text class="ai-label">AI</text> -->
+                </view>
+                <text class="ai-comment-text">{{comment.content}}                <text class="ai-label">AI</text></text>
+                <!-- 语音播放按钮 -->
+                <view wx:if="{{comment.voiceUrl}}" class="voice-play-btn {{comment.isPlayingVoice ? 'playing' : ''}}" bindtap="playAiCommentVoice" data-comment="{{comment}}">
+                  <image class="action-icon" src="/static/icon/voice.svg" />
+                  <text style="font-size: 12px;color: #666666;margin-left: 40rpx;">{{ comment.voice_duration }}</text>
+                </view>
               </view>
+              <view class="ai-comment-actions">
+                <!-- 点赞按钮 -->
+                <view class="like-btn {{comment.isLiked ? 'liked' : ''}}" 
+                      bindtap="likeAiComment" 
+                      data-comment="{{comment}}">
+                  <image class="action-icon" src="{{comment.isLiked ? '/static/icon/like_active.svg' : '/static/icon/like.svg'}}"/>
+                  <text class="like-count">{{comment.likeCount ? comment.likeCount : ''}}</text>
+                </view>
+                <!-- 语音播放按钮 -->
+                <!-- <view wx:if="{{comment.voiceUrl}}" 
+                      class="voice-play-btn {{comment.isPlayingVoice ? 'playing' : ''}}" 
+                      bindtap="playAiCommentVoice" 
+                      data-comment="{{comment}}">
+                  <image class="action-icon" src="/static/icon/voice.svg"/>
+                  <text style="font-size: 12px;color: #666666;margin-left: 40rpx;">{{ comment.voice_duration }}</text>
+                </view> -->
+              </view>
+            </view>
+            
+            <!-- 普通用户评论 -->
+            <view wx:else class="user-comment-wrapper">
+              <view class="comment-user-inline">
+                <text class="comment-username-inline">{{comment.userName}}：</text>
+              </view>
+              <text class="comment-content-inline">{{comment.content}}</text>
             </view>
           </view>
         </view>
@@ -399,8 +438,20 @@
               </view>
               <text class="comment-username">{{item.userName || '用户'}}</text>
               <text class="comment-time">{{item.time}}</text>
+              <!-- AI评论标识 -->
+              <text wx:if="{{item.isAiComment}}" class="ai-comment-tag">AI</text>
             </view>
             <text class="comment-content">{{item.content}}</text>
+            
+            <!-- AI评论语音播放按钮 -->
+            <view wx:if="{{item.isAiComment && item.voiceUrl}}" class="comment-voice-section">
+              <view class="voice-play-btn {{item.isPlayingVoice ? 'playing' : ''}}" 
+                    bindtap="playCommentVoice" 
+                    data-comment="{{item}}">
+                <image class="voice-icon" src="/static/icon/voice.svg"/>
+                <text class="voice-duration">{{item.voiceDuration || '10s'}}</text>
+              </view>
+            </view>
           </view>
         </view>
         

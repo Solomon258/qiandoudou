@@ -48,7 +48,7 @@
 
     <!-- 选项区域 -->
     <view class="choices-section" wx:if="{{chapterContent.choicesList && chapterContent.choicesList.length > 0}}">
-      <view class="choices-title">给小时候的自己买零食吧，你选择：</view>
+      <view class="choices-title">你选择：</view>
       <view class="choices-list">
         <view wx:for="{{chapterContent.choicesList}}" wx:key="selection" 
               class="choice-item {{selectedChoice == item.selection ? 'selected' : ''}}"

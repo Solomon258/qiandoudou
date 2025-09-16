@@ -24,10 +24,15 @@ Page({
   onLoad(options) {
     // 获取用户ID参数（如果有的话）
     const userId = options.userId || app.globalData.userInfo?.id
+    const username = options.username
+    
+    console.log('用户社交主页加载参数:', { userId, username })
+    
     if (userId) {
-      this.setData({ userId })
+      this.setData({ userId, username })
       this.loadUserData(userId)
-    } else {
+    } else {
+      console.log('用户ID为空，使用默认信息')
       wx.showToast({
         title: '用户信息获取失败',
         icon: 'none'
@@ -43,22 +48,74 @@ Page({
 
   // 加载用户信息
   loadUserInfo() {
+    const currentUserId = this.data.userId
+    const currentUsername = this.data.username
+    
+    console.log('个人主页加载用户信息, 目标用户ID:', currentUserId, '用户名:', currentUsername)
+    
+    // 如果有传入的userId且不是当前登录用户，显示对应用户的信息
+    if (currentUserId && currentUserId != (app.globalData.userInfo?.id)) {
+      // 这是别人的主页，使用模拟数据或从后端获取
+      const mockUsers = {
+        201: {
+          nickname: '冲动的',
+          description: '一个冲动的投资者，喜欢尝试新的理财方式',
+          avatar: ''
+        },
+        202: {
+          nickname: '足呱呱',
+          description: '专注于日常记账和小额投资',
+          avatar: ''
+        },
+        203: {
+          nickname: '朱敏多',
+          description: '善于发现生活中的小确幸和小收获',
+          avatar: ''
+        }
+      }
+      
+      const targetUserInfo = mockUsers[currentUserId] || {
+        nickname: currentUsername || `用户${currentUserId}`,
+        description: '这个人很懒，什么都没留下',
+        avatar: ''
+      }
+      
+      const displayUserInfo = {
+        nickname: targetUserInfo.nickname,
+        avatar: targetUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+        description: targetUserInfo.description,
+        hasCustomAvatar: !!(targetUserInfo.avatar && !targetUserInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
+      }
+
+      console.log('显示其他用户的信息:', displayUserInfo)
+      
+      this.setData({
+        userInfo: displayUserInfo
+      })
+      return
+    }
+    
+    // 这是自己的主页，显示当前登录用户信息
     const userInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
+    console.log('个人主页加载自己的用户信息:', userInfo)
     
     if (userInfo) {
       // 有本地用户信息，直接使用
       const displayUserInfo = {
         nickname: userInfo.nickname || '钱兜兜用户',
-        avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+        avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
         description: userInfo.description || '这个人很懒，什么都没留下',
-        hasCustomAvatar: !!(userInfo.avatar && userInfo.hasCustomAvatar)
-      }
+        hasCustomAvatar: !!(userInfo.avatar && !userInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
+      }
+
+      console.log('个人主页显示的用户信息:', displayUserInfo)
       
       this.setData({
         userInfo: displayUserInfo
       })
     } else {
-      // 本地用户信息为空，尝试从后端获取
+      // 本地用户信息为空，尝试从后端获取
+      console.log('本地用户信息为空，从服务器获取')
       this.loadUserInfoFromServer()
     }
   },
@@ -69,19 +126,22 @@ Page({
     
     // 获取当前用户ID，如果没有用户ID则不加载
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       return
-    }
+    }
+
     
     authAPI.getCurrentUser(userId)
       .then(result => {
-        const serverUserInfo = result.data
+        const serverUserInfo = result.data
+
         
         // 设置用户信息
         const displayUserInfo = {
           id: serverUserInfo.id || 1,
           nickname: serverUserInfo.nickname || '钱兜兜用户',
-          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
           hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
         }
@@ -92,27 +152,31 @@ Page({
         
         // 同步到本地存储和全局数据
         wx.setStorageSync('userInfo', displayUserInfo)
-        app.globalData.userInfo = displayUserInfo
+        app.globalData.userInfo = displayUserInfo
+
       })
-      .catch(error => {
+      .catch(error => {
+
         
         // 使用默认用户信息
         const defaultUserInfo = {
           id: 1,
           nickname: '钱兜兜用户',
-          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: '这个人很懒，什么都没留下',
           hasCustomAvatar: false
         }
         
         this.setData({
           userInfo: defaultUserInfo
-        })
+        })
+
       })
   },
 
   // 加载用户数据
-  loadUserData(userId) {
+  loadUserData(userId) {
+
     this.setData({ loading: true })
     
     // 并行加载公开钱包和关注钱包
@@ -121,8 +185,10 @@ Page({
       this.loadFollowedWallets(userId),
       this.loadSocialStats(userId)
     ]).then(() => {
-      this.setData({ loading: false })
-    }).catch(error => {
+      this.setData({ loading: false })
+
+    }).catch(error => {
+
       this.setData({ loading: false })
       wx.showToast({
         title: '数据加载失败',
@@ -156,10 +222,12 @@ Page({
           }
         })
         
-        this.setData({ publicWallets })
+        this.setData({ publicWallets })
+
         return publicWallets
       })
-      .catch(error => {
+      .catch(error => {
+
         return []
       })
   },
@@ -183,10 +251,12 @@ Page({
           }
         })
         
-        this.setData({ followedWallets })
+        this.setData({ followedWallets })
+
         return followedWallets
       })
-      .catch(error => {
+      .catch(error => {
+
         
         // API失败时显示空列表
         this.setData({ followedWallets: [] })
@@ -210,7 +280,8 @@ Page({
           fansCount: 0, // 使用真实数据，新用户为0
           likesCount: 0  // 使用真实数据，新用户为0
         }
-      })
+      })
+
     }, 100)
     
     return Promise.resolve()
@@ -264,6 +335,21 @@ Page({
       url: '/pages/edit-profile/edit-profile'
     })
   },
+  // 退出登录
+  handleLogout() {
+    wx.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (modalRes) => {
+        if (modalRes.confirm) {
+          app.clearLoginInfo()
+          wx.redirectTo({
+            url: '/pages/login/login'
+          })
+        }
+      }
+    })
+  },
 
   // 点击公开钱包卡片
   onPublicWalletTap(e) {
@@ -285,7 +371,8 @@ Page({
     if (wallet) {
       // 构建完整的跳转URL，传递必要的社交信息以访问真实数据
       // 确保新钱包的社交数据为0，不传递任何可能的模拟数据
-      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=0&likeCount=0&viewsCount=0`
+      const url = `/pages/wallet-detail/wallet-detail?id=${walletId}&fromSocial=true&ownerNickname=${encodeURIComponent(wallet.ownerNickname || '用户')}&title=${encodeURIComponent(wallet.title)}&fansCount=0&likeCount=0&viewsCount=0`
+
       
       wx.navigateTo({
         url: url

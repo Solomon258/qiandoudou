@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * AI情侣互动事件监听器
@@ -23,7 +25,7 @@ public class AiLoverInteractionEventListener {
     /**
      * 监听交易创建事件，触发AI情侣互动
      */
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
     public void handleTransactionCreated(TransactionCreatedEvent event) {
         try {

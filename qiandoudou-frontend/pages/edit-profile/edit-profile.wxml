@@ -1,19 +1,13 @@
 <!--pages/edit-profile/edit-profile.wxml-->
 <view class="container">
   <!-- 顶部导航栏 -->
-  <view class="top-nav">
-    <view class="nav-left" bindtap="goBack">
-    </view>
-    <view class="nav-title">编辑账号信息</view>
-    <view class="nav-right"></view>
-  </view>
 
   <!-- 兜圈圈身份信息 -->
-  <view class="section-title">兜圈圈身份信息</view>
+  <!-- <view class="section-title">兜圈圈身份信息</view> -->
   
   <view class="info-card">
     <!-- 头像 -->
-    <view class="info-item" bindtap="changeAvatar">
+    <view class="info-item">
       <text class="item-label">头像</text>
       <view class="item-content">
         <view class="avatar-preview">
@@ -26,18 +20,52 @@
             <view class="loading-spinner"></view>
           </view>
         </view>
-        <view class="arrow-icon"></view>
+        
+        <!-- 微信头像选择按钮 -->
+        <view class="wechat-avatar-section" wx:if="{{showWechatAvatarOption}}">
+          <button class="wechat-avatar-btn" 
+                  open-type="chooseAvatar" 
+                  bind:chooseavatar="onChooseWechatAvatar"
+                  disabled="{{isUploadingAvatar}}">
+            <text class="wechat-icon">💬</text>
+            <text class="btn-text">使用微信头像</text>
+          </button>
+        </view>
+        <button id="wechat-avatar-picker"
+              class="wechat-avatar-picker-btn" 
+              open-type="chooseAvatar" 
+              bind:chooseavatar="onWechatAvatarSelected">
+              <view class="arrow-icon"></view>
+      </button>
+        <!-- <view class="arrow-icon" bindtap="changeAvatar"></view> -->
       </view>
     </view>
     
     <view class="divider"></view>
     
     <!-- 昵称 -->
-    <view class="info-item" bindtap="editNickname">
+    <view class="info-item">
       <text class="item-label">昵称</text>
       <view class="item-content">
-        <text class="item-value">{{userInfo.nickname || '昆虫记'}}</text>
-        <view class="arrow-icon"></view>
+        <!-- <view class="nickname-display" bindtap="editNickname">
+          <text class="item-value">{{userInfo.nickname || '昆虫记'}}</text>
+        </view> -->
+        
+        <!-- 微信昵称选择按钮 -->
+        <view class="wechat-nickname-section" wx:if="{{showWechatAvatarOption}}">
+          <input class="wechat-nickname-input" 
+                 type="nickname" 
+                 placeholder="点击获取微信昵称"
+                 bind:input="onWechatNicknameInput"
+                 disabled="{{isUpdatingNickname}}" />
+        </view>
+        <!-- <view class="arrow-icon" bindtap="editNickname"></view> -->
+        <!-- <view class="arrow-icon" bindtap="onWechatNicknameSelected"></view> -->
+        <input class="wechat-nickname-picker-input" 
+             type="nickname" 
+             value="{{userInfo.nickname || '昆虫记'}}"
+             bind:input="onWechatNicknameSelected" />
+        <!-- <view class="arrow-icon" bindtap="onWechatNicknameSelected"></view> -->
       </view>
     </view>
     
@@ -94,6 +122,42 @@
 
 <!-- 隐藏的canvas用于图片处理 -->
 <canvas canvas-id="avatarCanvas" style="position: absolute; left: -9999px; top: -9999px; width: 200px; height: 200px;"></canvas>
+
+<!-- 隐藏的微信头像选择器 -->
+<view wx:if="{{showWechatAvatarPicker}}" class="wechat-picker-overlay">
+  <view class="wechat-picker-content">
+    <view class="picker-header">
+      <text class="picker-title">选择微信头像</text>
+      <view class="picker-close" bindtap="hideWechatAvatarPicker">×</view>
+    </view>
+    <view class="picker-body">
+      <text class="picker-desc">点击下方按钮选择您的微信头像</text>
+      <button id="wechat-avatar-picker"
+              class="wechat-avatar-picker-btn" 
+              open-type="chooseAvatar" 
+              bind:chooseavatar="onWechatAvatarSelected">
+        选择微信头像
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- 隐藏的微信昵称选择器 -->
+<view wx:if="{{showWechatNicknamePicker}}" class="wechat-picker-overlay">
+  <view class="wechat-picker-content">
+    <view class="picker-header">
+      <text class="picker-title">获取微信昵称</text>
+      <view class="picker-close" bindtap="hideWechatNicknamePicker">×</view>
+    </view>
+    <view class="picker-body">
+      <text class="picker-desc">点击下方输入框获取您的微信昵称</text>
+      <input class="wechat-nickname-picker-input" 
+             type="nickname" 
+             placeholder="点击获取微信昵称"
+             bind:input="onWechatNicknameSelected" />
+    </view>
+  </view>
+</view>
 
 <!-- 编辑弹窗 -->
 <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
