@@ -529,17 +529,33 @@ Page({
             updatedTransactions[transactionIndex].isLiked = result.socialData.isLiked || false
             
             // 更新评论列表，处理AI评论
-            const processedComments = result.comments.map(comment => ({
-              ...comment,
-              isAiComment: comment.isAiComment || false,
-              aiPartnerName: comment.aiPartnerName || comment.user_nickname,
-              aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
-              userName: comment.userName || comment.user_nickname || '匿名用户',
-              voiceUrl: comment.voiceUrl || comment.voice_url,
-              isPlayingVoice: false,
-              isLiked: false,
-              likeCount: 0
-            }))
+            const processedComments = result.comments.map(comment => {
+              const processedComment = {
+                ...comment,
+                isAiComment: comment.isAiComment || false,
+                aiPartnerName: comment.aiPartnerName || comment.user_nickname,
+                aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
+                userName: comment.userName || comment.user_nickname || '匿名用户',
+                voiceUrl: comment.voiceUrl || comment.voice_url,
+                voiceDuration: comment.voiceDuration || comment.voice_duration, // 优先使用数据库中的真实时长
+                isPlayingVoice: false,
+                isLiked: false,
+                likeCount: 0
+              }
+              
+              // 为AI评论语音添加时长信息（只有在没有真实时长时才估算）
+              if (processedComment.isAiComment && processedComment.voiceUrl && !processedComment.voiceDuration) {
+                // 根据评论内容长度估算语音时长（作为降级方案）
+                const contentLength = processedComment.content ? processedComment.content.length : 20
+                const estimatedSeconds = Math.max(3, Math.min(Math.ceil(contentLength * 0.15), 15))
+                processedComment.voiceDuration = estimatedSeconds + 's'
+                console.log(`评论 ${comment.id} 使用估算时长: ${processedComment.voiceDuration}`)
+              } else if (processedComment.voiceDuration) {
+                console.log(`评论 ${comment.id} 使用数据库真实时长: ${processedComment.voiceDuration}`)
+              }
+              
+              return processedComment
+            })
             updatedTransactions[transactionIndex].comments = processedComments
             
             console.log(`交易 ${result.transactionId} 处理后的评论:`, processedComments)
@@ -1323,13 +1339,34 @@ Page({
 
         if (response.success && response.data) {
           // 处理评论数据格式
-          const comments = response.data.map(comment => ({
-            id: comment.id,
-            userName: comment.user_nickname || comment.userName || '匿名用户',
-            content: comment.content,
-            time: this.formatTime(comment.create_time || comment.createTime),
-            userId: comment.user_id || comment.userId
-          }))
+          const comments = response.data.map(comment => {
+            const processedComment = {
+              id: comment.id,
+              userName: comment.user_nickname || comment.userName || '匿名用户',
+              content: comment.content,
+              time: this.formatTime(comment.create_time || comment.createTime),
+              userId: comment.user_id || comment.userId,
+              // AI评论相关字段
+              isAiComment: comment.isAiComment || comment.is_ai_comment || false,
+              aiPartnerName: comment.aiPartnerName || comment.user_nickname,
+              aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
+              voiceUrl: comment.voiceUrl || comment.voice_url,
+              voiceDuration: comment.voiceDuration || comment.voice_duration, // 优先使用数据库中的真实时长
+              isPlayingVoice: false
+            }
+            
+            // 如果是AI评论但没有时长，进行估算
+            if (processedComment.isAiComment && processedComment.voiceUrl && !processedComment.voiceDuration) {
+              const contentLength = processedComment.content ? processedComment.content.length : 20
+              const estimatedSeconds = Math.max(3, Math.min(Math.ceil(contentLength * 0.15), 15))
+              processedComment.voiceDuration = estimatedSeconds + 's'
+              console.log(`评论弹窗 - 评论 ${comment.id} 使用估算时长: ${processedComment.voiceDuration}`)
+            } else if (processedComment.voiceDuration) {
+              console.log(`评论弹窗 - 评论 ${comment.id} 使用数据库真实时长: ${processedComment.voiceDuration}`)
+            }
+            
+            return processedComment
+          })
           
           this.setData({
             currentComments: comments
@@ -1821,6 +1858,121 @@ Page({
   // 关注钱包（只读模式下使用）- 保持向后兼容
   followWallet() {
     this.toggleFollow()
+  },
+
+  // 评论语音播放功能
+  playCommentVoice(e) {
+    console.log('播放评论语音')
+    
+    // 检查事件对象
+    if (!e || !e.currentTarget) {
+      console.warn('评论语音播放：事件对象无效')
+      return
+    }
+    
+    // 检查数据绑定
+    const dataset = e.currentTarget.dataset
+    if (!dataset || !dataset.comment) {
+      console.warn('评论语音播放：评论数据无效')
+      return
+    }
+    
+    const comment = dataset.comment
+    console.log('播放评论语音，评论数据:', comment)
+    
+    // 检查是否有语音URL
+    if (!comment.voiceUrl) {
+      console.warn('评论语音播放：没有语音URL')
+      wx.showToast({
+        title: '该评论没有语音',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 停止当前播放的语音
+    if (this.data.currentPlayingVoice) {
+      this.stopCurrentVoice()
+    }
+    
+    // 更新播放状态
+    const updatedComments = this.data.currentComments.map(c => {
+      if (c.id === comment.id) {
+        return { ...c, isPlayingVoice: true }
+      }
+      return { ...c, isPlayingVoice: false }
+    })
+    
+    this.setData({
+      currentComments: updatedComments,
+      currentPlayingVoice: comment.id
+    })
+    
+    console.log('开始播放评论语音:', comment.voiceUrl)
+    
+    // 创建音频上下文
+    const audioContext = wx.createInnerAudioContext()
+    audioContext.src = comment.voiceUrl
+    
+    // 播放结束处理
+    audioContext.onEnded(() => {
+      console.log('评论语音播放结束')
+      this.resetCommentVoiceState(comment.id)
+    })
+    
+    // 播放错误处理
+    audioContext.onError((err) => {
+      console.error('评论语音播放错误:', err)
+      this.resetCommentVoiceState(comment.id)
+      wx.showToast({
+        title: '语音播放失败',
+        icon: 'none'
+      })
+    })
+    
+    // 开始播放
+    audioContext.play()
+    
+    // 保存音频上下文
+    this.commentAudioContext = audioContext
+  },
+  
+  // 重置评论语音播放状态
+  resetCommentVoiceState(commentId) {
+    const updatedComments = this.data.currentComments.map(c => {
+      if (c.id === commentId) {
+        return { ...c, isPlayingVoice: false }
+      }
+      return c
+    })
+    
+    this.setData({
+      currentComments: updatedComments,
+      currentPlayingVoice: null
+    })
+    
+    if (this.commentAudioContext) {
+      this.commentAudioContext.destroy()
+      this.commentAudioContext = null
+    }
+  },
+  
+  // 停止当前播放的语音
+  stopCurrentVoice() {
+    if (this.commentAudioContext) {
+      this.commentAudioContext.stop()
+      this.commentAudioContext.destroy()
+      this.commentAudioContext = null
+    }
+    
+    if (this.data.voiceContext) {
+      this.data.voiceContext.stop()
+      this.data.voiceContext.destroy()
+    }
+    
+    this.setData({
+      currentPlayingVoice: null
+    })
   },
 
   // AI语音播放功能

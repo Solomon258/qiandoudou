@@ -81,7 +81,7 @@ public class AiAutoCommentServiceImpl implements AiAutoCommentService {
                 // 无图片时调用原有方法
                 commentContent = aiService.generatePartnerComment(aiPartner.getId(), transactionDescription);
             }
-            logger.info("AI生成的评论内容: {}", commentContent);
+            logger.info("AI生成的评论内容完成");
 
             // 6. 使用现有的语音生成服务
             String voiceUrl = null;
@@ -106,8 +106,8 @@ public class AiAutoCommentServiceImpl implements AiAutoCommentService {
             comment.put("isAiComment", true);
 
             logger.info("=== AI自动评论生成完成 ===");
-            logger.info("评论ID: {}, 内容: {}, 语音URL: {}", 
-                       comment.get("id"), commentContent, voiceUrl);
+            logger.info("评论ID: {}, 语音URL: {}", 
+                       comment.get("id"), voiceUrl);
 
             return comment;
 

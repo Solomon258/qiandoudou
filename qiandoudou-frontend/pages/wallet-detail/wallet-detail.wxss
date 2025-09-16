@@ -675,6 +675,7 @@
   border-radius: 20px;
   padding: 6px 12px;
   transition: all 0.2s ease;
+  margin-top: 10rpx;
 }
 
 .voice-play-btn:active {
@@ -1399,12 +1400,53 @@
   margin-left: auto;
 }
 
+.ai-comment-tag {
+  font-size: 9px;
+  color: #409EFF;
+  background: rgba(64, 158, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+}
+
 .comment-content {
   font-size: 14px;
   color: #333;
   line-height: 1.4;
   margin-left: 32px; /* 使用margin-left而不是padding-left，与头像对齐 */
   margin-top: 4px; /* 稍微降低一点位置 */
+}
+
+/* 评论语音播放区域 */
+.comment-voice-section {
+  margin-left: 32px;
+  margin-top: 8px;
+}
+
+.comment-voice-section .voice-play-btn {
+  display: flex;
+  align-items: center;
+  background: rgba(64, 158, 255, 0.1);
+  border-radius: 16px;
+  padding: 6px 12px;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.comment-voice-section .voice-play-btn.playing {
+  background: rgba(64, 158, 255, 0.2);
+}
+
+.comment-voice-section .voice-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+.comment-voice-section .voice-duration {
+  font-size: 11px;
+  color: #409EFF;
+  font-weight: 500;
 }
 
 /* 无评论提示 */
@@ -1611,10 +1653,10 @@
   align-items: flex-start;
   gap: 12rpx;
   padding: 20rpx;
-  background: #f8f9ff;
+  /* background: #f8f9ff; */
   border-radius: 16rpx;
   margin: 16rpx 0;
-  border-left: 6rpx solid #409eff;
+  /* border-left: 6rpx solid #409eff; */
   position: relative;
 }
 
@@ -1644,11 +1686,8 @@
 }
 
 .ai-label {
-  font-size: 20rpx;
+  font-size: 30rpx;
   color: #999;
-  background: #f0f0f0;
-  padding: 4rpx 8rpx;
-  border-radius: 8rpx;
 }
 
 .ai-comment-text {
@@ -1668,7 +1707,7 @@
 
 .like-btn {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
   gap: 4rpx;
   padding: 8rpx;

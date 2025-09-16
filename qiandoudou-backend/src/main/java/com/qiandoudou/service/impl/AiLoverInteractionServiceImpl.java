@@ -164,7 +164,7 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
                 return null;
             }
             
-            logger.info("开始生成AI情侣评论语音，AI伴侣: {}, 文本: {}", aiPartner.getName(), commentText);
+            logger.info("开始生成AI情侣评论语音，AI伴侣: {}", aiPartner.getName());
             
             // 使用与AI伴侣转账相同的语音生成方法
             String voiceUrl = aiService.generatePartnerVoiceByCharacterName(aiPartner.getName(), commentText);
@@ -178,7 +178,7 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
             return voiceUrl;
             
         } catch (Exception e) {
-            logger.error("生成AI情侣评论语音失败，AI伴侣ID: {}, 评论文本: {}", aiPartnerId, commentText, e);
+            logger.error("生成AI情侣评论语音失败，AI伴侣ID: {}", aiPartnerId, e);
             return null;
         }
     }

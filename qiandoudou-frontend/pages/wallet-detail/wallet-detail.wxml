@@ -222,9 +222,14 @@
               <view class="ai-comment-content">
                 <view class="ai-comment-header">
                   <text class="ai-comment-name">{{comment.aiPartnerName || comment.userName}}</text>
-                  <text class="ai-label">AI</text>
+                  <!-- <text class="ai-label">AI</text> -->
                 </view>
-                <text class="ai-comment-text">{{comment.content}}</text>
+                <text class="ai-comment-text">{{comment.content}}                <text class="ai-label">AI</text></text>
+                <!-- 语音播放按钮 -->
+                <view wx:if="{{comment.voiceUrl}}" class="voice-play-btn {{comment.isPlayingVoice ? 'playing' : ''}}" bindtap="playAiCommentVoice" data-comment="{{comment}}">
+                  <image class="action-icon" src="/static/icon/voice.svg" />
+                  <text style="font-size: 12px;color: #666666;margin-left: 40rpx;">{{ comment.voice_duration }}</text>
+                </view>
               </view>
               <view class="ai-comment-actions">
                 <!-- 点赞按钮 -->
@@ -232,15 +237,16 @@
                       bindtap="likeAiComment" 
                       data-comment="{{comment}}">
                   <image class="action-icon" src="{{comment.isLiked ? '/static/icon/like_active.svg' : '/static/icon/like.svg'}}"/>
-                  <text class="like-count">{{comment.likeCount || 0}}</text>
+                  <text class="like-count">{{comment.likeCount ? comment.likeCount : ''}}</text>
                 </view>
                 <!-- 语音播放按钮 -->
-                <view wx:if="{{comment.voiceUrl}}" 
+                <!-- <view wx:if="{{comment.voiceUrl}}" 
                       class="voice-play-btn {{comment.isPlayingVoice ? 'playing' : ''}}" 
                       bindtap="playAiCommentVoice" 
                       data-comment="{{comment}}">
                   <image class="action-icon" src="/static/icon/voice.svg"/>
-                </view>
+                  <text style="font-size: 12px;color: #666666;margin-left: 40rpx;">{{ comment.voice_duration }}</text>
+                </view> -->
               </view>
             </view>
             
@@ -432,8 +438,20 @@
               </view>
               <text class="comment-username">{{item.userName || '用户'}}</text>
               <text class="comment-time">{{item.time}}</text>
+              <!-- AI评论标识 -->
+              <text wx:if="{{item.isAiComment}}" class="ai-comment-tag">AI</text>
             </view>
             <text class="comment-content">{{item.content}}</text>
+            
+            <!-- AI评论语音播放按钮 -->
+            <view wx:if="{{item.isAiComment && item.voiceUrl}}" class="comment-voice-section">
+              <view class="voice-play-btn {{item.isPlayingVoice ? 'playing' : ''}}" 
+                    bindtap="playCommentVoice" 
+                    data-comment="{{item}}">
+                <image class="voice-icon" src="/static/icon/voice.svg"/>
+                <text class="voice-duration">{{item.voiceDuration || '10s'}}</text>
+              </view>
+            </view>
           </view>
         </view>
         

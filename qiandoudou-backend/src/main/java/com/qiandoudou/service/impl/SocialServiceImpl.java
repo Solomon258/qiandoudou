@@ -11,6 +11,7 @@ import com.qiandoudou.mapper.TransactionMapper;
 import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.mapper.WalletViewMapper;
 import com.qiandoudou.service.AiPartnerService;
+import com.qiandoudou.service.AudioDurationService;
 import com.qiandoudou.entity.WalletView;
 import com.qiandoudou.service.SocialService;
 import org.slf4j.Logger;
@@ -57,6 +58,9 @@ public class SocialServiceImpl implements SocialService {
     
     @Autowired
     private AiPartnerService aiPartnerService;
+    
+    @Autowired
+    private AudioDurationService audioDurationService;
 
     @Override
     public Map<String, Object> getUserSocialStats(Long userId) {
@@ -286,7 +290,13 @@ public class SocialServiceImpl implements SocialService {
             postComment.setVoiceUrl(voiceUrl); // 设置语音URL
             
             postCommentMapper.insert(postComment);
-            logger.info("AI评论记录插入成功");
+            logger.info("AI评论记录插入成功，评论ID: {}", postComment.getId());
+            
+            // 异步解析语音时长并更新数据库
+            if (voiceUrl != null && !voiceUrl.trim().isEmpty()) {
+                logger.info("启动异步音频时长解析任务，评论ID: {}", postComment.getId());
+                audioDurationService.parseAndUpdateDurationAsync(postComment.getId(), voiceUrl);
+            }
             
             // 2. 返回新创建的AI评论信息
             Map<String, Object> comment = new HashMap<>();
