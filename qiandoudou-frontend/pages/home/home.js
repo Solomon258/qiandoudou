@@ -296,6 +296,7 @@ Page({
 
   // 确认创建钱包
   confirmCreateWallet() {
+    console.log(this.data,'------')
     const { selectedWalletType } = this.data
     
     if (!selectedWalletType) {
@@ -305,7 +306,15 @@ Page({
       })
       return
     }
-
+    if (selectedWalletType === 'couple2') {
+      wx.showModal({
+        title: '提示',
+        content: '功能开发中，敬请期待！',
+        showCancel: false
+      })
+      return
+    }
+console.log(selectedWalletType)
     if (selectedWalletType === 'personal') {
       // 自己攒钱 - 直接创建并进入钱包详情页
       this.createPersonalWallet()
