@@ -603,8 +603,8 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
-  width: 28rpx;
-  height: 28rpx;
+  width: 32rpx;
+  height: 32rpx;
 }
 .login-hi {
   font-family: AlibabaPuHuiTiM;
