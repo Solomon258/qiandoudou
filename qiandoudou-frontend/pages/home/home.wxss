@@ -8,7 +8,8 @@
 .wallet-page {
   min-height: 100vh;
   background: #f1f2f3;
-  padding-bottom: 97px;
+  /* padding-bottom: 97px; */
+  margin-top: 180rpx;
 }
 
 .nav-left {
@@ -1499,12 +1500,6 @@
   background: #f8f9fa;
 }
 
-/* 钱包页面 */
-.wallet-page {
-  min-height: 100vh;
-  background: #f1f2f3;
-  padding-bottom: 97px;
-}
 
 /* 顶部导航栏 */
 .top-nav {
@@ -2817,7 +2812,12 @@
   display: flex;
   align-items: center;
   padding-top: var(--status-bar-height);
-  position: relative;
+  /* position: relative; */
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #fff;
+  z-index: 99;
 }
 
 .nav-back {
