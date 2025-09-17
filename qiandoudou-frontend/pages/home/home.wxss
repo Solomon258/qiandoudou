@@ -1956,6 +1956,7 @@
 /* 新建钱包按钮 */
 .create-wallet-section {
   padding: 0 16px 20px;
+  padding-bottom: 226rpx;
 }
 
 .create-wallet-card {
