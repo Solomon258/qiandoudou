@@ -6,6 +6,7 @@ import com.qiandoudou.entity.PostComment;
 import com.qiandoudou.mapper.NotificationMapper;
 import com.qiandoudou.mapper.PostLikeMapper;
 import com.qiandoudou.mapper.UserFollowMapper;
+import com.qiandoudou.mapper.BuddyCharacterMapper;
 import com.qiandoudou.mapper.PostCommentMapper;
 import com.qiandoudou.mapper.TransactionMapper;
 import com.qiandoudou.mapper.WalletMapper;
@@ -61,6 +62,9 @@ public class SocialServiceImpl implements SocialService {
     
     @Autowired
     private AudioDurationService audioDurationService;
+    
+    @Autowired
+    private BuddyCharacterMapper buddyCharacterMapper;
 
     @Override
     public Map<String, Object> getUserSocialStats(Long userId) {
@@ -635,16 +639,41 @@ public class SocialServiceImpl implements SocialService {
                 comment.put("isAiComment", isAiComment);
                 
                 if (isAiComment) {
-                    // 如果是AI评论，获取AI伴侣信息
-                    Object userIdObj = comment.get("user_id");
-                    if (userIdObj != null) {
-                        Long aiPartnerId = Long.valueOf(userIdObj.toString());
-                        com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
-                        if (aiPartner != null) {
-                            comment.put("aiPartnerName", aiPartner.getName());
-                            comment.put("aiPartnerAvatar", aiPartner.getAvatar());
-                            comment.put("userName", aiPartner.getName());
-                            comment.put("user_nickname", aiPartner.getName());
+                    // 检查是否为搭子评论
+                    Object buddyCharacterIdObj = comment.get("buddy_character_id");
+                    if (buddyCharacterIdObj != null) {
+                        // 搭子评论：从buddy_characters表获取信息
+                        Long buddyCharacterId = Long.valueOf(buddyCharacterIdObj.toString());
+                        logger.info("处理搭子评论，搭子ID: {}", buddyCharacterId);
+                        
+                        // 获取搭子角色信息
+                        com.qiandoudou.entity.BuddyCharacter buddyCharacter = buddyCharacterMapper.selectById(buddyCharacterId);
+                        if (buddyCharacter != null) {
+                            comment.put("aiPartnerName", buddyCharacter.getName());
+                            comment.put("aiPartnerAvatar", buddyCharacter.getAvatar());
+                            comment.put("userName", buddyCharacter.getName());
+                            comment.put("user_nickname", buddyCharacter.getName());
+                            comment.put("isBuddyComment", true);
+                            comment.put("buddyCharacterId", buddyCharacterId);
+                            logger.info("搭子评论信息设置完成，搭子: {}", buddyCharacter.getName());
+                        } else {
+                            logger.warn("搭子角色不存在，ID: {}", buddyCharacterId);
+                        }
+                        
+                    } else {
+                        // AI伴侣评论：从ai_partners表获取信息
+                        Object userIdObj = comment.get("user_id");
+                        if (userIdObj != null) {
+                            Long aiPartnerId = Long.valueOf(userIdObj.toString());
+                            logger.info("处理AI伴侣评论，AI伴侣ID: {}", aiPartnerId);
+                            
+                            com.qiandoudou.entity.AiPartner aiPartner = aiPartnerService.getById(aiPartnerId);
+                            if (aiPartner != null) {
+                                comment.put("aiPartnerName", aiPartner.getName());
+                                comment.put("aiPartnerAvatar", aiPartner.getAvatar());
+                                comment.put("userName", aiPartner.getName());
+                                comment.put("user_nickname", aiPartner.getName());
+                            }
                         }
                     }
                     

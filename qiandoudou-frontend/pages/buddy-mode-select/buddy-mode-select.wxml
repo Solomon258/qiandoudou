@@ -1,0 +1,28 @@
+<!--pages/buddy-mode-select/buddy-mode-select.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">选择搭子互动方式</text>
+  </view>
+
+  <view class="mode-options">
+    <view class="mode-card free-mode-card" bindtap="selectFreeMode">
+      <view class="mode-info">
+        <text class="mode-title">自由选搭</text>
+        <text class="mode-desc">自己挑选喜欢的搭子</text>
+        <text class="mode-detail">可选择2-6个不同性格的AI搭子，打造专属互动团队</text>
+      </view>
+    </view>
+
+    <view class="mode-card group-mode-card" bindtap="selectGroupMode">
+      <view class="mode-info">
+        <text class="mode-title">加入圈子</text>
+        <text class="mode-desc">加入已有的搭子圈子</text>
+        <text class="mode-detail">体验经典IP角色的互动乐趣，如水泊梁山、三国英雄等</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text class="tip-text">💡 每个搭子都有独特的性格，会根据你的攒钱和花钱情况给出不同的评论互动</text>
+  </view>
+</view>

@@ -59,8 +59,12 @@ public class AiLoverInteractionServiceImpl implements AiLoverInteractionService 
             }
             
             // 检查是否为AI情侣钱包
-            if (!isAiLoverWallet(wallet.getId())) {
-                logger.debug("非AI情侣钱包，跳过互动处理: {}", wallet.getId());
+            boolean isAiLover = isAiLoverWallet(wallet.getId());
+            logger.info("钱包类型检查 - 钱包ID: {}, 类型: {}, AI伴侣ID: {}, 是否AI情侣钱包: {}", 
+                wallet.getId(), wallet.getType(), wallet.getAiPartnerId(), isAiLover);
+            
+            if (!isAiLover) {
+                logger.info("非AI情侣钱包，跳过互动处理: {}", wallet.getId());
                 return;
             }
             

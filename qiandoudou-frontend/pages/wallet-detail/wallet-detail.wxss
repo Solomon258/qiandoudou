@@ -1690,6 +1690,11 @@
   color: #999;
 }
 
+.ai-label-section {
+  margin-top: 20rpx;
+  margin-bottom: 10rpx;
+}
+
 .ai-comment-text {
   font-size: 30rpx;
   color: #333;

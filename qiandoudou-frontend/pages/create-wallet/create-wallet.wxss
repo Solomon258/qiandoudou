@@ -136,3 +136,18 @@
   color: #c0c4cc;
   font-size: 16px;
 }
+
+/* 搭子头像组合显示 */
+.buddy-avatars {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.buddy-avatar-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+}

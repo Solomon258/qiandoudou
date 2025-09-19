@@ -307,10 +307,10 @@ Page({
       return
     }
     if (selectedWalletType === 'couple2') {
-      wx.showModal({
-        title: '提示',
-        content: '功能开发中，敬请期待！',
-        showCancel: false
+      // 搭子攒钱 - 跳转到搭子模式选择页面
+      this.hideWalletTypeModal()
+      wx.navigateTo({
+        url: '/pages/buddy-mode-select/buddy-mode-select'
       })
       return
     }
@@ -544,7 +544,7 @@ console.log(selectedWalletType)
 
           
           // 处理钱包类型（可能是布尔值或数字）
-          const walletType = wallet.type === true || wallet.type === 'true' || wallet.type === 2 ? 2 : 1
+          const walletType = wallet.type === true || wallet.type === 'true' || wallet.type === 2 ? 2 : (wallet.type === 3 ? 3 : 1)
           
           // 构建社交动态数据
           const socialPost = {
@@ -553,7 +553,7 @@ console.log(selectedWalletType)
             title: wallet.name || '未命名钱包',
             owner_nickname: wallet.owner_nickname || '匿名用户',
             total_amount: parseFloat(wallet.balance || 0).toFixed(2),
-            tags: walletType === 2 ? ['情感', '情侣', wallet.ai_partner_name || 'AI伴侣'] : ['生活', '攒钱', '个人'],
+            tags: walletType === 2 ? ['情感', '情侣', wallet.ai_partner_name || 'AI伴侣'] : (walletType === 3 ? ['生活', '搭子', '攒钱'] : ['生活', '攒钱', '个人']),
             description: this.generateWalletDescription({...wallet, type: walletType}, recentTransactions),
             backgroundStyle: this.getWalletBackground({
               ...wallet,

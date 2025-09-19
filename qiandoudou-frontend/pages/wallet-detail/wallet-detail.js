@@ -40,6 +40,9 @@ Page({
     // AI语音播放相关
     currentPlayingVoice: null, // 当前播放的语音
     voiceContext: null, // 语音上下文
+    // AI评论语音播放相关
+    currentPlayingCommentVoice: null, // 当前播放的AI评论语音
+    commentVoiceContext: null, // AI评论语音上下文
     // 统计功能相关
     currentYear: new Date().getFullYear(), // 当前年份
     currentMonth: new Date().getMonth() + 1, // 当前月份
@@ -124,12 +127,15 @@ Page({
   },
 
   onShow() {
+    console.log('=== 页面onShow事件触发 ===')
 
     // 重置音频播放状态，避免状态不一致
+    console.log('重置音频状态...')
     this.resetAudioState()
     
     // 页面显示时重新加载钱包详情、交易记录和背景样式
     if (this.data.walletId) {
+      console.log('重新加载页面数据...')
 
       this.loadWalletDetail() // 重新加载钱包详情（包括余额）
       this.loadTransactions() // 刷新交易记录
@@ -255,6 +261,12 @@ Page({
         
         console.log('最终is_public值:', wallet.is_public)
 
+        console.log('=== 钱包详情数据 ===')
+        console.log('钱包类型:', wallet.type)
+        console.log('背景图字段 backgroundImage:', wallet.backgroundImage)
+        console.log('背景图字段 background_image:', wallet.background_image)
+        console.log('完整钱包数据:', wallet)
+
         this.setData({
           wallet,
           selectedBackground: wallet.backgroundImage || 'gradient1',
@@ -266,6 +278,9 @@ Page({
         
         // 更新背景样式
         this.updateBackgroundStyle()
+        
+        console.log('=== 背景样式更新后 ===')
+        console.log('walletBackgroundStyle:', this.data.walletBackgroundStyle)
         
         // 如果是自己的钱包，加载"重新养小时候的自己"剧本进度
         if (isOwnWallet) {
@@ -321,8 +336,9 @@ Page({
             formattedTime = '刚刚'
           }
           
-          // 检查是否为AI伴侣交易
-          const isAiTransaction = transaction.aiPartnerId || transaction.ai_partner_id || transaction.isAiTransaction
+          // 检查是否为AI伴侣交易或搭子交易
+          const isAiTransaction = transaction.aiPartnerId || transaction.ai_partner_id || transaction.isAiTransaction || 
+                                  transaction.aiPartnerName || transaction.ai_partner_name
 
           return {
             ...transaction,
@@ -580,16 +596,30 @@ Page({
   updateBackgroundStyle() {
     const wallet = this.data.wallet
     
+    console.log('=== updateBackgroundStyle 调试 ===')
+    console.log('wallet.type:', wallet.type)
+    console.log('wallet.backgroundImage:', wallet.backgroundImage)
+    console.log('wallet.background_image:', wallet.background_image)
+    
     // 获取背景设置（兼容不同的字段名）
-    let currentBackground = wallet.backgroundImage || wallet.background_image || 'gradient1'
+    let currentBackground = wallet.backgroundImage || wallet.background_image
+    
+    console.log('currentBackground:', currentBackground)
 
     let backgroundStyle = ''
     
     if (!currentBackground) {
       // 没有背景设置，使用默认背景
-      backgroundStyle = wallet.type === 2 ? 
-        'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-        'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+      if (wallet.type === 2) {
+        // 情侣钱包
+        backgroundStyle = 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);'
+      } else if (wallet.type === 3) {
+        // 搭子钱包
+        backgroundStyle = `background-image: url('https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/dazizan_beijingtu.jpg'); background-size: cover; background-position: center;`
+      } else {
+        // 个人钱包
+        backgroundStyle = 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+      }
     } else if (currentBackground.startsWith('http')) {
       // OSS图片URL背景
       backgroundStyle = `background-image: url('${currentBackground}'); background-size: cover; background-position: center;`
@@ -607,10 +637,16 @@ Page({
 
       } else {
         // 图片不存在，使用默认背景
-
-        backgroundStyle = wallet.type === 2 ? 
-          'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+        if (wallet.type === 2) {
+          // 情侣钱包
+          backgroundStyle = 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);'
+        } else if (wallet.type === 3) {
+          // 搭子钱包
+          backgroundStyle = `background-image: url('https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/dazizan_beijingtu.jpg'); background-size: cover; background-position: center;`
+        } else {
+          // 个人钱包
+          backgroundStyle = 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+        }
       }
     } else {
       // 预设渐变背景
@@ -620,12 +656,20 @@ Page({
 
       } else {
         // 未知背景类型，使用默认背景
-
-        backgroundStyle = wallet.type === 2 ? 
-          'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
-          'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+        if (wallet.type === 2) {
+          // 情侣钱包
+          backgroundStyle = 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);'
+        } else if (wallet.type === 3) {
+          // 搭子钱包
+          backgroundStyle = `background-image: url('https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/dazizan_beijingtu.jpg'); background-size: cover; background-position: center;`
+        } else {
+          // 个人钱包
+          backgroundStyle = 'background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);'
+        }
       }
     }
+    
+    console.log('最终背景样式:', backgroundStyle)
     
     this.setData({
       walletBackgroundStyle: backgroundStyle
@@ -1585,6 +1629,12 @@ Page({
     // 空函数，用于阻止事件冒泡
   },
 
+  // 页面点击事件（用于处理页面点击）
+  onPageTap() {
+    // 空函数，用于处理页面点击事件
+    // 可以在这里添加需要的页面点击逻辑
+  },
+
   // 格式化时间
   formatTime(timestamp) {
     try {
@@ -1977,101 +2027,118 @@ Page({
 
   // AI语音播放功能
   playAiVoice(e) {
-    // 最基础的调试日志 - 确保事件能触发
-
+    console.log('=== AI语音播放开始 ===')
+    
     // 检查事件对象
     if (!e || !e.currentTarget) {
-
+      console.warn('事件对象无效')
       return
     }
     
     // 检查数据绑定
     const dataset = e.currentTarget.dataset
-
     if (!dataset || !dataset.transaction) {
-
+      console.warn('交易数据无效')
       return
     }
     
     const transaction = dataset.transaction
     const transactionId = transaction.id
+    console.log('准备播放交易语音:', transactionId, '当前播放状态:', this.data.currentPlayingVoice)
+    console.log('语音URL:', transaction.voiceUrl)
 
-    // 强制清理任何现有的音频状态，避免状态不一致
-    if (this.data.currentPlayingVoice || this.data.voiceContext) {
-
-      this.forceResetAudioState()
-      
-      // 添加延迟确保清理完成
-      setTimeout(() => {
-
-        this.startVoicePlayback(transaction)
-      }, 200)
+    // 如果当前正在播放同一个语音，则停止播放
+    if (this.data.currentPlayingVoice === transactionId) {
+      console.log('停止当前播放的语音 - 同一个交易')
+      this.stopCurrentVoice()
       return
     }
+
+    // 如果有其他语音在播放，先停止
+    if (this.data.currentPlayingVoice && this.data.currentPlayingVoice !== transactionId) {
+      console.log('停止其他语音播放 - 不同交易')
+      this.stopCurrentVoice()
+    }
     
-    // 直接开始播放
-    this.startVoicePlayback(transaction)
+    // 等待一小段时间确保停止完成，然后开始播放新语音
+    setTimeout(() => {
+      console.log('开始播放新语音，当前状态:', this.data.currentPlayingVoice)
+      this.startVoicePlayback(transaction)
+    }, 100)
   },
   
   // 开始语音播放的核心逻辑
   startVoicePlayback(transaction) {
     const transactionId = transaction.id
+    console.log('=== 开始播放语音核心逻辑 ===')
+    console.log('交易ID:', transactionId)
+    console.log('当前播放状态:', this.data.currentPlayingVoice)
+    console.log('音频上下文存在:', !!this.data.voiceContext)
 
     // 检查是否有语音URL
     if (!transaction.voiceUrl || transaction.voiceUrl === 'undefined' || transaction.voiceUrl === 'null' || transaction.voiceUrl.startsWith('mock_voice_')) {
-
+      console.log('没有有效语音URL，使用模拟播放')
       this.simulateVoicePlay(transaction)
       return
     }
     
     // 检查URL是否有效
     if (typeof transaction.voiceUrl !== 'string' || transaction.voiceUrl.trim() === '') {
-
+      console.log('语音URL格式无效，使用模拟播放')
       this.simulateVoicePlay(transaction)
       return
     }
     
-    // 强制清理任何残留的音频上下文
-    if (this.data.voiceContext) {
-
-      try {
-        this.data.voiceContext.destroy()
-      } catch (error) {
-
-      }
-    }
+    console.log('准备播放真实语音:', transaction.voiceUrl)
+    
+    // 确保之前的音频上下文已经完全清理
+    console.log('清理旧的音频上下文...')
+    this.ensureAudioContextCleanup()
     
     // 创建全新的音频上下文
     const voiceContext = wx.createInnerAudioContext()
+    console.log('创建新的音频上下文，ID:', voiceContext.id || 'unknown')
 
     // 设置音频属性
     voiceContext.src = transaction.voiceUrl
     voiceContext.autoplay = false
     voiceContext.loop = false
     voiceContext.volume = 1.0
-    voiceContext.playbackRate = 1.0
+    console.log('音频属性设置完成')
 
     // 先更新状态，再设置事件监听
     this.setData({
       currentPlayingVoice: transactionId,
       voiceContext: voiceContext
     })
+    console.log('页面状态已更新')
     
     this.updateTransactionPlayingState(transactionId, true)
     
     // 设置事件监听
     voiceContext.onCanplay(() => {
-
-      if (this.data.currentPlayingVoice === transactionId) {
-
-        voiceContext.play()
+      console.log('=== 音频onCanplay事件触发 ===')
+      console.log('当前播放状态:', this.data.currentPlayingVoice)
+      console.log('目标交易ID:', transactionId)
+      console.log('音频上下文匹配:', this.data.voiceContext === voiceContext)
+      
+      if (this.data.currentPlayingVoice === transactionId && this.data.voiceContext === voiceContext) {
+        console.log('条件满足，开始播放音频')
+        try {
+          voiceContext.play()
+        } catch (error) {
+          console.error('播放音频失败:', error)
+          this.cleanupVoiceContext(transactionId)
+        }
       } else {
-
+        console.log('音频上下文已改变，不播放')
+        console.log('- currentPlayingVoice匹配:', this.data.currentPlayingVoice === transactionId)
+        console.log('- voiceContext匹配:', this.data.voiceContext === voiceContext)
       }
     })
     
     voiceContext.onPlay(() => {
-
+      console.log('=== 音频onPlay事件触发 ===')
       wx.showToast({
         title: '语音播放中...',
         icon: 'none',
@@ -2080,7 +2147,7 @@ Page({
     })
     
     voiceContext.onEnded(() => {
-
+      console.log('=== 音频onEnded事件触发 ===')
       this.cleanupVoiceContext(transactionId)
       wx.showToast({
         title: '播放完成',
@@ -2090,7 +2157,7 @@ Page({
     })
     
     voiceContext.onError((error) => {
-
+      console.error('=== 音频onError事件触发 ===', error)
       wx.showModal({
         title: '语音播放失败',
         content: `错误信息: ${error.errMsg || '未知错误'}\n错误代码: ${error.errCode || 'N/A'}\n\n可能原因:\n1. 网络连接问题\n2. 音频文件损坏\n3. 音频上下文冲突\n\n建议重新点击播放`,
@@ -2102,17 +2169,21 @@ Page({
     })
     
     voiceContext.onWaiting(() => {
-
+      console.log('音频缓冲中...')
     })
     
     voiceContext.onStop(() => {
-
+      console.log('音频已停止')
     })
     
     // 设置超时保护
     const timeoutId = setTimeout(() => {
+      console.log('=== 音频播放超时检查 ===')
+      console.log('当前播放状态:', this.data.currentPlayingVoice)
+      console.log('目标交易ID:', transactionId)
+      
       if (this.data.currentPlayingVoice === transactionId) {
-
+        console.log('音频播放超时，执行清理')
         this.cleanupVoiceContext(transactionId)
         wx.showToast({
           title: '播放超时，请重试',
@@ -2123,12 +2194,31 @@ Page({
     
     // 将超时ID保存到音频上下文，以便清理时取消
     voiceContext._timeoutId = timeoutId
+    
+    // 尝试开始播放（某些情况下onCanplay可能不会触发）
+    setTimeout(() => {
+      console.log('=== 延迟播放尝试 ===')
+      console.log('当前播放状态:', this.data.currentPlayingVoice)
+      console.log('音频上下文匹配:', this.data.voiceContext === voiceContext)
+      
+      if (this.data.currentPlayingVoice === transactionId && this.data.voiceContext === voiceContext) {
+        console.log('延迟尝试播放音频')
+        try {
+          voiceContext.play()
+        } catch (error) {
+          console.error('延迟播放失败:', error)
+          this.cleanupVoiceContext(transactionId)
+        }
+      } else {
+        console.log('延迟播放条件不满足，跳过')
+      }
+    }, 200) // 增加延迟时间到200ms
 
   },
   
   // 停止当前播放的语音
   stopCurrentVoice() {
-
+    console.log('停止当前语音播放')
     const currentId = this.data.currentPlayingVoice
     
     if (this.data.voiceContext) {
@@ -2136,15 +2226,16 @@ Page({
         // 清除超时定时器
         if (this.data.voiceContext._timeoutId) {
           clearTimeout(this.data.voiceContext._timeoutId)
-
+          console.log('清除语音播放超时定时器')
         }
         
         // 停止并销毁音频上下文
         this.data.voiceContext.stop()
         this.data.voiceContext.destroy()
+        console.log('音频上下文已停止并销毁')
 
       } catch (error) {
-
+        console.error('停止音频上下文时出错:', error)
       }
     }
     
@@ -2157,7 +2248,52 @@ Page({
       currentPlayingVoice: null,
       voiceContext: null
     })
+    
+    console.log('语音播放状态已重置')
+  },
 
+  // 确保音频上下文完全清理
+  ensureAudioContextCleanup() {
+    console.log('=== 确保音频上下文完全清理 ===')
+    console.log('清理前状态 - currentPlayingVoice:', this.data.currentPlayingVoice)
+    console.log('清理前状态 - voiceContext存在:', !!this.data.voiceContext)
+    
+    if (this.data.voiceContext) {
+      try {
+        // 清除超时定时器
+        if (this.data.voiceContext._timeoutId) {
+          clearTimeout(this.data.voiceContext._timeoutId)
+          console.log('清除超时定时器')
+        }
+        
+        // 停止并销毁音频上下文
+        this.data.voiceContext.stop()
+        console.log('音频上下文已停止')
+        this.data.voiceContext.destroy()
+        console.log('音频上下文已销毁')
+      } catch (error) {
+        console.error('清理音频上下文时出错:', error)
+      }
+    } else {
+      console.log('没有需要清理的音频上下文')
+    }
+    
+    // 重置所有交易的播放状态
+    const transactions = this.data.transactions || []
+    let hasPlayingTransaction = false
+    transactions.forEach((transaction, index) => {
+      if (transaction.isPlaying) {
+        hasPlayingTransaction = true
+        console.log('重置交易播放状态:', transaction.id)
+      }
+    })
+    
+    // 重置状态
+    this.setData({
+      currentPlayingVoice: null,
+      voiceContext: null
+    })
+    console.log('音频上下文状态已重置')
   },
   
   // 清理音频上下文的统一方法
@@ -2261,6 +2397,7 @@ Page({
   onUnload() {
 
     this.stopCurrentVoice()
+    this.stopAiCommentVoice()
   },
 
   // 页面隐藏时暂停语音
@@ -2272,6 +2409,15 @@ Page({
 
       } catch (error) {
 
+      }
+    }
+    
+    // 暂停AI评论语音
+    if (this.data.commentVoiceContext && this.data.currentPlayingCommentVoice) {
+      try {
+        this.data.commentVoiceContext.pause()
+      } catch (error) {
+        console.warn('暂停AI评论语音失败:', error)
       }
     }
   },
@@ -2290,6 +2436,15 @@ Page({
 
       } catch (error) {
 
+      }
+    }
+    
+    // 清理AI评论语音上下文
+    if (this.data.commentVoiceContext) {
+      try {
+        this.data.commentVoiceContext.destroy()
+      } catch (error) {
+        console.warn('清理AI评论语音上下文失败:', error)
       }
     }
     
@@ -2313,7 +2468,9 @@ Page({
     // 重置全局状态
     this.setData({
       currentPlayingVoice: null,
-      voiceContext: null
+      voiceContext: null,
+      currentPlayingCommentVoice: null,
+      commentVoiceContext: null
     })
 
   },
@@ -2322,45 +2479,13 @@ Page({
   goBack() {
     // 清理音频资源
     this.stopCurrentVoice()
+    this.stopAiCommentVoice()
     
     wx.navigateBack({
       delta: 1
     })
   },
 
-  // 强制重置音频状态
-  forceResetAudioState() {
-
-    // 强制清理所有音频资源
-    if (this.data.voiceContext) {
-      try {
-        if (this.data.voiceContext._timeoutId) {
-          clearTimeout(this.data.voiceContext._timeoutId)
-        }
-        this.data.voiceContext.stop()
-        this.data.voiceContext.destroy()
-      } catch (error) {
-
-      }
-    }
-    
-    // 重置所有状态
-    this.setData({
-      currentPlayingVoice: null,
-      voiceContext: null
-    })
-    
-    // 重置所有交易的播放状态
-    const transactions = this.data.transactions || []
-    transactions.forEach((transaction, index) => {
-      if (transaction.isPlaying) {
-        this.setData({
-          [`transactions[${index}].isPlaying`]: false
-        })
-      }
-    })
-
-  },
 
   // 返回钱包列表页面
   goBackToWalletList() {
@@ -2518,22 +2643,26 @@ Page({
 
   // 播放评论语音
   playCommentVoice(e) {
+    console.log('播放评论语音')
     const comment = e.currentTarget.dataset.comment
+    const commentId = `comment_${comment.id}`
+
+    // 如果当前评论正在播放，则停止
+    if (this.data.currentPlayingVoice === commentId) {
+      console.log('停止当前播放的评论语音')
+      this.stopCurrentVoice()
+      return
+    }
 
     // 如果正在播放其他语音，先停止
     if (this.data.currentPlayingVoice) {
+      console.log('停止其他语音播放')
       this.stopCurrentVoice()
-    }
-    
-    // 如果当前评论正在播放，则停止
-    if (comment.isPlayingVoice) {
-      this.stopCommentVoice(comment)
-      return
     }
     
     // 检查语音URL
     if (!comment.voiceUrl || comment.voiceUrl === '' || comment.voiceUrl === 'null') {
-
+      console.log('评论没有语音URL，使用模拟播放')
       this.simulateCommentVoicePlay(comment)
       return
     }
@@ -2576,21 +2705,36 @@ Page({
 
   // 播放真实评论语音
   playRealCommentVoice(comment) {
+    const commentId = `comment_${comment.id}`
+    console.log('播放真实评论语音:', comment.voiceUrl)
+    
     try {
+      // 确保之前的音频上下文已经完全清理
+      this.ensureAudioContextCleanup()
+      
       // 创建音频上下文
       const voiceContext = wx.createInnerAudioContext()
       voiceContext.src = comment.voiceUrl
-      voiceContext.autoplay = true
+      voiceContext.autoplay = false
+      voiceContext.loop = false
+      voiceContext.volume = 1.0
       
       // 更新评论播放状态
       this.updateCommentPlayingState(comment.id, true)
       this.setData({ 
-        currentPlayingVoice: `comment_${comment.id}`,
+        currentPlayingVoice: commentId,
         voiceContext: voiceContext 
       })
 
-      voiceContext.onPlay(() => {
+      voiceContext.onCanplay(() => {
+        console.log('评论语音可以播放')
+        if (this.data.currentPlayingVoice === commentId) {
+          voiceContext.play()
+        }
+      })
 
+      voiceContext.onPlay(() => {
+        console.log('评论语音开始播放')
         wx.showToast({
           title: '正在播放评论语音',
           icon: 'none',
@@ -2599,13 +2743,18 @@ Page({
       })
       
       voiceContext.onEnded(() => {
-
+        console.log('评论语音播放结束')
         this.updateCommentPlayingState(comment.id, false)
         this.setData({ currentPlayingVoice: null, voiceContext: null })
+        wx.showToast({
+          title: '播放完成',
+          icon: 'success',
+          duration: 1000
+        })
       })
       
       voiceContext.onError((error) => {
-
+        console.error('评论语音播放失败:', error)
         this.updateCommentPlayingState(comment.id, false)
         this.setData({ currentPlayingVoice: null, voiceContext: null })
         wx.showToast({
@@ -2614,8 +2763,20 @@ Page({
         })
       })
       
+      // 延迟尝试播放
+      setTimeout(() => {
+        if (this.data.currentPlayingVoice === commentId && this.data.voiceContext === voiceContext) {
+          console.log('延迟尝试播放评论语音')
+          try {
+            voiceContext.play()
+          } catch (error) {
+            console.error('延迟播放评论语音失败:', error)
+          }
+        }
+      }, 100)
+      
     } catch (error) {
-
+      console.error('创建评论语音播放失败:', error)
       wx.showToast({
         title: '播放失败',
         icon: 'error'
@@ -2907,8 +3068,12 @@ Page({
   playAiCommentVoice(e) {
     const comment = e.currentTarget.dataset.comment
     const voiceUrl = comment.voiceUrl
+    const commentId = `ai_comment_${comment.id}`
     
     console.log('播放AI评论语音:', voiceUrl)
+    console.log('当前播放状态:', this.data.currentPlayingCommentVoice)
+    console.log('目标评论ID:', commentId)
+    console.log('音频上下文存在:', !!this.data.commentVoiceContext)
     
     if (!voiceUrl) {
       wx.showToast({
@@ -2918,20 +3083,86 @@ Page({
       return
     }
     
-    // 停止当前播放的语音
-    if (this.data.voiceContext) {
-      this.data.voiceContext.destroy()
+    // 如果当前正在播放同一个AI评论语音，则停止
+    if (this.data.currentPlayingCommentVoice === commentId) {
+      console.log('停止当前播放的AI评论语音 - 同一个评论')
+      this.stopAiCommentVoice()
+      return
     }
+    
+    // 停止当前播放的AI评论语音
+    if (this.data.commentVoiceContext || this.data.currentPlayingCommentVoice) {
+      console.log('停止其他AI评论语音播放')
+      this.stopAiCommentVoice()
+      
+      // 等待一小段时间确保停止完成
+      setTimeout(() => {
+        this.startAiCommentVoicePlayback(comment, commentId, voiceUrl)
+      }, 100)
+      return
+    }
+    
+    // 直接开始播放
+    this.startAiCommentVoicePlayback(comment, commentId, voiceUrl)
+  },
+  
+  // 开始AI评论语音播放的核心逻辑
+  startAiCommentVoicePlayback(comment, commentId, voiceUrl) {
+    console.log('开始AI评论语音播放核心逻辑')
+    console.log('评论ID:', commentId)
+    console.log('当前状态:', this.data.currentPlayingCommentVoice)
+    console.log('音频URL:', voiceUrl)
+    
+    // 创建独立的AI评论语音上下文
+    const commentVoiceContext = wx.createInnerAudioContext()
+    commentVoiceContext.src = voiceUrl
+    commentVoiceContext.autoplay = false  // 改为手动播放
+    commentVoiceContext.loop = false
+    commentVoiceContext.volume = 1.0
+    
+    console.log('音频上下文已创建')
+    
+    // 立即设置AI评论语音上下文到页面数据中
+    this.setData({ 
+      commentVoiceContext,
+      currentPlayingCommentVoice: commentId
+    })
     
     // 更新播放状态
     this.updateCommentPlayingState(comment.id, true)
     
-    // 创建音频上下文并播放
-    const voiceContext = wx.createInnerAudioContext()
-    voiceContext.src = voiceUrl
-    voiceContext.autoplay = true
+    // 设置超时保护
+    const timeoutId = setTimeout(() => {
+      console.log('AI评论语音播放超时检查')
+      if (this.data.currentPlayingCommentVoice === commentId) {
+        console.log('AI评论语音播放超时，执行清理')
+        this.cleanupAiCommentVoice(commentVoiceContext, comment.id)
+        wx.showToast({
+          title: '播放超时，请重试',
+          icon: 'none'
+        })
+      }
+    }, 15000) // 15秒超时
     
-    voiceContext.onPlay(() => {
+    // 将超时ID保存到音频上下文
+    commentVoiceContext._timeoutId = timeoutId
+    
+    commentVoiceContext.onCanplay(() => {
+      console.log('AI评论语音可以播放')
+      if (this.data.currentPlayingCommentVoice === commentId && this.data.commentVoiceContext === commentVoiceContext) {
+        console.log('条件满足，开始播放AI评论语音')
+        try {
+          commentVoiceContext.play()
+        } catch (error) {
+          console.error('播放AI评论语音失败:', error)
+          this.cleanupAiCommentVoice(commentVoiceContext, comment.id)
+        }
+      } else {
+        console.log('AI评论语音上下文已改变，不播放')
+      }
+    })
+    
+    commentVoiceContext.onPlay(() => {
       console.log('AI评论语音开始播放')
       wx.showToast({
         title: '语音播放中...',
@@ -2940,12 +3171,9 @@ Page({
       })
     })
     
-    voiceContext.onEnded(() => {
+    commentVoiceContext.onEnded(() => {
       console.log('AI评论语音播放结束')
-      this.updateCommentPlayingState(comment.id, false)
-      voiceContext.destroy()
-      this.setData({ voiceContext: null })
-      
+      this.cleanupAiCommentVoice(commentVoiceContext, comment.id)
       wx.showToast({
         title: '播放完成',
         icon: 'success',
@@ -2953,19 +3181,89 @@ Page({
       })
     })
     
-    voiceContext.onError((error) => {
+    commentVoiceContext.onError((error) => {
       console.error('AI评论语音播放失败:', error)
-      this.updateCommentPlayingState(comment.id, false)
-      voiceContext.destroy()
-      this.setData({ voiceContext: null })
-      
-      wx.showToast({
+      this.cleanupAiCommentVoice(commentVoiceContext, comment.id)
+      wx.showModal({
         title: '语音播放失败',
-        icon: 'error'
+        content: `错误信息: ${error.errMsg || '未知错误'}\n错误代码: ${error.errCode || 'N/A'}`,
+        showCancel: false,
+        confirmText: '确定'
       })
     })
     
-    this.setData({ voiceContext })
+    commentVoiceContext.onWaiting(() => {
+      console.log('AI评论语音缓冲中...')
+    })
+    
+    commentVoiceContext.onStop(() => {
+      console.log('AI评论语音已停止')
+    })
+    
+    // 延迟尝试播放（某些情况下onCanplay可能不会触发）
+    setTimeout(() => {
+      console.log('延迟尝试播放AI评论语音')
+      if (this.data.currentPlayingCommentVoice === commentId && this.data.commentVoiceContext === commentVoiceContext) {
+        console.log('延迟播放条件满足，尝试播放')
+        try {
+          commentVoiceContext.play()
+        } catch (error) {
+          console.error('延迟播放AI评论语音失败:', error)
+          this.cleanupAiCommentVoice(commentVoiceContext, comment.id)
+        }
+      } else {
+        console.log('延迟播放条件不满足，跳过')
+      }
+    }, 200)
+  },
+  
+  // 清理AI评论语音上下文的统一方法
+  cleanupAiCommentVoice(commentVoiceContext, commentId) {
+    console.log('清理AI评论语音上下文')
+    
+    // 只清理指定的音频上下文，避免清理错误的上下文
+    if (this.data.commentVoiceContext === commentVoiceContext) {
+      // 先立即清理内存中的状态
+      this.data.commentVoiceContext = null
+      this.data.currentPlayingCommentVoice = null
+      
+      try {
+        // 清除超时定时器
+        if (commentVoiceContext._timeoutId) {
+          clearTimeout(commentVoiceContext._timeoutId)
+        }
+        
+        // 销毁音频上下文
+        commentVoiceContext.destroy()
+      } catch (error) {
+        console.warn('销毁AI评论语音上下文失败:', error)
+      }
+      
+      // 然后更新页面数据
+      this.setData({ 
+        commentVoiceContext: null,
+        currentPlayingCommentVoice: null
+      })
+    }
+    
+    // 更新评论播放状态
+    this.updateCommentPlayingState(commentId, false)
+  },
+
+  // 停止AI评论语音播放
+  stopAiCommentVoice() {
+    console.log('停止AI评论语音播放')
+    
+    if (this.data.commentVoiceContext && this.data.currentPlayingCommentVoice) {
+      const commentId = this.data.currentPlayingCommentVoice.replace('ai_comment_', '')
+      this.cleanupAiCommentVoice(this.data.commentVoiceContext, commentId)
+    } else {
+      // 如果没有正在播放的语音，只重置状态
+      this.setData({
+        commentVoiceContext: null,
+        currentPlayingCommentVoice: null
+      })
+    }
   },
 
   // 更新评论播放状态

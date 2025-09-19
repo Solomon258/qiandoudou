@@ -66,6 +66,12 @@ public class PostComment implements Serializable {
     private Long aiPartnerId;
 
     /**
+     * 搭子角色ID
+     */
+    @TableField("buddy_character_id")
+    private Long buddyCharacterId;
+
+    /**
      * 语音时长
      */
     @TableField("voice_duration")

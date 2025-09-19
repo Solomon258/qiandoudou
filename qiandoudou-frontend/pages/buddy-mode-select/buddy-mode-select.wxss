@@ -1,0 +1,130 @@
+/* pages/buddy-mode-select/buddy-mode-select.wxss */
+.container {
+  height: 100vh;
+  background: #ffffff;
+  padding: 40rpx 30rpx;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 53rpx;
+  padding-top: 27rpx;
+}
+
+.title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.mode-options {
+  margin-bottom: 60rpx;
+}
+
+.mode-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  min-height: 342rpx;
+}
+
+.mode-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 5rpx 20rpx rgba(0, 0, 0, 0.15);
+}
+
+
+.mode-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.mode-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.mode-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+}
+
+.mode-detail {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.4;
+}
+
+
+.tips {
+  background: #f8f9fa;
+  border-radius: 15rpx;
+  padding: 30rpx;
+}
+
+.tip-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 自由选搭卡片背景 */
+.free-mode-card {
+  background-image: url('https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/dazizan_beijingtu.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+
+
+/* 加入圈子卡片背景 */
+.group-mode-card {
+  background-image: url('https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/jiaruquanzi.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+/* 为背景图片卡片的文字添加阴影以提高可读性 */
+.free-mode-card .mode-title,
+.free-mode-card .mode-desc,
+.free-mode-card .mode-detail,
+.group-mode-card .mode-title,
+.group-mode-card .mode-desc,
+.group-mode-card .mode-detail {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
+
+.free-mode-card .mode-title,
+.group-mode-card .mode-title {
+  color: #fff;
+  font-weight: bold;
+}
+
+

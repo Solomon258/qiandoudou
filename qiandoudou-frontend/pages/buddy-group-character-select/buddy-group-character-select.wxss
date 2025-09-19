@@ -1,0 +1,281 @@
+/* pages/buddy-group-character-select/buddy-group-character-select.wxss */
+/* 基于自由选搭页面样式 */
+
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  position: relative;
+}
+
+/* 全屏背景图 */
+.fullscreen-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+/* 上半部分：内容展示区域 */
+.main-display {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(60rpx + env(safe-area-inset-top));
+  background: transparent;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* 圈子标题 */
+.group-title {
+  position: absolute;
+  top: calc(100rpx + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+}
+
+.group-name {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10rpx 30rpx;
+  border-radius: 20rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+/* 角色信息居中显示 */
+.buddy-info-center {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 15;
+  width: 80%;
+}
+
+.buddy-name-large {
+  height: 168rpx;
+  line-height: 168rpx;
+  font-family: Songti SC;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 100rpx;
+  text-align: center;
+}
+
+.buddy-tags-center {
+  display: flex;
+  justify-content: center;
+  margin: 40rpx 0 20rpx 0;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.tag-pill {
+  font-family: PingFang SC;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8rpx 28rpx;
+  font-size: 24rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid #ffffff;
+  border-radius: 16rpx;
+}
+
+.buddy-desc-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.desc-text {
+  font-family: PingFang SC;
+  font-size: 32rpx;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* 语音控制 */
+.voice-control {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 10rpx 20rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.voice-icon {
+  font-size: 28rpx;
+}
+
+.voice-duration {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 加入圈子按钮 */
+.invite-btn-center-fixed {
+  margin-top: 40rpx;
+  width: 480rpx;
+  height: 96rpx;
+  background: linear-gradient(180deg, #fee085 0%, #fff2c2 100%);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin: 40rpx auto 0;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.invite-btn-center-fixed:active {
+  transform: scale(0.95);
+  background: linear-gradient(135deg, #fdd764 0%, #ffeaa1 100%);
+}
+
+.invite-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 头像轮播区域 */
+.avatar-section-overlay {
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 500rpx;
+  padding-bottom: 40rpx;
+}
+
+/* 头像轮播 */
+.avatar-swiper {
+  height: 360rpx;
+  margin-bottom: 20rpx;
+}
+
+.avatar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-container {
+  position: relative;
+  transition: all 0.3s ease;
+  transform: scale(0.8);
+  opacity: 0.6;
+}
+
+.avatar-container.active {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.avatar-image {
+  width: 218rpx;
+  height: 292rpx;
+  border-radius: 40rpx;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.4);
+}
+
+.avatar-container.active .avatar-image {
+  width: 218rpx;
+  height: 292rpx;
+  border-radius: 40rpx;
+  border: none;
+  box-shadow: 0 15rpx 40rpx rgba(0, 0, 0, 0.5);
+}
+
+/* 选择框 */
+.select-checkbox {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2rpx solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+.select-checkbox.selected {
+  background: transparent;
+  border: none;
+}
+
+.check-icon-image {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+/* 圈子成员展示 */
+.group-members {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20rpx;
+  padding: 20rpx 30rpx;
+  margin: 0 30rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.members-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 15rpx;
+}
+
+.member-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15rpx;
+}
+
+.member-name {
+  background: #f0f0f0;
+  border-radius: 20rpx;
+  padding: 10rpx 20rpx;
+  font-size: 24rpx;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.member-name.current {
+  background: #4CAF50;
+  color: white;
+}
+
+/* 加载状态 */
+.loading-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.loading-text {
+  font-size: 32rpx;
+  color: #999;
+}

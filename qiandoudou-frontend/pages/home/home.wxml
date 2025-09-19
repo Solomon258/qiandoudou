@@ -50,7 +50,7 @@
         <view class="wallet-info">
           <view class="wallet-header">
             <text class="wallet-title">{{item.name || '钱兜兜'}}</text>
-            <text class="wallet-type">{{item.type === 1 ? '个人' : '情侣'}}</text>
+            <text class="wallet-type">{{item.type === 1 ? '个人' : (item.type === 3 ? '搭子' : '情侣')}}</text>
           </view>
           <!-- 分享按钮 -->
           <view class="share-btn" catchtap="onWalletShare" data-wallet="{{item}}">

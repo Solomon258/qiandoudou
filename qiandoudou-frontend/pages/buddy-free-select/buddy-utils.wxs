@@ -1,0 +1,13 @@
+var isBuddySelected = function(buddyId, selectedBuddies) {
+  if (!selectedBuddies || selectedBuddies.length === 0) return false;
+  for (var i = 0; i < selectedBuddies.length; i++) {
+    if (selectedBuddies[i].id === buddyId) {
+      return true;
+    }
+  }
+  return false;
+};
+
+module.exports.isBuddySelected = isBuddySelected;
+
+

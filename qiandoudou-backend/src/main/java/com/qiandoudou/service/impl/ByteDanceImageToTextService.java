@@ -173,7 +173,7 @@ public class ByteDanceImageToTextService {
 
             // 文本部分 - 添加中文限制
             String finalPrompt = prompt != null ? prompt : "一段话描述这张图，20字以内";
-            finalPrompt += "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。";
+            finalPrompt += "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"亲亲\"等。";
             Map<String, Object> textContent = new HashMap<>();
             textContent.put("type", "text");
             textContent.put("text", finalPrompt);
@@ -250,7 +250,7 @@ public class ByteDanceImageToTextService {
             
             // 文本部分 - 添加中文限制
             String finalPrompt = prompt != null ? prompt : "生成一段优美的文案";
-            finalPrompt += "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。";
+            finalPrompt += "。要求：只使用中文，不要生成任何英文单词、字母或英文表达，用中文表达亲昵如\"亲爱的\"、\"宝贝\"、\"亲亲\"等。";
             Map<String, Object> textContent = new HashMap<>();
             textContent.put("type", "text");
             textContent.put("text", finalPrompt);

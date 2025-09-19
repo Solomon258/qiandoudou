@@ -1,0 +1,87 @@
+<!--pages/buddy-group-character-select/buddy-group-character-select.wxml-->
+<view class="container" wx:if="{{!loading}}">
+  <!-- 全屏背景图 -->
+  <image 
+    class="fullscreen-background" 
+    src="{{buddyCharacters[currentIndex].fullImage || buddyCharacters[currentIndex].avatar}}" 
+    mode="aspectFill"
+    lazy-load="true"
+    show-menu-by-longpress="false"
+  />
+  
+  <!-- 上半部分：内容展示区域 -->
+  <view class="main-display">
+    <!-- 圈子标题 -->
+    <view class="group-title">
+      <text class="group-name">{{groupName}}</text>
+    </view>
+    
+    <!-- 角色信息 -->
+    <view class="buddy-info-center">
+      <text class="buddy-name-large">{{buddyCharacters[currentIndex].name}}</text>
+      <view class="buddy-tags-center">
+        <text wx:for="{{buddyCharacters[currentIndex].tags}}" wx:key="*this" class="tag-pill">{{item}}</text>
+      </view>
+      <view class="buddy-desc-center">
+        <text class="desc-text">{{buddyCharacters[currentIndex].description}}</text>
+        <view class="voice-control" bindtap="onPlayVoice" wx:if="{{buddyCharacters[currentIndex].voiceSampleUrl}}">
+          <text class="voice-icon">{{voicePlaying && playingIndex === currentIndex ? '⏸️' : '🔊'}}</text>
+          <text class="voice-duration">{{buddyCharacters[currentIndex].voiceDuration || '3s'}}</text>
+        </view>
+      </view>
+      
+      <!-- 加入圈子按钮 -->
+      <view class="invite-btn-center-fixed" catchtap="onConfirmJoinGroup">
+        <text class="invite-text">加入{{groupName}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 头像轮播区域 -->
+  <view class="avatar-section-overlay">
+    <!-- 头像轮播 -->
+    <swiper 
+      class="avatar-swiper" 
+      current="{{currentIndex}}" 
+      bindchange="onSwiperChange"
+      display-multiple-items="3"
+      previous-margin="60rpx"
+      next-margin="60rpx"
+      circular="{{true}}"
+    >
+      <swiper-item wx:for="{{buddyCharacters}}" wx:key="id" class="avatar-item">
+        <view 
+          class="avatar-container {{currentIndex === index ? 'active' : ''}}"
+          bindtap="onAvatarTap"
+          data-index="{{index}}"
+        >
+          <!-- 选择框 - 圈中选角所有成员都被选中 -->
+          <view class="select-checkbox selected">
+            <image class="check-icon-image" src="/static/icon/check-green.svg" />
+          </view>
+          
+          <image 
+            class="avatar-image" 
+            src="{{item.avatar}}" 
+            mode="aspectFill"
+            lazy-load="true"
+            show-menu-by-longpress="false"
+          />
+        </view>
+      </swiper-item>
+    </swiper>
+    
+    <!-- 圈子成员展示 -->
+    <view class="group-members">
+      <text class="members-title">圈子成员：</text>
+      <view class="member-list">
+        <text wx:for="{{buddyCharacters}}" wx:key="id" class="member-name {{currentIndex === index ? 'current' : ''}}">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 加载状态 -->
+<view class="loading-container" wx:if="{{loading}}">
+  <text class="loading-text">加载中...</text>
+</view>

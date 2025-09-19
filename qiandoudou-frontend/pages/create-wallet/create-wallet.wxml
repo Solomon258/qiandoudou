@@ -19,10 +19,15 @@
           <text class="type-name">AI情侣攒</text>
           <text class="type-desc">和AI一起攒钱</text>
         </view>
+        <view class="type-option {{walletType === 3 ? 'selected' : ''}}" bindtap="selectWalletType" data-type="3">
+          <text class="type-icon">👥</text>
+          <text class="type-name">搭子攒钱</text>
+          <text class="type-desc">多个AI搭子互动</text>
+        </view>
       </view>
     </view>
 
-    <!-- AI伴侣选择（仅情侣钱兜兜显示） -->
+    <!-- AI伴侣选择（情侣钱兜兜显示） -->
     <view wx:if="{{walletType === 2}}" class="form-item">
       <text class="form-label">选择AI伴侣</text>
       <view class="ai-partner-selector" bindtap="goToSelectPartner">
@@ -36,13 +41,30 @@
         <text class="arrow">></text>
       </view>
     </view>
+
+    <!-- 搭子选择（搭子攒钱显示） -->
+    <view wx:if="{{walletType === 3}}" class="form-item">
+      <text class="form-label">选择搭子</text>
+      <view class="ai-partner-selector" bindtap="goToSelectPartner">
+        <view wx:if="{{selectedBuddies && selectedBuddies.length > 0}}" class="selected-partner">
+          <view class="buddy-avatars">
+            <image wx:for="{{selectedBuddies}}" wx:key="id" class="buddy-avatar-mini" src="{{item.avatar}}" mode="aspectFill" />
+          </view>
+          <text class="partner-name">已选择{{selectedBuddies.length}}个搭子</text>
+        </view>
+        <view wx:else class="select-partner-placeholder">
+          <text class="placeholder-text">点击选择搭子</text>
+        </view>
+        <text class="arrow">></text>
+      </view>
+    </view>
     
     <view class="form-item">
       <text class="form-label">初始余额</text>
       <input class="form-input" placeholder="请输入初始余额" type="digit" bindinput="onBalanceInput" value="{{balance}}" />
     </view>
     
-    <button class="create-btn" bindtap="handleCreate" disabled="{{loading || (walletType === 2 && !selectedPartner)}}">
+    <button class="create-btn" bindtap="handleCreate" disabled="{{loading || (walletType === 2 && !selectedPartner) || (walletType === 3 && (!selectedBuddies || selectedBuddies.length < 2))}}">
       {{loading ? '创建中...' : '创建钱兜兜'}}
     </button>
   </view>

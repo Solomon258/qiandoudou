@@ -59,9 +59,10 @@ public class AiServiceImpl implements AiService {
     @Override
     public String generatePartnerComment(String transactionType, String description, Double amount) {
         try {
-            // 构建交易描述
+            // 构建交易描述，不包含具体金额
+            String amountDescription = getAmountDescription(amount);
             StringBuilder transactionDesc = new StringBuilder();
-            transactionDesc.append(transactionType).append("了 ").append(amount).append(" 元");
+            transactionDesc.append(transactionType).append("了").append(amountDescription);
             if (description != null && !description.trim().isEmpty()) {
                 transactionDesc.append("，备注：").append(description);
             }
@@ -184,9 +185,10 @@ public class AiServiceImpl implements AiService {
     @Override
     public String generatePartnerComment(String transactionType, String description, Double amount, String imageUrl) {
         try {
-            // 构建交易描述
+            // 构建交易描述，不包含具体金额
+            String amountDescription = getAmountDescription(amount);
             StringBuilder transactionDesc = new StringBuilder();
-            transactionDesc.append(transactionType).append("了 ").append(amount).append(" 元");
+            transactionDesc.append(transactionType).append("了").append(amountDescription);
             if (description != null && !description.trim().isEmpty()) {
                 transactionDesc.append("，备注：").append(description);
             }
@@ -298,7 +300,7 @@ public class AiServiceImpl implements AiService {
         prompt.append("请以").append(name).append("的身份，用").append(personality).append("的语气，");
         prompt.append("对伴侣的储蓄行为给出一句温馨的评论或鼓励。");
         prompt.append("要求：1）50字以内；2）语气要符合性格特点；3）内容要与储蓄相关；4）要体现情侣间的亲密关系；");
-        prompt.append("5）只使用中文，不要生成任何英文单词、字母或英文表达；6）用中文表达亲昵，如\"亲爱的\"、\"宝贝\"、\"么么哒\"等。");
+        prompt.append("5）只使用中文，不要生成任何英文单词、字母或英文表达；6）用中文表达亲昵，如\"亲爱的\"、\"宝贝\"等，但不要使用\"么么哒\"这样的表达。");
         prompt.append("请直接返回评论内容，不要加任何前缀或后缀说明。");
         
         return prompt.toString();
@@ -324,7 +326,7 @@ public class AiServiceImpl implements AiService {
                     "亲爱的，你又存钱了呢，真是个勤劳的小蜜蜂～我爱你！",
                     "看到你这么用心理财，我的心都要化了～你真棒！💕",
                     "宝贝，你的储蓄习惯真让人欣慰，我们的未来会更美好的～",
-                    "亲爱的，又存钱了呢～么么哒！你真是太棒了！",
+                    "亲爱的，又存钱了呢～你真是太棒了！",
                     "宝贝，看到你储蓄我就很开心～亲亲你！"
                 };
                 return name + "：" + getRandomMessage(messages);
@@ -344,7 +346,7 @@ public class AiServiceImpl implements AiService {
                     "储蓄星人又在行动了！你真的超级棒棒哒！🌟",
                     "小金库又有新成员啦～你真是理财小达人呢！",
                     "哇塞！你又存钱了耶～我要给你点一万个赞！👍",
-                    "么么哒～又存钱啦！你真是太可爱了呢！",
+                    "亲亲～又存钱啦！你真是太可爱了呢！",
                     "亲亲～看到你存钱我就超开心的！"
                 };
                 return name + "：" + getRandomMessage(messages);
@@ -386,6 +388,25 @@ public class AiServiceImpl implements AiService {
     }
 
     /**
+     * 根据金额大小生成描述性文字
+     */
+    private String getAmountDescription(Double amount) {
+        if (amount == null) {
+            return "一笔钱";
+        }
+        
+        if (amount < 50) {
+            return "一笔零钱";
+        } else if (amount >= 50 && amount < 200) {
+            return "很多钱";
+        } else if (amount >= 200 && amount <= 1000) {
+            return "一笔巨款";
+        } else {
+            return "一笔超级巨款";
+        }
+    }
+
+    /**
      * 过滤英文表达，替换为中文表达
      */
     private String filterEnglishExpressions(String text) {
@@ -395,9 +416,9 @@ public class AiServiceImpl implements AiService {
         
         // 创建替换映射表
         Map<String, String> replacements = new HashMap<>();
-        replacements.put("mua", "么么哒");
-        replacements.put("MUA", "么么哒");
-        replacements.put("Mua", "么么哒");
+        replacements.put("mua", "亲亲");
+        replacements.put("MUA", "亲亲");
+        replacements.put("Mua", "亲亲");
         replacements.put("kiss", "亲亲");
         replacements.put("KISS", "亲亲");
         replacements.put("Kiss", "亲亲");
@@ -433,9 +454,9 @@ public class AiServiceImpl implements AiService {
         }
         
         // 去除单独的英文字母（如M U A这种被拆分的情况）
-        result = result.replaceAll("\\b[A-Za-z]\\s+[A-Za-z]\\s+[A-Za-z]\\b", "么么哒");
-        result = result.replaceAll("\\bM\\s+U\\s+A\\b", "么么哒");
-        result = result.replaceAll("\\bm\\s+u\\s+a\\b", "么么哒");
+        result = result.replaceAll("\\b[A-Za-z]\\s+[A-Za-z]\\s+[A-Za-z]\\b", "亲亲");
+        result = result.replaceAll("\\bM\\s+U\\s+A\\b", "亲亲");
+        result = result.replaceAll("\\bm\\s+u\\s+a\\b", "亲亲");
         
         return result;
     }

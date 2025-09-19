@@ -15,7 +15,11 @@
     "pages/script-image-detail/script-image-detail",
     "pages/ai-partner/ai-partner",
     "pages/ai-chat/ai-chat",
-    "pages/couple-savings/couple-savings"
+    "pages/couple-savings/couple-savings",
+    "pages/buddy-mode-select/buddy-mode-select",
+    "pages/buddy-free-select/buddy-free-select",
+    "pages/buddy-group-select/buddy-group-select",
+    "pages/buddy-group-character-select/buddy-group-character-select"
   ],
   "window": {
     "backgroundTextStyle": "light",

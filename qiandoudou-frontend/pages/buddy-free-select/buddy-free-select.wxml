@@ -1,0 +1,97 @@
+<!--pages/buddy-free-select/buddy-free-select.wxml-->
+<wxs module="utils" src="./buddy-utils.wxs"></wxs>
+<view class="container" wx:if="{{!loading}}">
+  <!-- 全屏背景图 -->
+  <image 
+    wx:if="{{buddyCharacters.length > 0}}"
+    class="fullscreen-background" 
+    src="{{buddyCharacters[currentIndex].fullImage || buddyCharacters[currentIndex].avatar}}" 
+    mode="aspectFill"
+    lazy-load="true"
+    show-menu-by-longpress="false"
+  />
+  
+  <!-- 上半部分：内容展示区域 -->
+  <view class="main-display">
+    <!-- 搭子信息放在腰身位置 -->
+    <view class="buddy-info-center" wx:if="{{buddyCharacters.length > 0}}">
+      <text class="buddy-name-large">{{buddyCharacters[currentIndex].name}}</text>
+      <view class="buddy-tags-center">
+        <text wx:for="{{buddyCharacters[currentIndex].tags}}" wx:key="*this" class="tag-pill">{{item}}</text>
+      </view>
+      <view class="buddy-desc-center">
+        <text class="desc-text">{{buddyCharacters[currentIndex].description}}</text>
+        <view class="voice-control" bindtap="onPlayVoice" wx:if="{{buddyCharacters[currentIndex].voiceSampleUrl}}">
+          <text class="voice-icon">{{voicePlaying && playingIndex === currentIndex ? '⏸️' : '🔊'}}</text>
+          <text class="voice-duration">{{buddyCharacters[currentIndex].voiceDuration || '3s'}}</text>
+        </view>
+      </view>
+      
+      <!-- 邀请按钮 -->
+      <view class="invite-btn-center-fixed" catchtap="onConfirmSelection">
+        <text class="invite-text">邀请他们加入团队</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 头像轮播区域 -->
+  <view class="avatar-section-overlay">
+    <!-- 头像轮播 -->
+    <swiper 
+      wx:if="{{buddyCharacters.length > 0}}"
+      class="avatar-swiper" 
+      current="{{currentIndex}}" 
+      bindchange="onSwiperChange"
+      display-multiple-items="{{buddyCharacters.length >= 3 ? 3 : buddyCharacters.length}}"
+      previous-margin="60rpx"
+      next-margin="60rpx"
+      circular="{{buddyCharacters.length > 3}}"
+    >
+      <swiper-item wx:for="{{buddyCharacters}}" wx:key="id" class="avatar-item">
+        <view 
+          class="avatar-container {{currentIndex === index ? 'active' : ''}}"
+          bindtap="onAvatarTap"
+          data-index="{{index}}"
+        >
+          <!-- 选择框 -->
+          <view class="select-checkbox {{utils.isBuddySelected(item.id, selectedBuddies) ? 'selected' : ''}}" 
+                bindtap="onSelectTap" 
+                data-index="{{index}}"
+                catchtap="onSelectTap">
+            <image wx:if="{{utils.isBuddySelected(item.id, selectedBuddies)}}" class="check-icon-image" src="/static/icon/check-green.svg" />
+          </view>
+          
+          <image 
+            class="avatar-image" 
+            src="{{item.avatar}}" 
+            mode="aspectFill"
+            lazy-load="true"
+            show-menu-by-longpress="false"
+          />
+        </view>
+      </swiper-item>
+    </swiper>
+    
+    <!-- 已选择的搭子展示 -->
+    <view class="selected-buddies" wx:if="{{selectedBuddies.length > 0}}">
+      <text class="selected-title">已选择：</text>
+      <view class="buddy-tags">
+        <view wx:for="{{selectedBuddies}}" wx:key="id" class="buddy-tag">
+          <text class="buddy-tag-name">{{item.name}}</text>
+          <text class="remove-btn" bindtap="onRemoveBuddy" data-id="{{item.id}}">×</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空数据提示 -->
+  <view class="empty-container" wx:if="{{!loading && buddyCharacters.length === 0}}">
+    <text class="empty-text">暂无可选搭子</text>
+    <text class="empty-desc">请检查网络连接或稍后重试</text>
+  </view>
+</view>
+
+<!-- 加载状态 -->
+<view class="loading-container" wx:if="{{loading}}">
+  <text class="loading-text">加载中...</text>
+</view>

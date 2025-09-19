@@ -58,6 +58,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             } else if (type == 2) {
                 // 情侣钱包
                 backgroundImage = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/lover.jpg";
+            } else if (type == 3) {
+                // 搭子钱包（默认背景图，实际应该在BuddyService中设置）
+                backgroundImage = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dazi/dazizan_beijingtu.jpg";
             }
         }
         
