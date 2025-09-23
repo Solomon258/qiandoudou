@@ -19,7 +19,14 @@
     "pages/buddy-mode-select/buddy-mode-select",
     "pages/buddy-free-select/buddy-free-select",
     "pages/buddy-group-select/buddy-group-select",
-    "pages/buddy-group-character-select/buddy-group-character-select"
+    "pages/buddy-group-character-select/buddy-group-character-select",
+    "pages/dream-type-select/dream-type-select",
+    "pages/dream-shopping-select/dream-shopping-select",
+    "pages/dream-travel-select/dream-travel-select",
+    "pages/dream-create/dream-create",
+    "pages/dream-detail/dream-detail",
+    "pages/dream-rewards/dream-rewards",
+    "pages/dream-share/dream-share"
   ],
   "window": {
     "backgroundTextStyle": "light",

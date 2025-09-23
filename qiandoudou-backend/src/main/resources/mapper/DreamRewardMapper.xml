@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiandoudou.mapper.DreamRewardMapper">
+
+    <!-- 根据钱包ID获取奖励列表 -->
+    <select id="selectByWalletId" resultType="com.qiandoudou.entity.DreamReward">
+        SELECT * FROM dream_rewards 
+        WHERE wallet_id = #{walletId} AND deleted = 0
+        ORDER BY unlock_progress ASC
+    </select>
+
+    <!-- 根据钱包ID和进度获取可解锁的奖励 -->
+    <select id="selectUnlockableRewards" resultType="com.qiandoudou.entity.DreamReward">
+        SELECT * FROM dream_rewards 
+        WHERE wallet_id = #{walletId} 
+        AND unlock_progress &lt;= #{progress}
+        AND is_unlocked = 0 
+        AND deleted = 0
+        ORDER BY unlock_progress ASC
+    </select>
+
+    <!-- 批量解锁奖励 -->
+    <update id="batchUnlockRewards">
+        UPDATE dream_rewards 
+        SET is_unlocked = 1, unlock_time = NOW()
+        WHERE id IN
+        <foreach collection="rewardIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 为新钱包创建默认奖励（从模板复制） -->
+    <insert id="createDefaultRewards">
+        INSERT INTO dream_rewards (wallet_id, reward_type, title, description, unlock_progress, unlock_condition, reward_image)
+        SELECT #{walletId}, reward_type, title, description, unlock_progress, unlock_condition, reward_image
+        FROM dream_rewards 
+        WHERE wallet_id = 0 AND deleted = 0
+    </insert>
+
+</mapper>

@@ -1,0 +1,484 @@
+/* pages/dream-type-select/dream-type-select.wxss */
+.container {
+  min-height: 100vh;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 120rpx; /* 为底部按钮留出空间 */
+}
+
+/* 顶部标题 */
+.header {
+  text-align: center;
+  padding: 60rpx 40rpx 40rpx;
+}
+
+.title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+/* 搜索框 */
+.search-box {
+  margin: 0 40rpx 40rpx;
+}
+
+.search-input {
+  width: 100%;
+  height: 80rpx;
+  background: #f8f8f8;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 40rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: #999999;
+}
+
+/* 气泡容器 */
+.bubble-container {
+  position: relative;
+  height: 1000rpx;
+  margin: 0 20rpx;
+}
+
+/* 气泡样式 */
+.bubble {
+  position: absolute;
+  width: 230rpx;
+  height: 230rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: float 6s ease-in-out infinite;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.bubble:active {
+  transform: scale(0.95);
+}
+
+/* 固定位置布局（适配230rpx大气泡） */
+.bubble-1 {
+  left: 8%;
+  top: 5%;
+}
+
+.bubble-2 {
+  left: 55%;
+  top: 12%;
+}
+
+.bubble-3 {
+  left: 15%;
+  top: 32%;
+}
+
+.bubble-4 {
+  left: 60%;
+  top: 48%;
+}
+
+.bubble-5 {
+  left: 30%;
+  top: 68%;
+}
+
+/* 气泡浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20rpx) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-10rpx) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-15rpx) rotate(0.5deg);
+  }
+}
+
+/* 泡泡背景图片 */
+.bubble-bg {
+  position: absolute;
+  width: 230rpx;
+  height: 230rpx;
+  z-index: 1;
+}
+
+/* 气泡图标 */
+.bubble-icon {
+  width: 115rpx;
+  height: 115rpx;
+  z-index: 2;
+  margin-bottom: 12rpx;
+}
+
+/* 气泡名称 */
+.bubble-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+  z-index: 2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170rpx;
+}
+
+/* 购物气泡 */
+.shopping-bubble {
+  /* 使用泡泡背景图片，不需要额外背景色 */
+}
+
+/* 旅行气泡 */
+.travel-bubble {
+  /* 旅行图片已经在泡泡里了 */
+}
+
+/* 底部标签切换 */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: #ffffff;
+  border-top: 1rpx solid #f0f0f0;
+  padding: 20rpx 40rpx 40rpx;
+  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  border-radius: 50rpx;
+  margin: 0 10rpx;
+  transition: all 0.3s ease;
+  background: #f5f5f5;
+}
+
+.tab-item.active {
+  background: #ff6b35;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+}
+
+.tab-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #666666;
+  transition: color 0.3s ease;
+}
+
+.tab-item.active .tab-text {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 弹框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 30rpx 30rpx 0 0;
+  padding: 40rpx;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  position: relative;
+  text-align: left;
+  margin-bottom: 40rpx;
+  padding-top: 20rpx;
+  height: 100rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+  line-height: 100rpx;
+}
+
+.modal-icon {
+  width: 120rpx;
+  height: 120rpx;
+  position: absolute;
+  right: 40rpx;
+  top: -20rpx;
+}
+
+.modal-section {
+  margin-bottom: 30rpx;
+}
+
+.modal-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 15rpx;
+  font-weight: 500;
+}
+
+.modal-input {
+  width: 100%;
+  height: 80rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #333333;
+  box-sizing: border-box;
+}
+
+.modal-input:focus {
+  border-color: #74b9ff;
+}
+
+/* 车型选择 */
+.car-types {
+  display: flex;
+  gap: 15rpx;
+}
+
+.car-type-item {
+  flex: 1;
+  height: 60rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.car-type-item.selected {
+  background: #74b9ff;
+  border-color: #74b9ff;
+  color: #ffffff;
+}
+
+.car-type-item text {
+  font-size: 24rpx;
+}
+
+.car-type-item.selected text {
+  color: #ffffff;
+}
+
+/* 快捷金额选择 */
+.quick-amounts {
+  display: flex;
+  gap: 15rpx;
+}
+
+.quick-amount-item {
+  flex: 1;
+  height: 60rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.quick-amount-item:active {
+  background: #74b9ff;
+  border-color: #74b9ff;
+}
+
+.quick-amount-item:active text {
+  color: #ffffff;
+}
+
+.quick-amount-item text {
+  font-size: 24rpx;
+  color: #333333;
+}
+
+/* 旅行标签选择 */
+.travel-tags {
+  display: flex;
+  gap: 15rpx;
+}
+
+.travel-tag-item {
+  flex: 1;
+  height: 60rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.travel-tag-item.selected {
+  background: #74b9ff;
+  border-color: #74b9ff;
+  color: #ffffff;
+}
+
+.travel-tag-item text {
+  font-size: 24rpx;
+}
+
+.travel-tag-item.selected text {
+  color: #ffffff;
+}
+
+/* 城市输入 */
+.city-inputs {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.city-input {
+  flex: 1;
+  height: 80rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #333333;
+  box-sizing: border-box;
+}
+
+.city-input:focus {
+  border-color: #74b9ff;
+}
+
+.city-separator {
+  font-size: 28rpx;
+  color: #666666;
+  font-weight: bold;
+}
+
+/* 快捷城市选择 */
+.quick-cities {
+  display: flex;
+  gap: 15rpx;
+}
+
+.quick-city-item {
+  flex: 1;
+  height: 60rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.quick-city-item:active {
+  background: #74b9ff;
+  border-color: #74b9ff;
+}
+
+.quick-city-item:active text {
+  color: #ffffff;
+}
+
+.quick-city-item text {
+  font-size: 24rpx;
+  color: #333333;
+}
+
+/* 天数输入 */
+.days-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.days-input {
+  width: 200rpx;
+  height: 80rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #333333;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.days-input:focus {
+  border-color: #74b9ff;
+}
+
+/* 按钮区域 */
+.modal-buttons {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: #f8f9fa;
+  color: #666666;
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  color: #ffffff;
+}

@@ -6,7 +6,7 @@ Page({
   data: {
     name: '',
     balance: '',
-    walletType: 1, // 1: 个人钱包, 2: AI情侣攒, 3: 搭子攒钱
+    walletType: 1, // 1: 个人钱包, 2: AI情侣攒, 3: 搭子攒钱, 4: 梦想攒钱
     selectedPartner: null,
     selectedBuddies: [], // 选中的搭子列表
     buddyGroupId: null, // 搭子圈子ID
@@ -72,6 +72,13 @@ Page({
     }
   },
 
+  // 跳转到梦想攒钱选择页面
+  goToDreamSelect() {
+    wx.navigateTo({
+      url: '/pages/dream-type-select/dream-type-select'
+    })
+  },
+
   onNameInput(e) {
     this.setData({
       name: e.detail.value
@@ -117,6 +124,12 @@ Page({
         title: '请选择至少2个搭子',
         icon: 'none'
       })
+      return
+    }
+
+    if (walletType === 4) {
+      // 梦想攒钱，跳转到梦想选择页面
+      this.goToDreamSelect()
       return
     }
 

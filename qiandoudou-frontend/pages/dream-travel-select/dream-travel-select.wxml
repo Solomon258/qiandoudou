@@ -1,0 +1,149 @@
+<!--pages/dream-travel-select/dream-travel-select.wxml-->
+<view class="container">
+  <!-- 搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <image src="/static/icon/search.png" class="search-icon" mode="aspectFit" />
+      <input 
+        class="search-input" 
+        placeholder="搜索你的梦想目的地..."
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        placeholder-style="color: #999999"
+      />
+    </view>
+  </view>
+
+  <!-- 气泡目的地展示区域 -->
+  <view class="bubble-container">
+    <view class="bubble-area">
+      <block wx:for="{{filteredItems}}" wx:key="id" wx:for-index="index">
+        <view 
+          class="bubble-item {{selectedItem && selectedItem.id === item.id ? 'selected' : ''}}"
+          style="{{item.bubbleStyle}}"
+          data-id="{{item.id}}"
+          bindtap="selectItem"
+        >
+          <!-- 气泡背景 -->
+          <view class="bubble-bg">
+            <image src="/static/icon/paopao/泡泡@3x.png" class="bubble-image" mode="aspectFit" />
+          </view>
+          
+          <!-- 目的地图标 -->
+          <view class="item-icon">
+            <image src="{{item.imageUrl}}" class="item-image" mode="aspectFit" />
+          </view>
+          
+          <!-- 目的地名称 -->
+          <view class="item-name">
+            <text>{{item.displayName}}</text>
+          </view>
+          
+          <!-- 建议金额 -->
+          <view class="item-price" wx:if="{{item.suggestedAmount}}">
+            <text>¥{{item.suggestedAmount}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredItems.length === 0}}">
+      <image src="/static/icon/empty.png" class="empty-icon" mode="aspectFit" />
+      <text class="empty-text">暂无相关目的地</text>
+      <text class="empty-desc">试试其他关键词吧</text>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="bottom-tip">
+    <text class="tip-text">点击气泡选择你的梦想目的地</text>
+  </view>
+
+  <!-- 旅行梦想弹框 -->
+  <view class="modal-overlay" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-content" catchtap="">
+      <!-- 弹框头部 -->
+      <view class="modal-header">
+        <text class="modal-title">选择梦想攒的主题</text>
+        <image class="modal-icon" src="/static/icon/paopao/sini_compressed.png" mode="aspectFit" />
+      </view>
+
+      <!-- 梦想名称输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入梦想攒的名称</text>
+        <input 
+          class="modal-input" 
+          placeholder="XXX的钱包" 
+          value="{{modalData.walletName}}" 
+          bindinput="onWalletNameInput" 
+          maxlength="20" />
+      </view>
+
+      <!-- 标签选择 -->
+      <view class="modal-section">
+        <view class="travel-tags">
+          <view 
+            wx:for="{{modalData.tags}}" 
+            wx:key="*this" 
+            class="travel-tag-item {{modalData.selectedTag === item ? 'selected' : ''}}"
+            data-tag="{{item}}"
+            bindtap="selectTag">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 出发地与目的地输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入出发地与目的地</text>
+        <view class="city-inputs">
+          <input 
+            class="city-input" 
+            placeholder="深圳" 
+            value="{{modalData.departureCity}}" 
+            bindinput="onDepartureCityInput" />
+          <text class="city-separator">—</text>
+          <input 
+            class="city-input" 
+            placeholder="乌鲁木齐" 
+            value="{{modalData.destinationCity}}" 
+            bindinput="onDestinationCityInput" />
+        </view>
+      </view>
+
+      <!-- 快捷城市选择 -->
+      <view class="modal-section">
+        <view class="quick-cities">
+          <view 
+            wx:for="{{modalData.quickCities}}" 
+            wx:key="*this" 
+            class="quick-city-item"
+            data-city="{{item}}"
+            bindtap="selectQuickCity">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 旅游天数输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入旅游天数</text>
+        <view class="days-input-container">
+          <input 
+            class="days-input" 
+            placeholder="7" 
+            value="{{modalData.travelDays}}" 
+            bindinput="onTravelDaysInput" 
+            type="number" />
+        </view>
+      </view>
+
+      <!-- 按钮区域 -->
+      <view class="modal-buttons">
+        <button class="modal-btn cancel-btn" bindtap="closeModal">取消</button>
+        <button class="modal-btn confirm-btn" bindtap="confirmCreate">确认</button>
+      </view>
+    </view>
+  </view>
+</view>

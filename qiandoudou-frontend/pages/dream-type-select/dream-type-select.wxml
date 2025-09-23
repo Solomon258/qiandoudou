@@ -1,0 +1,208 @@
+<!--pages/dream-type-select/dream-type-select.wxml-->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <text class="title">选择你的梦想类型</text>
+    <text class="subtitle">为你的目标开始攒钱之旅</text>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <input class="search-input" placeholder="{{'搜索' + (currentTab === 0 ? '商品' : '目的地')}}" bindinput="onSearchInput" />
+  </view>
+
+  <!-- 气泡容器 -->
+  <view class="bubble-container">
+    <!-- 购物气泡 -->
+    <block wx:if="{{currentTab === 0}}">
+      <view wx:for="{{shoppingItems}}" wx:key="id" 
+            class="bubble shopping-bubble bubble-{{index + 1}}" 
+            style="animation-delay: {{bubblePositions[index] ? bubblePositions[index].animationDelay : 0}}s;"
+            bindtap="selectShoppingItem" 
+            data-id="{{item.id}}">
+        <!-- 泡泡背景 -->
+        <image class="bubble-bg" src="/static/icon/paopao/pao/泡泡@3x.png" mode="aspectFit" />
+        <!-- 商品图标 -->
+        <image class="bubble-icon" src="{{item.icon}}" mode="aspectFit" />
+        <text class="bubble-name">{{item.name}}</text>
+      </view>
+    </block>
+
+    <!-- 旅行气泡 -->
+    <block wx:if="{{currentTab === 1}}">
+      <view wx:for="{{travelItems}}" wx:key="id" 
+            class="bubble travel-bubble bubble-{{index + 1}}" 
+            style="animation-delay: {{bubblePositions[index] ? bubblePositions[index].animationDelay : 0}}s;"
+            bindtap="selectTravelItem" 
+            data-id="{{item.id}}">
+        <!-- 旅行目的地图片（已经在泡泡里） -->
+        <image class="bubble-icon" src="{{item.icon}}" mode="aspectFit" />
+        <text class="bubble-name">{{item.name}}</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 底部标签切换 -->
+  <view class="bottom-tab-bar">
+    <view class="tab-item {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
+      <text class="tab-text">购物</text>
+    </view>
+    <view class="tab-item {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">
+      <text class="tab-text">旅行</text>
+    </view>
+  </view>
+
+  <!-- 购物梦想弹框 -->
+  <view class="modal-overlay" wx:if="{{showShoppingModal}}" bindtap="closeShoppingModal">
+    <view class="modal-content" catchtap="preventModalClose">
+      <!-- 弹框头部 -->
+      <view class="modal-header">
+        <text class="modal-title">选择轿车</text>
+        <image class="modal-icon" src="/static/icon/goods/轿车@3x.png" mode="aspectFit" />
+      </view>
+
+      <!-- 梦想名称输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入梦想攒的名称</text>
+        <input 
+          class="modal-input" 
+          placeholder="XXX的钱包" 
+          value="{{shoppingModalData.walletName}}" 
+          bindinput="onShoppingWalletNameInput" 
+          maxlength="20" />
+      </view>
+
+      <!-- 车型选择 -->
+      <view class="modal-section">
+        <view class="car-types">
+          <view 
+            wx:for="{{shoppingModalData.carTypes}}" 
+            wx:key="*this" 
+            class="car-type-item {{shoppingModalData.selectedCarType === item ? 'selected' : ''}}"
+            data-type="{{item}}"
+            bindtap="selectCarType">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 金额输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入梦想攒的金额</text>
+        <input 
+          class="modal-input" 
+          placeholder="¥1" 
+          value="{{shoppingModalData.targetAmount}}" 
+          bindinput="onShoppingTargetAmountInput" 
+          type="digit" />
+      </view>
+
+      <!-- 快捷金额选择 -->
+      <view class="modal-section">
+        <view class="quick-amounts">
+          <view 
+            wx:for="{{shoppingModalData.quickAmounts}}" 
+            wx:key="*this" 
+            class="quick-amount-item"
+            data-amount="{{item}}"
+            bindtap="selectShoppingQuickAmount">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 按钮区域 -->
+      <view class="modal-buttons">
+        <button class="modal-btn cancel-btn" bindtap="closeShoppingModal">取消</button>
+        <button class="modal-btn confirm-btn" bindtap="confirmCreateShopping">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 旅行梦想弹框 -->
+  <view class="modal-overlay" wx:if="{{showTravelModal}}" bindtap="closeTravelModal">
+    <view class="modal-content" catchtap="preventModalClose">
+      <!-- 弹框头部 -->
+      <view class="modal-header">
+        <text class="modal-title">选择梦想攒的主题</text>
+        <image class="modal-icon" src="/static/icon/paopao/sini_compressed.png" mode="aspectFit" />
+      </view>
+
+      <!-- 梦想名称输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入梦想攒的名称</text>
+        <input 
+          class="modal-input" 
+          placeholder="XXX的钱包" 
+          value="{{travelModalData.walletName}}" 
+          bindinput="onTravelWalletNameInput" 
+          maxlength="20" />
+      </view>
+
+      <!-- 标签选择 -->
+      <view class="modal-section">
+        <view class="travel-tags">
+          <view 
+            wx:for="{{travelModalData.tags}}" 
+            wx:key="*this" 
+            class="travel-tag-item {{travelModalData.selectedTag === item ? 'selected' : ''}}"
+            data-tag="{{item}}"
+            bindtap="selectTravelTag">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 出发地与目的地输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入出发地与目的地</text>
+        <view class="city-inputs">
+          <input 
+            class="city-input" 
+            placeholder="深圳" 
+            value="{{travelModalData.departureCity}}" 
+            bindinput="onDepartureCityInput" />
+          <text class="city-separator">—</text>
+          <input 
+            class="city-input" 
+            placeholder="乌鲁木齐" 
+            value="{{travelModalData.destinationCity}}" 
+            bindinput="onDestinationCityInput" />
+        </view>
+      </view>
+
+      <!-- 快捷城市选择 -->
+      <view class="modal-section">
+        <view class="quick-cities">
+          <view 
+            wx:for="{{travelModalData.quickCities}}" 
+            wx:key="*this" 
+            class="quick-city-item"
+            data-city="{{item}}"
+            bindtap="selectTravelQuickCity">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 旅游天数输入 -->
+      <view class="modal-section">
+        <text class="modal-label">请输入旅游天数</text>
+        <view class="days-input-container">
+          <input 
+            class="days-input" 
+            placeholder="7" 
+            value="{{travelModalData.travelDays}}" 
+            bindinput="onTravelDaysInput" 
+            type="number" />
+        </view>
+      </view>
+
+      <!-- 按钮区域 -->
+      <view class="modal-buttons">
+        <button class="modal-btn cancel-btn" bindtap="closeTravelModal">取消</button>
+        <button class="modal-btn confirm-btn" bindtap="confirmCreateTravel">确认</button>
+      </view>
+    </view>
+  </view>
+</view>

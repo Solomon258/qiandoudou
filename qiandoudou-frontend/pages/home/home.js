@@ -324,6 +324,12 @@ console.log(selectedWalletType)
       wx.navigateTo({
         url: '/pages/couple-savings/couple-savings'
       })
+    } else if (selectedWalletType === 'dream') {
+      // 梦想攒钱 - 跳转到梦想类型选择页面
+      this.hideWalletTypeModal()
+      wx.navigateTo({
+        url: '/pages/dream-type-select/dream-type-select'
+      })
     }
   },
 

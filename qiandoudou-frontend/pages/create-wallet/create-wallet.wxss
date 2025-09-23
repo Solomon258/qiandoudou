@@ -58,15 +58,17 @@
 /* 钱包类型选择 */
 .wallet-type-options {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .type-option {
   flex: 1;
+  min-width: 140rpx;
   background: #f8f9fa;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  padding: 20px 15px;
+  padding: 15px 10px;
   text-align: center;
   transition: all 0.3s;
 }

@@ -24,6 +24,11 @@
           <text class="type-name">搭子攒钱</text>
           <text class="type-desc">多个AI搭子互动</text>
         </view>
+        <view class="type-option {{walletType === 4 ? 'selected' : ''}}" bindtap="selectWalletType" data-type="4">
+          <text class="type-icon">🎯</text>
+          <text class="type-name">梦想攒钱</text>
+          <text class="type-desc">为梦想目标攒钱</text>
+        </view>
       </view>
     </view>
 
@@ -59,13 +64,13 @@
       </view>
     </view>
     
-    <view class="form-item">
+    <view wx:if="{{walletType !== 4}}" class="form-item">
       <text class="form-label">初始余额</text>
       <input class="form-input" placeholder="请输入初始余额" type="digit" bindinput="onBalanceInput" value="{{balance}}" />
     </view>
     
     <button class="create-btn" bindtap="handleCreate" disabled="{{loading || (walletType === 2 && !selectedPartner) || (walletType === 3 && (!selectedBuddies || selectedBuddies.length < 2))}}">
-      {{loading ? '创建中...' : '创建钱兜兜'}}
+      {{loading ? '创建中...' : (walletType === 4 ? '确认新建钱兜兜' : '创建钱兜兜')}}
     </button>
   </view>
 </view>

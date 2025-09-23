@@ -5,6 +5,7 @@ import com.qiandoudou.entity.Transaction;
 import com.qiandoudou.entity.Wallet;
 import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.service.AiService;
+import com.qiandoudou.service.DreamWalletService;
 import com.qiandoudou.service.TransactionService;
 import com.qiandoudou.service.WalletService;
 import com.qiandoudou.event.TransactionCreatedEvent;
@@ -33,6 +34,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private DreamWalletService dreamWalletService;
 
     @Autowired
     private AiService aiService;
@@ -89,6 +93,19 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         wallet.setBalance(newBalance);
         updateById(wallet);
 
+        // 如果是梦想钱包，更新进度
+        if (wallet.getType() == 3 || wallet.getType() == 4) { // 3-梦想攒钱(购物)，4-梦想攒钱(旅行)
+            try {
+                boolean reachedMilestone = dreamWalletService.updateDreamProgress(
+                    walletId, newBalance, amount, 1); // 1-转入
+                if (reachedMilestone) {
+                    logger.info("梦想钱包达到新里程碑，钱包ID: {}", walletId);
+                }
+            } catch (Exception e) {
+                logger.error("更新梦想钱包进度失败，钱包ID: {}", walletId, e);
+            }
+        }
+
         // 创建交易记录
         Transaction transaction = new Transaction();
         transaction.setWalletId(walletId);
@@ -132,6 +149,19 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         BigDecimal newBalance = wallet.getBalance().subtract(amount);
         wallet.setBalance(newBalance);
         updateById(wallet);
+
+        // 如果是梦想钱包，更新进度
+        if (wallet.getType() == 3 || wallet.getType() == 4) { // 3-梦想攒钱(购物)，4-梦想攒钱(旅行)
+            try {
+                boolean reachedMilestone = dreamWalletService.updateDreamProgress(
+                    walletId, newBalance, amount, 2); // 2-转出
+                if (reachedMilestone) {
+                    logger.info("梦想钱包达到新里程碑，钱包ID: {}", walletId);
+                }
+            } catch (Exception e) {
+                logger.error("更新梦想钱包进度失败，钱包ID: {}", walletId, e);
+            }
+        }
 
         // 创建交易记录
         Transaction transaction = new Transaction();

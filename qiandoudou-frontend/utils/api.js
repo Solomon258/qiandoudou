@@ -579,6 +579,87 @@ const walletAPI = {
         userId: app.globalData.userInfo?.id 
       }
     })
+  },
+
+  // ========== 梦想钱包相关API ==========
+
+  // 获取梦想商品列表
+  getDreamItems(category) {
+    return request({
+      url: '/dream-wallet/items',
+      method: 'GET',
+      data: { category }
+    })
+  },
+
+  // 搜索梦想商品
+  searchDreamItems(keyword, category) {
+    return request({
+      url: '/dream-wallet/items/search',
+      method: 'GET',
+      data: { keyword, category }
+    })
+  },
+
+  // 创建梦想钱包
+  createDreamWallet(userId, dreamType, walletName, targetAmount, itemId, days) {
+    return request({
+      url: '/dream-wallet/create',
+      method: 'POST',
+      data: { userId, dreamType, walletName, targetAmount, itemId, days }
+    })
+  },
+
+  // 获取梦想钱包详情
+  getDreamWalletDetail(walletId) {
+    return request({
+      url: `/dream-wallet/detail/${walletId}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取梦想钱包奖励列表
+  getDreamRewards(walletId) {
+    return request({
+      url: `/dream-wallet/rewards/${walletId}`,
+      method: 'GET'
+    })
+  },
+
+  // 生成旅行行程
+  generateTravelItinerary(destination, days, budget) {
+    return request({
+      url: '/dream-wallet/generate-itinerary',
+      method: 'POST',
+      data: { destination, days, budget }
+    })
+  },
+
+  // 生成分享图片
+  generateDreamShareImage(walletId, progress) {
+    return request({
+      url: '/dream-wallet/generate-share',
+      method: 'POST',
+      data: { walletId, progress }
+    })
+  },
+
+  // 记录分享行为
+  recordDreamShare(walletId, userId, shareType, progress, imageUrl, shareText) {
+    return request({
+      url: '/dream-wallet/record-share',
+      method: 'POST',
+      data: { walletId, userId, shareType, progress, imageUrl, shareText }
+    })
+  },
+
+  // 手动更新梦想进度（用于测试）
+  updateDreamProgress(walletId, newBalance, triggerAmount, triggerType) {
+    return request({
+      url: '/dream-wallet/update-progress',
+      method: 'POST',
+      data: { walletId, newBalance, triggerAmount, triggerType }
+    })
   }
 }
 

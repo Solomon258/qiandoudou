@@ -1,0 +1,62 @@
+<!--pages/dream-create/dream-create.wxml-->
+<view class="container">
+  <!-- 顶部展示区域 -->
+  <view class="header-section">
+    <view class="item-preview">
+      <image class="item-image" src="{{itemIcon}}" mode="aspectFit" />
+      <text class="item-name">{{itemName}}</text>
+      <text wx:if="{{type === 'travel'}}" class="item-landmark">{{landmark}}</text>
+    </view>
+  </view>
+
+  <!-- 表单区域 -->
+  <view class="form-section">
+    <view class="form-item">
+      <text class="form-label">钱包名称</text>
+      <input 
+        class="form-input" 
+        placeholder="请输入钱包名称" 
+        value="{{walletName}}" 
+        bindinput="onWalletNameInput" 
+        maxlength="20" />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">目标金额</text>
+      <input 
+        class="form-input" 
+        placeholder="请输入目标金额" 
+        value="{{targetAmount}}" 
+        bindinput="onTargetAmountInput" 
+        type="digit" />
+    </view>
+
+    <!-- 旅行天数（仅旅行类型显示） -->
+    <view wx:if="{{type === 'travel'}}" class="form-item">
+      <text class="form-label">旅行天数</text>
+      <input 
+        class="form-input" 
+        placeholder="请输入旅行天数" 
+        value="{{travelDays}}" 
+        bindinput="onTravelDaysInput" 
+        type="number" />
+    </view>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="tip-section">
+    <text class="tip-text">
+      {{type === 'shopping' ? '为你的梦想商品设定目标，开始攒钱之旅吧！' : '为你的梦想旅程设定目标，开始攒钱之旅吧！'}}
+    </text>
+  </view>
+
+  <!-- 创建按钮 -->
+  <view class="button-section">
+    <button 
+      class="create-btn" 
+      bindtap="createDreamWallet" 
+      disabled="{{loading}}">
+      {{loading ? '创建中...' : '创建梦想钱包'}}
+    </button>
+  </view>
+</view>
