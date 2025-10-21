@@ -1,0 +1,238 @@
+/* pages/badge-share/badge-share.wxss */
+.container {
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 80rpx 32rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 卡片容器 */
+.card-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600rpx;
+}
+
+/* 关闭按钮 */
+.close-btn {
+  position: absolute;
+  top: -80rpx;
+  right: 0;
+  width: 64rpx;
+  height: 64rpx;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-icon {
+  width: 64rpx;
+  height: 64rpx;
+  filter: drop-shadow(0 2rpx 8rpx rgba(0, 0, 0, 0.3));
+}
+
+/* 分享卡片 */
+.share-card {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+}
+
+/* 汽车图片容器 */
+.car-image-container {
+  position: relative;
+  width: 100%;
+  height: 400rpx;
+  background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%);
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-tag {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.badge-text {
+  font-size: 24rpx;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+/* 梦想信息 */
+.dream-info {
+  padding: 40rpx 32rpx 24rpx;
+  text-align: center;
+}
+
+.dream-title {
+  font-size: 28rpx;
+  color: #666666;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.amount {
+  font-size: 72rpx;
+  color: #000000;
+  font-weight: 600;
+  line-height: 1.2;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.amount-label {
+  font-size: 28rpx;
+  color: #999999;
+  display: block;
+}
+
+/* 激励文案 */
+.motivation-text {
+  padding: 0 32rpx 32rpx;
+}
+
+.motivation {
+  font-size: 28rpx;
+  color: #333333;
+  line-height: 1.6;
+  text-align: center;
+  display: block;
+}
+
+/* 日期 */
+.date-info {
+  padding: 0 32rpx 32rpx;
+  text-align: right;
+}
+
+.date {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* 小程序码区域 */
+.qr-code-section {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  border-top: 1rpx solid #F0F0F0;
+  gap: 16rpx;
+}
+
+.qr-code {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 8rpx;
+}
+
+.qr-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.qr-title {
+  font-size: 28rpx;
+  color: #000000;
+  font-weight: 500;
+}
+
+.qr-desc {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* 底部按钮区域 */
+.bottom-actions {
+  width: 100%;
+  max-width: 600rpx;
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+/* 主分享按钮 */
+.share-btn {
+  width: 100%;
+  height: 96rpx;
+  background: #1677FF;
+  border-radius: 16rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(22, 119, 255, 0.3);
+}
+
+.share-btn::after {
+  border: none;
+}
+
+.share-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.btn-icon {
+  width: 32rpx;
+  height: 32rpx;
+  filter: brightness(0) invert(1);
+}
+
+.btn-text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+/* 其他分享选项 */
+.share-options {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 0 20rpx;
+}
+
+.share-option-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.share-option-item:active {
+  opacity: 0.7;
+}
+
+.option-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #F5F5F5;
+}
+
+.option-text {
+  font-size: 22rpx;
+  color: #FFFFFF;
+  text-align: center;
+}

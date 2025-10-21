@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: #ffffff;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   padding-bottom: 120rpx; /* 为底部按钮留出空间 */
 }
 
@@ -49,16 +49,19 @@
 
 /* 气泡容器 */
 .bubble-container {
-  position: relative;
-  height: 1000rpx;
+  min-height: 1000rpx;
   margin: 0 20rpx;
+  padding: 20rpx 0 140rpx 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: flex-start;
 }
 
 /* 气泡样式 */
 .bubble {
-  position: absolute;
   width: 230rpx;
-  height: 230rpx;
+  height: 280rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -66,51 +69,39 @@
   animation: float 6s ease-in-out infinite;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-bottom: 40rpx;
 }
 
 .bubble:active {
   transform: scale(0.95);
 }
 
-/* 固定位置布局（适配230rpx大气泡） */
-.bubble-1 {
-  left: 8%;
-  top: 5%;
+/* 左列气泡 - 奇数项 */
+.bubble:nth-child(odd) {
+  margin-left: 80rpx;
+  margin-right: auto;
 }
 
-.bubble-2 {
-  left: 55%;
-  top: 12%;
+/* 右列气泡 - 偶数项 */
+.bubble:nth-child(even) {
+  margin-left: auto;
+  margin-right: 80rpx;
+  margin-top: 60rpx; /* 右列气泡向下偏移，形成错位效果 */
 }
 
-.bubble-3 {
-  left: 15%;
-  top: 32%;
-}
-
-.bubble-4 {
-  left: 60%;
-  top: 48%;
-}
-
-.bubble-5 {
-  left: 30%;
-  top: 68%;
-}
-
-/* 气泡浮动动画 */
+/* 气泡浮动动画 - 上下左右浮动 */
 @keyframes float {
   0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translate(0, 0) rotate(0deg);
   }
   25% {
-    transform: translateY(-20rpx) rotate(1deg);
+    transform: translate(10rpx, -15rpx) rotate(2deg);
   }
   50% {
-    transform: translateY(-10rpx) rotate(-1deg);
+    transform: translate(-8rpx, -25rpx) rotate(-1deg);
   }
   75% {
-    transform: translateY(-15rpx) rotate(0.5deg);
+    transform: translate(12rpx, -10rpx) rotate(1deg);
   }
 }
 
@@ -124,8 +115,8 @@
 
 /* 气泡图标 */
 .bubble-icon {
-  width: 115rpx;
-  height: 115rpx;
+  width: 138rpx;  /* 115 * 1.2 = 138 */
+  height: 138rpx;
   z-index: 2;
   margin-bottom: 12rpx;
 }
@@ -151,6 +142,12 @@
 /* 旅行气泡 */
 .travel-bubble {
   /* 旅行图片已经在泡泡里了 */
+}
+
+/* 旅行气泡图标放大1.5倍 (在原来1.2倍的基础上再放大) */
+.travel-bubble .bubble-icon {
+  width: 207rpx;  /* 138 * 1.5 = 207 */
+  height: 207rpx;
 }
 
 /* 底部标签切换 */
@@ -395,6 +392,12 @@
   border-color: #74b9ff;
 }
 
+/* 目的地输入框置灰 */
+.city-input-disabled {
+  background-color: #f5f5f5;
+  color: #999999;
+}
+
 .city-separator {
   font-size: 28rpx;
   color: #666666;
@@ -419,6 +422,12 @@
   transition: all 0.3s ease;
 }
 
+.quick-city-item.selected {
+  background: #74b9ff;
+  border-color: #74b9ff;
+  color: #ffffff;
+}
+
 .quick-city-item:active {
   background: #74b9ff;
   border-color: #74b9ff;
@@ -431,6 +440,10 @@
 .quick-city-item text {
   font-size: 24rpx;
   color: #333333;
+}
+
+.quick-city-item.selected text {
+  color: #ffffff;
 }
 
 /* 天数输入 */
@@ -480,5 +493,63 @@
 
 .confirm-btn {
   background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  color: #ffffff;
+}
+
+/* 旅行弹框特殊样式 */
+.travel-modal-overlay {
+  align-items: center; /* 居中显示 */
+}
+
+.travel-modal-content {
+  width: 85%;
+  max-width: 600rpx;
+  border-radius: 30rpx; /* 四周都是圆角 */
+  max-height: 75vh;
+  padding-top: 100rpx; /* 为右上角图标留出空间 */
+}
+
+.travel-modal-header {
+  margin-bottom: 30rpx;
+  padding-top: 0;
+  height: auto;
+}
+
+.travel-modal-icon {
+  width: 200rpx;
+  height: 200rpx;
+  position: absolute;
+  right: -20rpx;
+  top: -80rpx;  /* 向下移动，从-120rpx改为-80rpx */
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* 旅行天数输入区域 */
+.travel-days-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.travel-days-section .modal-label {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.travel-days-section .days-input {
+  width: 200rpx;
+  margin-left: 20rpx;
+}
+
+/* 旅行弹框按钮样式 */
+.travel-modal-content .cancel-btn {
+  background: #ffffff;
+  color: #ff6b35;
+  border: 2rpx solid #ff6b35;
+}
+
+.travel-modal-content .confirm-btn {
+  background: #ff6b35;
   color: #ffffff;
 }

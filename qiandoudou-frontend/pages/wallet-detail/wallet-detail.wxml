@@ -52,7 +52,7 @@
       <!-- 关注按钮（在背景图右下角） -->
       <view wx:if="{{fromSocial && !isOwnWallet}}" class="follow-button-corner">
         <image class="follow-btn-image {{isFollowing ? 'following' : ''}}" 
-               src="{{isFollowing ? 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/已关注.png' : 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/关注.png'}}" 
+               src="{{isFollowing ? 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/已关注.png' : 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/关注.png'}}" 
                bindtap="toggleFollow"
                mode="aspectFit" />
       </view>

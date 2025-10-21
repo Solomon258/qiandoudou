@@ -339,18 +339,14 @@
 .followed-wallet-list {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  gap: 16rpx;
   min-height: 188rpx;
-  padding-bottom: 40px;
 }
-
-/* 关注钱包列表默认左对齐 */
 
 /* 关注的钱包卡片 */
 .followed-wallet-card {
-  flex-shrink: 0;
-  width: 48%;
+  width: calc((100% - 16rpx) / 2);
   height: 188rpx;
   border-radius: 24rpx;
   overflow: hidden;
@@ -433,8 +429,7 @@
 
 /* 关注钱包列表中的空状态 */
 .followed-wallet-list .empty-state {
-  flex: 1;
-  min-width: 100%;
+  width: 100%;
   padding: 60rpx 40rpx;
 }
 

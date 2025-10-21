@@ -17,7 +17,7 @@ Page({
         amount: '2221.21',
         tags: ['生活', '攒钱'],
         description: '一年每天自动存一块已到期（说真的，突然…',
-        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png',
+        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
         backgroundStyle: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);',
         walletId: 1001,
         participantCount: 2,
@@ -26,13 +26,13 @@ Page({
             userId: 201,
             username: '冲动的',
             message: '来啦记得回',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
+            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
           },
           {
             userId: 202,
             username: '足呱呱',
             message: '好漂亮',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
+            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
           }
         ]
       },
@@ -43,7 +43,7 @@ Page({
         amount: '21231.21',
         tags: ['情感', '校园'],
         description: '给发哥攒钱买车',
-        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png',
+        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
         backgroundStyle: 'background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);',
         walletId: 1002,
         participantCount: 2,
@@ -52,14 +52,14 @@ Page({
             userId: 203,
             username: '朱敏多',
             message: '今天在垃圾桶捡到五块',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png',
             amount: '+¥100.00'
           },
           {
             userId: 202,
             username: '足呱呱',
             message: '来啦来啦',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png'
+            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
           }
         ]
       }
@@ -425,14 +425,14 @@ Page({
               description: recentTransactions.length > 0 
                 ? recentTransactions[0].description || '开始攒钱之旅'
                 : '开始攒钱之旅',
-              bgImage: wallet.backgroundImage || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/bg.png',
+              bgImage: wallet.backgroundImage || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
               backgroundStyle: backgroundStyles[index % backgroundStyles.length],
               participantCount: wallet.type === 2 ? 2 : 1,
               fansCount: 0, // 新钱包粉丝数为0，稍后从API获取真实数据
               comments: recentTransactions.slice(0, 2).map(tx => ({
                 username: wallet.owner_nickname || '用户',
                 message: tx.description || '攒钱记录',
-                avatar: wallet.owner_avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+                avatar: wallet.owner_avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png',
                 amount: tx.type === 1 ? `+¥${tx.amount}` : undefined
               }))
             }

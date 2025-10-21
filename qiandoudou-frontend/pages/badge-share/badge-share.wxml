@@ -1,0 +1,84 @@
+<!--pages/badge-share/badge-share.wxml-->
+<view class="container">
+  <!-- 卡片容器 -->
+  <view class="card-wrapper">
+    <!-- 关闭按钮 -->
+    <view class="close-btn" bindtap="closePage">
+      <image class="close-icon" src="/static/icon/close-circle.png" mode="aspectFit" />
+    </view>
+
+    <!-- 分享卡片 -->
+    <view class="share-card">
+    <!-- 汽车图片 -->
+    <view class="car-image-container">
+      <image class="car-image" src="{{carImageUrl}}" mode="aspectFill" />
+      <view class="badge-tag">
+        <text class="badge-text">已有组件：{{badgeLabel}}</text>
+      </view>
+    </view>
+
+    <!-- 梦想信息 -->
+    <view class="dream-info">
+      <text class="dream-title">梦想计划的第{{daysCount}}天</text>
+      <text class="amount">{{formattedAmount}}</text>
+      <text class="amount-label">已攒梦想基金(元)</text>
+    </view>
+
+    <!-- 激励文案 -->
+    <view class="motivation-text">
+      <text class="motivation">攒钱冲目标！{{badgeProgress}}% 稳稳拿下，每一笔储蓄都在向心仪好物"小跑靠近"，这执行力太绝～</text>
+    </view>
+
+    <!-- 日期 -->
+    <view class="date-info">
+      <text class="date">—— {{achieveDate}}</text>
+    </view>
+
+    <!-- 小程序码 -->
+    <view class="qr-code-section">
+      <image class="qr-code" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/erweima.jpg" mode="aspectFit" />
+      <view class="qr-text">
+        <text class="qr-title">👈扫码看看</text>
+        <text class="qr-desc">来钱兜兜实现你的梦想</text>
+      </view>
+    </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮区域 -->
+  <view class="bottom-actions">
+    <!-- 分享到朋友圈按钮 -->
+    <button class="share-btn" bindtap="onShareToFriends">
+      <image class="btn-icon" src="/static/icon/share.svg" mode="aspectFit" />
+      <text class="btn-text">分享到朋友圈</text>
+    </button>
+
+    <!-- 其他分享选项 -->
+    <view class="share-options">
+      <view class="share-option-item" bindtap="onSaveImage">
+        <image class="option-icon" src="/static/icon/download.png" mode="aspectFit" />
+        <text class="option-text">保存图片</text>
+      </view>
+
+      <view class="share-option-item" bindtap="onShareToDouyin">
+        <image class="option-icon" src="/static/icon/douyin.png" mode="aspectFit" />
+        <text class="option-text">抖音</text>
+      </view>
+
+      <view class="share-option-item" bindtap="onShareToXiaohongshu">
+        <image class="option-icon" src="/static/icon/xiaohongshu.png" mode="aspectFit" />
+        <text class="option-text">小红书</text>
+      </view>
+
+      <view class="share-option-item" bindtap="onShareToWeibo">
+        <image class="option-icon" src="/static/icon/weibo.png" mode="aspectFit" />
+        <text class="option-text">微博</text>
+      </view>
+
+      <view class="share-option-item" bindtap="onShareToKuaishou">
+        <image class="option-icon" src="/static/icon/kuaishou.png" mode="aspectFit" />
+        <text class="option-text">快手</text>
+      </view>
+    </view>
+  </view>
+</view>

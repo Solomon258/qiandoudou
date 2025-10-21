@@ -6,6 +6,7 @@ Page({
   data: {
     walletId: null,
     wallet: {},
+    dreamMode: false, // 是否是梦想钱包模式
     activeTab: 'direct', // 'direct' 或 'auto'
     transferAmount: '',
     transferNote: '',
@@ -28,13 +29,15 @@ Page({
   },
 
   onLoad(options) {
-
+    console.log('transfer-in onLoad options:', options)
     const walletId = options.id || options.walletId
-
-
+    const dreamMode = options.dreamMode === 'true'
+    
+    console.log('transfer-in - walletId:', walletId, 'dreamMode:', dreamMode)
     
     this.setData({
-      walletId: walletId
+      walletId: walletId,
+      dreamMode: dreamMode
     })
     
     this.loadWalletInfo()
@@ -43,15 +46,38 @@ Page({
   // 加载钱包信息
   loadWalletInfo() {
     const walletId = this.data.walletId
+    const dreamMode = this.data.dreamMode
+    
     if (!walletId) {
-
+      console.error('钱包ID为空')
       return
     }
 
-    walletAPI.getWalletDetail(walletId)
+    console.log('loadWalletInfo - walletId:', walletId, 'dreamMode:', dreamMode)
+    
+    // 根据是否是梦想模式选择不同的API
+    const apiCall = dreamMode ? 
+      walletAPI.getDreamWalletDetail(walletId) : 
+      walletAPI.getWalletDetail(walletId)
+    
+    apiCall
       .then(result => {
-        const wallet = result.data
-        if (!wallet) {
+        console.log('transfer-in API返回数据:', result.data)
+        
+        // 根据是否是梦想模式处理不同的数据结构
+        let wallet
+        if (dreamMode) {
+          // 梦想钱包API返回：{wallet: {...}, currentProgress: 0, ...}
+          const responseData = result.data
+          wallet = responseData.wallet || responseData
+        } else {
+          // 普通钱包API直接返回钱包数据
+          wallet = result.data
+        }
+        
+        console.log('处理后的钱包数据:', wallet)
+        
+        if (!wallet || !wallet.id) {
           wx.showToast({
             title: '钱包不存在',
             icon: 'none'
@@ -362,7 +388,13 @@ Page({
     }
     
     // 直接转入逻辑
-    const { transferAmount, transferNote, wallet } = this.data
+    const { transferAmount, transferNote, wallet, dreamMode } = this.data
+    
+    console.log('confirmTransfer 调试信息:')
+    console.log('- transferAmount:', transferAmount)
+    console.log('- wallet:', wallet)
+    console.log('- wallet.id:', wallet?.id)
+    console.log('- dreamMode:', dreamMode)
     
     if (!transferAmount || parseFloat(transferAmount) <= 0) {
       wx.showToast({
@@ -373,6 +405,7 @@ Page({
     }
     
     if (!wallet || !wallet.id) {
+      console.error('钱包信息错误 - wallet:', wallet)
       wx.showToast({
         title: '钱包信息错误',
         icon: 'error'
@@ -387,8 +420,17 @@ Page({
     const imageUrl = this.data.uploadedImage || null
     const note = transferNote || null
 
-    walletAPI.transferIn(wallet.id, amount, description, imageUrl, note)
+    // 根据是否是梦想模式调用不同的API或添加特殊参数
+    console.log('准备调用转入API - dreamMode:', dreamMode, 'walletId:', wallet.id)
+    
+    const transferPromise = dreamMode ? 
+      // 梦想钱包可能需要特殊处理，先使用通用API
+      walletAPI.transferIn(wallet.id, amount, description, imageUrl, note) :
+      walletAPI.transferIn(wallet.id, amount, description, imageUrl, note)
+    
+    transferPromise
       .then(result => {
+        console.log('转入API返回结果:', result)
         wx.showToast({
           title: `成功转入¥${amount}`,
           icon: 'success'

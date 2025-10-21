@@ -117,4 +117,13 @@ public interface DreamWalletService {
      * @return 里程碑值（20,40,60,80,100）
      */
     Integer getProgressMilestone(Integer progress);
+
+    /**
+     * 获取梦想钱包交易记录
+     * @param walletId 钱包ID
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @return 交易记录分页结果
+     */
+    Map<String, Object> getDreamWalletRecords(Long walletId, Integer page, Integer pageSize);
 }

@@ -59,21 +59,34 @@ public class DreamWalletController {
      */
     @PostMapping("/create")
     public Result<Wallet> createDreamWallet(@RequestBody Map<String, Object> request) {
+        log.info("==================== 收到创建梦想钱包请求 ====================");
+        log.info("请求参数: {}", request);
+
         try {
             Long userId = Long.valueOf(request.get("userId").toString());
             Integer dreamType = Integer.valueOf(request.get("dreamType").toString());
             String walletName = request.get("walletName").toString();
             BigDecimal targetAmount = new BigDecimal(request.get("targetAmount").toString());
             Long itemId = Long.valueOf(request.get("itemId").toString());
-            Integer days = request.get("days") != null ? 
+            Integer days = request.get("days") != null ?
                 Integer.valueOf(request.get("days").toString()) : null;
 
+            log.info("解析后参数 - userId: {}, dreamType: {}, walletName: {}, targetAmount: {}, itemId: {}, days: {}",
+                userId, dreamType, walletName, targetAmount, itemId, days);
+
+            log.info("准备调用 dreamWalletService.createDreamWallet()");
             Wallet wallet = dreamWalletService.createDreamWallet(
                 userId, dreamType, walletName, targetAmount, itemId, days);
-            
+
+            log.info("钱包创建成功，钱包ID: {}", wallet.getId());
+            log.info("==================== 创建梦想钱包请求完成 ====================");
+
             return Result.success("梦想钱包创建成功", wallet);
         } catch (Exception e) {
-            log.error("创建梦想钱包失败: {}", e.getMessage(), e);
+            log.error("==================== 创建梦想钱包失败 ====================");
+            log.error("异常类型: {}", e.getClass().getName());
+            log.error("异常消息: {}", e.getMessage());
+            log.error("完整堆栈:", e);
             return Result.error(e.getMessage());
         }
     }
@@ -180,6 +193,23 @@ public class DreamWalletController {
             return Result.success(message);
         } catch (Exception e) {
             log.error("更新梦想进度失败: {}", e.getMessage(), e);
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取梦想钱包交易记录
+     */
+    @GetMapping("/records/{walletId}")
+    public Result<Map<String, Object>> getDreamWalletRecords(
+            @PathVariable Long walletId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        try {
+            Map<String, Object> records = dreamWalletService.getDreamWalletRecords(walletId, page, pageSize);
+            return Result.success("获取成功", records);
+        } catch (Exception e) {
+            log.error("获取梦想钱包交易记录失败: {}", e.getMessage(), e);
             return Result.error(e.getMessage());
         }
     }

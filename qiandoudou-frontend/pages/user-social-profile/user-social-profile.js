@@ -6,7 +6,7 @@ Page({
   data: {
     userInfo: {
       nickname: '昆虫记',
-      avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/user-avatar.png',
+      avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png',
       description: '每100个粉丝，打卡一个5A级景区'
     },
     socialStats: {
@@ -44,6 +44,11 @@ Page({
   onShow() {
     // 页面显示时重新加载用户信息，确保头像等信息是最新的
     this.loadUserInfo()
+
+    // 重新加载钱包数据，确保关注列表是最新的
+    if (this.data.userId) {
+      this.loadUserData(this.data.userId)
+    }
   },
 
   // 加载用户信息
@@ -82,7 +87,7 @@ Page({
       
       const displayUserInfo = {
         nickname: targetUserInfo.nickname,
-        avatar: targetUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+        avatar: targetUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
         description: targetUserInfo.description,
         hasCustomAvatar: !!(targetUserInfo.avatar && !targetUserInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
       }
@@ -103,7 +108,7 @@ Page({
       // 有本地用户信息，直接使用
       const displayUserInfo = {
         nickname: userInfo.nickname || '钱兜兜用户',
-        avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+        avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
         description: userInfo.description || '这个人很懒，什么都没留下',
         hasCustomAvatar: !!(userInfo.avatar && !userInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
       }
@@ -141,7 +146,7 @@ Page({
         const displayUserInfo = {
           id: serverUserInfo.id || 1,
           nickname: serverUserInfo.nickname || '钱兜兜用户',
-          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
           hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
         }
@@ -162,7 +167,7 @@ Page({
         const defaultUserInfo = {
           id: 1,
           nickname: '钱兜兜用户',
-          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/usages/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: '这个人很懒，什么都没留下',
           hasCustomAvatar: false
         }
@@ -234,9 +239,17 @@ Page({
 
   // 加载用户关注的钱包
   loadFollowedWallets(userId) {
+    console.log('=== 加载用户关注的钱包 ===')
+    console.log('userId:', userId)
+
     return walletAPI.getUserFollowedWallets(userId)
       .then(result => {
+        console.log('关注钱包API响应:', result)
+
         const wallets = result.data || []
+        console.log('关注的钱包数量:', wallets.length)
+        console.log('关注的钱包数据:', wallets)
+
         const followedWallets = wallets.map(wallet => {
           return {
             id: wallet.id,
@@ -250,14 +263,15 @@ Page({
             viewsCount: wallet.views_count || 0
           }
         })
-        
+
+        console.log('处理后的关注钱包数据:', followedWallets)
         this.setData({ followedWallets })
 
         return followedWallets
       })
       .catch(error => {
+        console.error('加载关注钱包失败:', error)
 
-        
         // API失败时显示空列表
         this.setData({ followedWallets: [] })
         return []
@@ -287,8 +301,55 @@ Page({
     return Promise.resolve()
   },
 
+  // 根据进度获取梦想钱包的汽车图片URL
+  getDreamWalletImageUrl(wallet) {
+    const dreamImages = [
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 0-20%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 20-40%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png', // 40-60%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png', // 60-80%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'  // 80-100%
+    ]
+
+    // 计算进度百分比
+    const targetAmount = wallet.dreamTargetAmount || wallet.dream_target_amount || wallet.targetAmount || 0
+    const currentAmount = wallet.balance || wallet.currentAmount || 0
+    const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
+
+    // 根据进度选择图片
+    let imageIndex = 0
+    if (progress >= 80) imageIndex = 4
+    else if (progress >= 60) imageIndex = 3
+    else if (progress >= 40) imageIndex = 2
+    else if (progress >= 20) imageIndex = 1
+
+    return dreamImages[imageIndex]
+  },
+
   // 获取钱包背景样式
   getWalletBackground(wallet) {
+    // 梦想钱包类型（type=4购物, type=5旅行）
+    const isDreamWallet = wallet.type === 4 || wallet.type === 5 ||
+                         (wallet.dreamType !== undefined) ||
+                         (wallet.dream_target_amount !== undefined) ||
+                         (wallet.dreamTargetAmount !== undefined)
+
+    if (isDreamWallet) {
+      // 梦想钱包：根据类型使用不同背景
+      let dreamImage
+
+      // Type 5 = 旅行钱包，使用目的地图片
+      if (wallet.type === 5) {
+        dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
+                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
+      } else {
+        // Type 4 = 购物钱包，使用汽车图片
+        dreamImage = this.getDreamWalletImageUrl(wallet)
+      }
+
+      return `background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%); background-image: url('${dreamImage}'); background-size: cover; background-position: center;`
+    }
+
     const backgroundOptions = {
       'gradient1': 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);',
       'gradient2': 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);',
@@ -298,7 +359,7 @@ Page({
       'gradient6': 'background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);'
     }
 
-    // 获取背景设置
+    // 获取背景设置（兼容不同的字段名）
     const currentBackground = wallet.backgroundImage || wallet.background_image || 'gradient1'
 
     if (currentBackground) {
@@ -319,8 +380,8 @@ Page({
     }
 
     // 默认背景
-    return wallet.type === 2 ? 
-      'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' : 
+    return wallet.type === 2 ?
+      'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);' :
       'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);'
   },
 

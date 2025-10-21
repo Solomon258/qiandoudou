@@ -45,12 +45,12 @@
     <!-- 钱兜兜列表 -->
     <view wx:if="{{wallets.length > 0}}" class="wallet-list-section">
       <view wx:for="{{wallets}}" wx:key="id" class="wallet-card" style="{{item.backgroundStyle}}"
-        bindtap="handleWalletTap" data-id="{{item.id}}">
+        bindtap="handleWalletTap" data-id="{{item.id}}" data-type="{{item.type}}" data-wallet="{{item}}">
         <!-- 钱兜兜信息 -->
-        <view class="wallet-info">
+        <view class="wallet-info" style="{{item.textColorStyle}}">
           <view class="wallet-header">
             <text class="wallet-title">{{item.name || '钱兜兜'}}</text>
-            <text class="wallet-type">{{item.type === 1 ? '个人' : (item.type === 2 ? '情侣' : (item.type === 3 ? '梦想攒钱(购物)' : (item.type === 4 ? '梦想攒钱(旅行)' : '搭子')))}}</text>
+            <text class="wallet-type">{{item.type === 1 ? '个人' : (item.type === 2 ? '情侣' : (item.type === 3 ? '搭子' : (item.type === 4 ? '梦想攒钱(购物)' : (item.type === 5 ? '梦想攒钱(旅行)' : '未知类型'))))}}</text>
           </view>
           <!-- 分享按钮 -->
           <view class="share-btn" catchtap="onWalletShare" data-wallet="{{item}}">
@@ -60,16 +60,6 @@
             <text class="amount-text">¥ {{item.balance || '0.00'}}</text>
           </view>
 
-          <!-- 梦想钱包进度信息 -->
-          <view wx:if="{{item.type === 3 || item.type === 4}}" class="dream-progress-info">
-            <view class="dream-target">
-              <text class="target-label">目标：¥{{item.dream_target_amount || '0.00'}}</text>
-            </view>
-            <view class="progress-bar">
-              <view class="progress-fill" style="width: {{item.dream_progress || 0}}%"></view>
-            </view>
-            <text class="progress-text">已完成 {{item.dream_progress || 0}}%</text>
-          </view>
 
           <!-- AI伴侣信息（情侣钱兜兜） -->
           <view wx:if="{{item.type === 2 && item.ai_partner_name}}" class="ai-partner-info">

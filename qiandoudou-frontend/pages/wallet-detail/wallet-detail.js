@@ -83,6 +83,11 @@ Page({
     const walletId = options.id
     const fromSocial = options.fromSocial === 'true'
 
+    console.log('=== wallet-detail onLoad 参数 ===')
+    console.log('walletId:', walletId)
+    console.log('fromSocial:', fromSocial)
+    console.log('options.fromSocial:', options.fromSocial)
+
     // 从URL参数中读取社交信息
     const socialInfo = fromSocial ? {
       owner_nickname: decodeURIComponent(options.ownerNickname || ''),
@@ -195,7 +200,15 @@ Page({
         // 验证是否为自己的钱包
         const currentUserId = app.globalData.userInfo?.id
         const isOwnWallet = (wallet.userId == currentUserId || wallet.user_id == currentUserId)
-        
+
+        console.log('=== 钱包所有权验证 ===')
+        console.log('currentUserId:', currentUserId)
+        console.log('wallet.userId:', wallet.userId)
+        console.log('wallet.user_id:', wallet.user_id)
+        console.log('isOwnWallet:', isOwnWallet)
+        console.log('fromSocial:', this.data.fromSocial)
+        console.log('关注按钮显示条件 (fromSocial && !isOwnWallet):', this.data.fromSocial && !isOwnWallet)
+
         // 如果来自社交圈，需要获取钱包所有者的信息
         if (this.data.fromSocial && !isOwnWallet) {
           // 从公开钱包API获取的数据可能已经包含owner信息，直接使用
@@ -272,7 +285,12 @@ Page({
           selectedBackground: wallet.backgroundImage || 'gradient1',
           isOwnWallet: isOwnWallet
         })
-        
+
+        console.log('=== setData 后的状态 ===')
+        console.log('this.data.fromSocial:', this.data.fromSocial)
+        console.log('this.data.isOwnWallet:', this.data.isOwnWallet)
+        console.log('关注按钮应该显示:', this.data.fromSocial && !this.data.isOwnWallet)
+
         // 加载钱包所有者的头像信息
         this.loadWalletOwnerAvatar(wallet.userId || wallet.user_id)
         

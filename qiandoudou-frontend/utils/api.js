@@ -3,10 +3,8 @@ const app = getApp()
 
 // 后端API基础地址
 const BASE_URL = 'http://localhost:8080/api'  // 本地开发
-// const BASE_URL = 'https://xcx22.dawoa.com/api'  // IP访问（用于微信小程序调试）
-// const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
-// const BASE_URL = 'https://ai-where.com/api'
-// https://heartllo.cn/api/scripts/2/chapters/2
+//  const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
+
 
 /**
  * 通用网络请求函数
@@ -615,6 +613,36 @@ const walletAPI = {
     return request({
       url: `/dream-wallet/detail/${walletId}`,
       method: 'GET'
+    })
+  },
+
+  // 获取梦想钱包交易记录（使用通用交易记录接口）
+  getDreamWalletRecords(walletId, page = 1, pageSize = 20) {
+    return request({
+      url: `/wallet/transactions`,
+      method: 'GET',
+      data: { walletId }
+    }).then(result => {
+      // 转换数据格式以适配分页
+      if (result && result.data) {
+        const allRecords = result.data || []
+        const startIndex = (page - 1) * pageSize
+        const endIndex = startIndex + pageSize
+        const paginatedRecords = allRecords.slice(startIndex, endIndex)
+        const hasMore = endIndex < allRecords.length
+        
+        return {
+          ...result,
+          data: {
+            records: paginatedRecords,
+            hasMore: hasMore,
+            total: allRecords.length,
+            page: page,
+            pageSize: pageSize
+          }
+        }
+      }
+      return result
     })
   },
 

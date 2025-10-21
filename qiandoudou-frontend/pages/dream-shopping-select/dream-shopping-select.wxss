@@ -89,8 +89,8 @@
 .item-icon {
   position: relative;
   z-index: 2;
-  width: 60rpx;
-  height: 60rpx;
+  width: 72rpx;  /* 60 * 1.2 = 72 */
+  height: 72rpx;
   margin-bottom: 10rpx;
 }
 

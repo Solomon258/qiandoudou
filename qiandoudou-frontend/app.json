@@ -26,7 +26,9 @@
     "pages/dream-create/dream-create",
     "pages/dream-detail/dream-detail",
     "pages/dream-rewards/dream-rewards",
-    "pages/dream-share/dream-share"
+    "pages/dream-share/dream-share",
+    "pages/badge-share/badge-share",
+    "pages/car-share/car-share"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -114,34 +114,35 @@
   </view>
 
   <!-- 关注的钱兜兜 -->
-  <view wx:if="{{followedWallets.length > 0}}" class="section">
+  <view class="section">
     <view class="section-header">
       <text class="section-title">关注的钱兜兜({{followedWallets.length}})</text>
-      <view class="recent-follow" bindtap="viewRecentFollows">
-        <text class="recent-text">最近关注</text>
-        <view class="arrow-icon"></view>
-      </view>
     </view>
-    
+
     <view class="followed-wallet-list">
-      <view wx:for="{{followedWallets}}" wx:key="id" 
-            class="followed-wallet-card" 
-            bindtap="onFollowedWalletTap" 
+      <view wx:if="{{followedWallets.length === 0}}" class="empty-state">
+        <text class="empty-icon">💕</text>
+        <text class="empty-text">还没有关注的钱兜兜</text>
+      </view>
+
+      <view wx:for="{{followedWallets}}" wx:key="id"
+            class="followed-wallet-card"
+            bindtap="onFollowedWalletTap"
             data-wallet-id="{{item.id}}">
         <!-- 钱包背景 -->
         <view class="followed-wallet-bg" style="{{item.backgroundStyle}}">
           <!-- 参与人数标签 -->
           <view class="followed-participant-badge">{{item.participantCount}}人</view>
-          
+
           <!-- 钱包标题 -->
           <view class="followed-wallet-title">{{item.title}}</view>
-          
+
           <!-- 钱包金额 -->
           <view class="followed-wallet-amount">
             <text class="followed-amount-symbol">¥</text>
             <text class="followed-amount-number">{{item.amount}}</text>
           </view>
-          
+
           <!-- 粉丝数 -->
           <view class="followed-fans-count">粉丝 {{item.participantCount}}</view>
         </view>

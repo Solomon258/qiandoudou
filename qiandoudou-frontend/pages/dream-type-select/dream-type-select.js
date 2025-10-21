@@ -1,23 +1,17 @@
 // pages/dream-type-select/dream-type-select.js
+const { walletAPI } = require('../../utils/api.js')
+
 Page({
   data: {
     currentTab: 0, // 0: 购物, 1: 旅行
     // 购物商品数据
-    shoppingItems: [
-      { id: 1, name: '轿车', icon: '/static/icon/paopao/shopping/轿车@3x.png', price: '100000' },
-      { id: 2, name: 'SUV', icon: '/static/icon/paopao/shopping/suv@3x.png', price: '150000' },
-      { id: 3, name: '超跑', icon: '/static/icon/paopao/shopping/超跑@3x.png', price: '500000' },
-      { id: 4, name: '包包', icon: '/static/icon/paopao/shopping/包包@3x.png', price: '5000' },
-      { id: 5, name: '劳力士', icon: '/static/icon/paopao/shopping/劳力士@3x.png', price: '50000' }
-    ],
+    shoppingItems: [],
+    allShoppingItems: [], // 存储所有购物商品（用于搜索）
     // 旅行目的地数据
-    travelItems: [
-      { id: 1, name: '北京', icon: '/static/icon/paopao/travel/编组 2.png', landmark: '天安门' },
-      { id: 2, name: '西安', icon: '/static/icon/paopao/travel/编组 3.png', landmark: '兵马俑' },
-      { id: 3, name: '乌鲁木齐', icon: '/static/icon/paopao/travel/编组 4.png', landmark: '天山' },
-      { id: 4, name: '悉尼', icon: '/static/icon/paopao/travel/编组 5.png', landmark: '歌剧院' },
-      { id: 5, name: '东京', icon: '/static/icon/paopao/travel/编组 6.png', landmark: '富士山' }
-    ],
+    travelItems: [],
+    allTravelItems: [], // 存储所有旅行目的地（用于搜索）
+    // 搜索关键词
+    searchKeyword: '',
     // 动画延迟数据
     bubblePositions: [
       { animationDelay: 0 },
@@ -26,6 +20,9 @@ Page({
       { animationDelay: 1.5 },
       { animationDelay: 2.0 }
     ],
+
+    // 加载状态
+    loading: false,
     
     // 弹框相关数据
     showShoppingModal: false,
@@ -49,13 +46,17 @@ Page({
       departureCity: '深圳',
       destinationCity: '',
       travelDays: 7,
+      targetAmount: '',
       tags: ['说走就走', '去班味', '牛马向往'],
-      quickCities: ['悉什', '四勒格', '计算机']
+      quickCities: ['北京', '上海', '深圳', '广州'],
+      quickAmounts: ['¥3000', '¥5000', '¥10000']
     }
   },
 
   onLoad(options) {
-    // 页面加载时不需要特殊处理
+    // 加载商品和目的地数据
+    this.loadShoppingItems()
+    this.loadTravelItems()
   },
 
   onShow() {
@@ -63,12 +64,77 @@ Page({
   },
 
   /**
+   * 加载购物商品列表
+   */
+  async loadShoppingItems() {
+    try {
+      const result = await walletAPI.getDreamItems(1) // category = 1 表示购物
+      console.log('购物商品API返回:', result)
+
+      if (result && result.data) {
+        const items = result.data.map(item => ({
+          id: item.id,
+          name: item.displayName,
+          icon: item.bubbleImageUrl || item.imageUrl,
+          price: item.suggestedAmount ? item.suggestedAmount.toString() : '0'
+        }))
+
+        this.setData({
+          shoppingItems: items,
+          allShoppingItems: items // 保存完整列表用于搜索
+        })
+      }
+    } catch (error) {
+      console.error('加载购物商品失败:', error)
+      wx.showToast({
+        title: '加载购物商品失败',
+        icon: 'none'
+      })
+    }
+  },
+
+  /**
+   * 加载旅行目的地列表
+   */
+  async loadTravelItems() {
+    try {
+      const result = await walletAPI.getDreamItems(2) // category = 2 表示旅行
+      console.log('旅行目的地API返回:', result)
+
+      if (result && result.data) {
+        const items = result.data.map(item => ({
+          id: item.id,
+          name: item.displayName,
+          icon: item.bubbleImageUrl || item.imageUrl,
+          landmark: item.description || ''
+        }))
+
+        this.setData({
+          travelItems: items,
+          allTravelItems: items // 保存完整列表用于搜索
+        })
+      }
+    } catch (error) {
+      console.error('加载旅行目的地失败:', error)
+      wx.showToast({
+        title: '加载旅行目的地失败',
+        icon: 'none'
+      })
+    }
+  },
+
+  /**
    * 切换标签页
    */
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab
+
+    // 切换标签时清空搜索框并恢复所有数据
     this.setData({
-      currentTab: parseInt(tab)
+      currentTab: parseInt(tab),
+      searchKeyword: '',
+      shoppingItems: this.data.allShoppingItems,
+      travelItems: this.data.allTravelItems
     })
   },
 
@@ -111,12 +177,68 @@ Page({
   },
 
   /**
-   * 搜索功能
+   * 搜索输入
    */
   onSearchInput(e) {
-    const keyword = e.detail.value.toLowerCase()
-    // 这里可以实现搜索逻辑
+    const keyword = e.detail.value
+    this.setData({
+      searchKeyword: keyword
+    })
+  },
+
+  /**
+   * 搜索确认（点击回车）
+   */
+  onSearchConfirm(e) {
+    const keyword = e.detail.value.trim()
+    this.performSearch(keyword)
+  },
+
+  /**
+   * 执行搜索
+   */
+  performSearch(keyword) {
     console.log('搜索关键词:', keyword)
+
+    if (!keyword) {
+      // 如果关键词为空，显示所有数据
+      this.setData({
+        shoppingItems: this.data.allShoppingItems,
+        travelItems: this.data.allTravelItems
+      })
+      return
+    }
+
+    const lowerKeyword = keyword.toLowerCase()
+
+    // 搜索购物商品
+    const filteredShopping = this.data.allShoppingItems.filter(item =>
+      item.name.toLowerCase().includes(lowerKeyword)
+    )
+
+    // 搜索旅行目的地
+    const filteredTravel = this.data.allTravelItems.filter(item =>
+      item.name.toLowerCase().includes(lowerKeyword) ||
+      (item.landmark && item.landmark.toLowerCase().includes(lowerKeyword))
+    )
+
+    this.setData({
+      shoppingItems: filteredShopping,
+      travelItems: filteredTravel
+    })
+
+    // 如果当前标签页没有搜索结果，提示用户
+    if (this.data.currentTab === 0 && filteredShopping.length === 0) {
+      wx.showToast({
+        title: '未找到相关商品',
+        icon: 'none'
+      })
+    } else if (this.data.currentTab === 1 && filteredTravel.length === 0) {
+      wx.showToast({
+        title: '未找到相关目的地',
+        icon: 'none'
+      })
+    }
   },
 
   // ===== 购物弹框相关方法 =====
@@ -171,6 +293,8 @@ Page({
    */
   confirmCreateShopping() {
     const { shoppingModalData } = this.data
+    const app = getApp()
+    const { walletAPI } = require('../../utils/api.js')
     
     if (!shoppingModalData.walletName.trim()) {
       wx.showToast({
@@ -188,10 +312,78 @@ Page({
       return
     }
 
-    // 跳转到创建页面
-    wx.navigateTo({
-      url: `/pages/dream-create/dream-create?dreamType=1&itemId=${shoppingModalData.itemId}&itemName=${encodeURIComponent(shoppingModalData.itemName)}&suggestedAmount=${shoppingModalData.targetAmount}&walletName=${encodeURIComponent(shoppingModalData.walletName)}&carType=${encodeURIComponent(shoppingModalData.selectedCarType)}`
-    })
+    const userId = app.globalData.userInfo?.id
+    if (!userId) {
+      wx.showToast({
+        title: '用户信息异常',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 直接创建梦想钱包
+    this.setData({ loading: true })
+    
+    walletAPI.createDreamWallet(
+      userId, 
+      1, // 购物类型
+      shoppingModalData.walletName.trim(), 
+      parseFloat(shoppingModalData.targetAmount), 
+      shoppingModalData.itemId, 
+      null // 购物类型不需要天数
+    )
+      .then(result => {
+        console.log('创建购物梦想钱包成功，返回数据:', result)
+        
+        wx.showToast({
+          title: '创建成功',
+          icon: 'success'
+        })
+        
+        // 通知首页刷新数据
+        const pages = getCurrentPages()
+        if (pages.length > 1) {
+          const homePage = pages[pages.length - 2] // 首页
+          if (homePage && homePage.loadWallets) {
+            homePage.loadWallets()
+          }
+        }
+        
+        // 获取钱包ID
+        const walletId = result.data?.walletId || result.data?.id || result.walletId || result.id
+        console.log('提取的钱包ID:', walletId)
+        
+        if (!walletId) {
+          console.error('无法获取钱包ID，返回数据:', result)
+          wx.showToast({
+            title: '创建成功，但跳转失败',
+            icon: 'none'
+          })
+          // 如果没有钱包ID，就返回首页
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+          return
+        }
+        
+        setTimeout(() => {
+          // 跳转到梦想详情页
+          console.log('准备跳转到详情页，钱包ID:', walletId)
+          wx.redirectTo({
+            url: `/pages/dream-detail/dream-detail?walletId=${walletId}`
+          })
+        }, 1500)
+      })
+      .catch(error => {
+        console.error('创建购物梦想钱包失败:', error)
+        wx.showToast({
+          title: error.message || '创建失败',
+          icon: 'none'
+        })
+      })
+      .finally(() => {
+        this.setData({ loading: false })
+      })
     
     this.closeShoppingModal()
   },
@@ -220,7 +412,7 @@ Page({
   selectTravelTag(e) {
     const tag = e.currentTarget.dataset.tag
     this.setData({
-      'travelModalData.selectedTag': tag
+      'travelModalData.walletName': tag  // 将标签内容填充到钱包名称，选中状态自动更新
     })
   },
 
@@ -243,21 +435,49 @@ Page({
   },
 
   /**
-   * 选择快捷城市
+   * 选择快捷城市（填充到出发地）
    */
   selectTravelQuickCity(e) {
     const city = e.currentTarget.dataset.city
     this.setData({
-      'travelModalData.destinationCity': city
+      'travelModalData.departureCity': city  // 填充到出发地
     })
   },
 
   /**
-   * 输入旅游天数
+   * 输入旅行天数（只允许正整数）
    */
   onTravelDaysInput(e) {
+    let value = e.detail.value
+    // 只保留数字
+    value = value.replace(/[^\d]/g, '')
+    // 转换为整数
+    let days = parseInt(value) || ''
+    // 确保是正整数
+    if (days && days < 1) {
+      days = 1
+    }
     this.setData({
-      'travelModalData.travelDays': parseInt(e.detail.value) || 1
+      'travelModalData.travelDays': days
+    })
+  },
+
+  /**
+   * 输入旅行目标金额
+   */
+  onTravelTargetAmountInput(e) {
+    this.setData({
+      'travelModalData.targetAmount': e.detail.value
+    })
+  },
+
+  /**
+   * 选择旅行快捷金额
+   */
+  selectTravelQuickAmount(e) {
+    const amount = e.currentTarget.dataset.amount.replace('¥', '')
+    this.setData({
+      'travelModalData.targetAmount': amount
     })
   },
 
@@ -266,10 +486,20 @@ Page({
    */
   confirmCreateTravel() {
     const { travelModalData } = this.data
-    
+    const app = getApp()
+    const { walletAPI } = require('../../utils/api.js')
+
     if (!travelModalData.walletName.trim()) {
       wx.showToast({
         title: '请输入梦想攒的名称',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (!travelModalData.departureCity.trim()) {
+      wx.showToast({
+        title: '请输入出发地',
         icon: 'none'
       })
       return
@@ -291,10 +521,81 @@ Page({
       return
     }
 
-    // 跳转到创建页面
-    wx.navigateTo({
-      url: `/pages/dream-create/dream-create?dreamType=2&itemId=${travelModalData.itemId}&itemName=${encodeURIComponent(travelModalData.itemName)}&walletName=${encodeURIComponent(travelModalData.walletName)}&departureCity=${encodeURIComponent(travelModalData.departureCity)}&destinationCity=${encodeURIComponent(travelModalData.destinationCity)}&travelDays=${travelModalData.travelDays}&selectedTag=${encodeURIComponent(travelModalData.selectedTag)}`
-    })
+    const userId = app.globalData.userInfo?.id
+    if (!userId) {
+      wx.showToast({
+        title: '用户信息异常',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 直接创建梦想钱包
+    this.setData({ loading: true })
+
+    // 获取目标金额，如果没有则使用建议金额或0
+    const targetAmount = travelModalData.targetAmount ? parseFloat(travelModalData.targetAmount) : 0
+
+    walletAPI.createDreamWallet(
+      userId,
+      2, // 旅行类型
+      travelModalData.walletName.trim(),
+      targetAmount,
+      travelModalData.itemId,
+      travelModalData.travelDays
+    )
+      .then(result => {
+        console.log('创建旅行梦想钱包成功，返回数据:', result)
+        
+        wx.showToast({
+          title: '创建成功',
+          icon: 'success'
+        })
+        
+        // 通知首页刷新数据
+        const pages = getCurrentPages()
+        if (pages.length > 1) {
+          const homePage = pages[pages.length - 2] // 首页
+          if (homePage && homePage.loadWallets) {
+            homePage.loadWallets()
+          }
+        }
+        
+        // 获取钱包ID
+        const walletId = result.data?.walletId || result.data?.id || result.walletId || result.id
+        console.log('提取的钱包ID:', walletId)
+        
+        if (!walletId) {
+          console.error('无法获取钱包ID，返回数据:', result)
+          wx.showToast({
+            title: '创建成功，但跳转失败',
+            icon: 'none'
+          })
+          // 如果没有钱包ID，就返回首页
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+          return
+        }
+        
+        setTimeout(() => {
+          // 跳转到梦想详情页
+          console.log('准备跳转到详情页，钱包ID:', walletId)
+          wx.redirectTo({
+            url: `/pages/dream-detail/dream-detail?walletId=${walletId}`
+          })
+        }, 1500)
+      })
+      .catch(error => {
+        console.error('创建旅行梦想钱包失败:', error)
+        wx.showToast({
+          title: error.message || '创建失败',
+          icon: 'none'
+        })
+      })
+      .finally(() => {
+        this.setData({ loading: false })
+      })
     
     this.closeTravelModal()
   },

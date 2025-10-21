@@ -8,7 +8,13 @@
 
   <!-- 搜索框 -->
   <view class="search-box">
-    <input class="search-input" placeholder="{{'搜索' + (currentTab === 0 ? '商品' : '目的地')}}" bindinput="onSearchInput" />
+    <input
+      class="search-input"
+      placeholder="{{'搜索' + (currentTab === 0 ? '商品' : '目的地')}}"
+      value="{{searchKeyword}}"
+      bindinput="onSearchInput"
+      bindconfirm="onSearchConfirm"
+      confirm-type="search" />
   </view>
 
   <!-- 气泡容器 -->
@@ -120,32 +126,32 @@
   </view>
 
   <!-- 旅行梦想弹框 -->
-  <view class="modal-overlay" wx:if="{{showTravelModal}}" bindtap="closeTravelModal">
-    <view class="modal-content" catchtap="preventModalClose">
+  <view class="modal-overlay travel-modal-overlay" wx:if="{{showTravelModal}}" bindtap="closeTravelModal">
+    <view class="modal-content travel-modal-content" catchtap="preventModalClose">
       <!-- 弹框头部 -->
-      <view class="modal-header">
-        <text class="modal-title">选择梦想攒的主题</text>
-        <image class="modal-icon" src="/static/icon/paopao/sini_compressed.png" mode="aspectFit" />
+      <view class="modal-header travel-modal-header">
+        <text class="modal-title">选择旅游地点</text>
+        <image class="modal-icon travel-modal-icon" src="{{travelModalData.itemIcon}}" mode="aspectFit" />
       </view>
 
       <!-- 梦想名称输入 -->
       <view class="modal-section">
         <text class="modal-label">请输入梦想攒的名称</text>
-        <input 
-          class="modal-input" 
-          placeholder="XXX的钱包" 
-          value="{{travelModalData.walletName}}" 
-          bindinput="onTravelWalletNameInput" 
+        <input
+          class="modal-input"
+          placeholder="XXX的钱包"
+          value="{{travelModalData.walletName}}"
+          bindinput="onTravelWalletNameInput"
           maxlength="20" />
       </view>
 
       <!-- 标签选择 -->
       <view class="modal-section">
         <view class="travel-tags">
-          <view 
-            wx:for="{{travelModalData.tags}}" 
-            wx:key="*this" 
-            class="travel-tag-item {{travelModalData.selectedTag === item ? 'selected' : ''}}"
+          <view
+            wx:for="{{travelModalData.tags}}"
+            wx:key="*this"
+            class="travel-tag-item {{travelModalData.walletName === item ? 'selected' : ''}}"
             data-tag="{{item}}"
             bindtap="selectTravelTag">
             <text>{{item}}</text>
@@ -157,27 +163,27 @@
       <view class="modal-section">
         <text class="modal-label">请输入出发地与目的地</text>
         <view class="city-inputs">
-          <input 
-            class="city-input" 
-            placeholder="深圳" 
-            value="{{travelModalData.departureCity}}" 
+          <input
+            class="city-input"
+            placeholder="深圳"
+            value="{{travelModalData.departureCity}}"
             bindinput="onDepartureCityInput" />
           <text class="city-separator">—</text>
-          <input 
-            class="city-input" 
-            placeholder="乌鲁木齐" 
-            value="{{travelModalData.destinationCity}}" 
-            bindinput="onDestinationCityInput" />
+          <input
+            class="city-input city-input-disabled"
+            placeholder="{{travelModalData.destinationCity}}"
+            value="{{travelModalData.destinationCity}}"
+            disabled="{{true}}" />
         </view>
       </view>
 
       <!-- 快捷城市选择 -->
       <view class="modal-section">
         <view class="quick-cities">
-          <view 
-            wx:for="{{travelModalData.quickCities}}" 
-            wx:key="*this" 
-            class="quick-city-item"
+          <view
+            wx:for="{{travelModalData.quickCities}}"
+            wx:key="*this"
+            class="quick-city-item {{travelModalData.departureCity === item ? 'selected' : ''}}"
             data-city="{{item}}"
             bindtap="selectTravelQuickCity">
             <text>{{item}}</text>
@@ -185,17 +191,15 @@
         </view>
       </view>
 
-      <!-- 旅游天数输入 -->
-      <view class="modal-section">
-        <text class="modal-label">请输入旅游天数</text>
-        <view class="days-input-container">
-          <input 
-            class="days-input" 
-            placeholder="7" 
-            value="{{travelModalData.travelDays}}" 
-            bindinput="onTravelDaysInput" 
-            type="number" />
-        </view>
+      <!-- 旅行天数输入 -->
+      <view class="modal-section travel-days-section">
+        <text class="modal-label">请输入旅行天数</text>
+        <input
+          class="days-input"
+          placeholder="7"
+          value="{{travelModalData.travelDays}}"
+          bindinput="onTravelDaysInput"
+          type="number" />
       </view>
 
       <!-- 按钮区域 -->

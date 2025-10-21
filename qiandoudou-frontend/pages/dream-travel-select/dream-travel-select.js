@@ -7,8 +7,7 @@ Page({
     dreamItems: [],
     filteredItems: [],
     selectedItem: null,
-    bubbleAnimations: [], // 存储气泡动画数据
-    
+
     // 弹框相关数据
     showModal: false,
     modalData: {
@@ -29,35 +28,50 @@ Page({
     this.loadDreamItems()
   },
 
-  onReady() {
-    this.startBubbleAnimations()
-  },
-
   /**
    * 加载旅行目的地列表
    */
   async loadDreamItems() {
     try {
       wx.showLoading({ title: '加载中...' })
-      
-      // 模拟旅行目的地数据
-      const mockData = [
-        { id: 1, displayName: '北京', imageUrl: '/static/icon/paopao/travel/编组 2.png', suggestedAmount: 5000 },
-        { id: 2, displayName: '西安', imageUrl: '/static/icon/paopao/travel/编组 3.png', suggestedAmount: 3000 },
-        { id: 3, displayName: '乌鲁木齐', imageUrl: '/static/icon/paopao/travel/编组 4.png', suggestedAmount: 8000 },
-        { id: 4, displayName: '悉尼', imageUrl: '/static/icon/paopao/travel/编组 5.png', suggestedAmount: 15000 },
-        { id: 5, displayName: '东京', imageUrl: '/static/icon/paopao/travel/编组 6.png', suggestedAmount: 12000 }
-      ]
-      
-      this.setData({
-        dreamItems: mockData,
-        filteredItems: mockData
-      })
-      this.initBubbleAnimations()
+
+      // 从后端API获取旅行目的地数据（category = 2 表示旅行）
+      const result = await walletAPI.getDreamItems(2)
+
+      console.log('API返回的数据:', result)
+
+      if (result && result.data) {
+        const items = result.data.map(item => {
+          console.log('处理item:', item)
+          return {
+            id: item.id,
+            displayName: item.displayName,
+            imageUrl: item.bubbleImageUrl || item.imageUrl, // 使用气泡图片
+            suggestedAmount: item.suggestedAmount
+          }
+        })
+
+        console.log('处理后的items:', items)
+        console.log('items数量:', items.length)
+
+        this.setData({
+          dreamItems: items,
+          filteredItems: items
+        }, () => {
+          console.log('setData完成, dreamItems数量:', this.data.dreamItems.length)
+          console.log('setData完成, filteredItems数量:', this.data.filteredItems.length)
+        })
+      } else {
+        console.error('API返回数据格式错误:', result)
+        wx.showToast({
+          title: 'API返回数据格式错误',
+          icon: 'none'
+        })
+      }
     } catch (error) {
       console.error('加载旅行目的地失败:', error)
       wx.showToast({
-        title: '网络错误',
+        title: '加载失败，请检查后端服务',
         icon: 'none'
       })
     } finally {
@@ -111,58 +125,6 @@ Page({
       })
     }
   },
-
-  /**
-   * 初始化气泡动画
-   */
-  initBubbleAnimations() {
-    const itemsWithStyle = this.data.filteredItems.map((item, index) => {
-      const animation = {
-        x: Math.random() * 300 + 50, // 随机X位置
-        y: Math.random() * 400 + 100, // 随机Y位置
-        scale: 0.8 + Math.random() * 0.4, // 随机缩放
-        rotation: Math.random() * 360, // 随机旋转
-        animationDelay: index * 200 // 动画延迟
-      }
-      
-      return {
-        ...item,
-        bubbleStyle: `
-          left: ${animation.x}rpx;
-          top: ${animation.y}rpx;
-          transform: scale(${animation.scale}) rotate(${animation.rotation}deg);
-          animation-delay: ${animation.animationDelay}ms;
-        `
-      }
-    })
-    
-    this.setData({ 
-      filteredItems: itemsWithStyle,
-      bubbleAnimations: itemsWithStyle.map(item => ({
-        id: item.id,
-        x: parseFloat(item.bubbleStyle.match(/left: ([\d.]+)rpx/)[1]),
-        y: parseFloat(item.bubbleStyle.match(/top: ([\d.]+)rpx/)[1])
-      }))
-    })
-  },
-
-  /**
-   * 开始气泡动画
-   */
-  startBubbleAnimations() {
-    // 每3秒更新一次气泡位置
-    setInterval(() => {
-      const animations = this.data.bubbleAnimations.map(bubble => ({
-        ...bubble,
-        x: Math.max(50, Math.min(300, bubble.x + (Math.random() - 0.5) * 100)),
-        y: Math.max(100, Math.min(500, bubble.y + (Math.random() - 0.5) * 100)),
-        rotation: bubble.rotation + (Math.random() - 0.5) * 90
-      }))
-      
-      this.setData({ bubbleAnimations: animations })
-    }, 3000)
-  },
-
 
   /**
    * 关闭弹框

@@ -1,1 +1,241 @@
 /* pages/dream-share/dream-share.wxss */
+
+.container {
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 32rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+/* 关闭按钮 */
+.close-btn {
+  position: absolute;
+  top: 60rpx;
+  right: 32rpx;
+  z-index: 1000;
+}
+
+.close-icon {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+/* 分享卡片 */
+.share-card {
+  width: 100%;
+  max-width: 600rpx;
+  position: relative;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.3);
+  margin-bottom: 40rpx;
+}
+
+.travel-share-image {
+  width: 100%;
+  height: 900rpx;
+  display: block;
+}
+
+/* 数据卡片覆盖层 */
+.data-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 24rpx;
+}
+
+.data-card {
+  width: 88%;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 顶部提示文字 */
+.top-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.hint-text {
+  font-size: 24rpx;
+  color: #333333;
+}
+
+.hint-days {
+  font-size: 40rpx;
+  color: #E91E63;
+  font-weight: bold;
+  margin: 0 6rpx;
+}
+
+/* 数据展示行 */
+.data-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1px solid #E5E5E5;
+  margin-bottom: 12rpx;
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.data-value {
+  font-size: 48rpx;
+  color: #000000;
+  font-weight: bold;
+  margin-bottom: 4rpx;
+}
+
+.data-label {
+  font-size: 20rpx;
+  color: #666666;
+}
+
+/* 日期行 */
+.date-row {
+  margin-bottom: 8rpx;
+}
+
+.date-text {
+  font-size: 26rpx;
+  color: #333333;
+  font-weight: 500;
+}
+
+/* 底部区域 */
+.bottom-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12rpx;
+}
+
+/* 进度提示 */
+.progress-hint {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-text {
+  font-size: 20rpx;
+  color: #666666;
+  margin-bottom: 4rpx;
+}
+
+.progress-percent {
+  font-size: 28rpx;
+  color: #E91E63;
+  font-weight: bold;
+}
+
+/* 二维码区域 */
+.qrcode-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.qrcode-image {
+  width: 100rpx;
+  height: 100rpx;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 8rpx;
+  margin-bottom: 6rpx;
+}
+
+.qrcode-hint {
+  font-size: 16rpx;
+  color: #999999;
+}
+
+/* 分享按钮区域 */
+.share-actions {
+  width: 100%;
+  max-width: 600rpx;
+}
+
+/* 主要分享按钮 */
+.main-share-btn {
+  width: 100%;
+  height: 96rpx;
+  background: #FF6B35;
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  border: none;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.4);
+}
+
+.main-share-btn::after {
+  border: none;
+}
+
+.main-share-btn:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.share-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.share-text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* 社交平台按钮 */
+.social-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 8rpx;
+}
+
+.social-btn:active {
+  opacity: 0.6;
+}
+
+.social-icon {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.social-label {
+  font-size: 22rpx;
+  color: #FFFFFF;
+  text-align: center;
+}

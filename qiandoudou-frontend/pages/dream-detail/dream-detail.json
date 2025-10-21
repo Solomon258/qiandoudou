@@ -1,3 +1,8 @@
 {
+  "navigationBarTitleText": "钱兜兜详情",
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#F5F5F5",
+  "enablePullDownRefresh": true,
   "usingComponents": {}
 }

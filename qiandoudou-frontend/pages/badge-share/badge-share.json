@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "分享",
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#F5F5F5",
+  "usingComponents": {
+    "share-modal": "/components/share-modal/share-modal"
+  }
+}

@@ -1,16 +1,17 @@
 /* pages/dream-travel-select/dream-travel-select.wxss */
 .container {
   min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
   position: relative;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 搜索区域 */
 .search-section {
   padding: 30rpx;
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 100;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10rpx);
@@ -39,27 +40,32 @@
 
 /* 气泡容器 */
 .bubble-container {
-  position: relative;
-  height: calc(100vh - 200rpx);
+  flex: 1;
   padding: 20rpx;
+  box-sizing: border-box;
 }
 
 .bubble-area {
-  position: relative;
   width: 100%;
-  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: flex-start;
+  padding: 20rpx 0 150rpx 0;
+  box-sizing: border-box;
 }
 
 /* 气泡目的地 */
 .bubble-item {
-  position: absolute;
-  width: 160rpx;
-  height: 160rpx;
+  position: relative;
+  width: 200rpx;
+  height: 220rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin: 20rpx 10rpx;
+  transition: all 0.3s ease;
   animation: float 6s ease-in-out infinite;
   cursor: pointer;
 }
@@ -75,10 +81,11 @@
 
 .bubble-bg {
   position: absolute;
-  width: 120rpx;
-  height: 120rpx;
+  width: 150rpx;
+  height: 150rpx;
   z-index: 1;
   transition: all 0.3s ease;
+  top: 10rpx;
 }
 
 .bubble-image {
@@ -89,9 +96,10 @@
 .item-icon {
   position: relative;
   z-index: 2;
-  width: 60rpx;
-  height: 60rpx;
-  margin-bottom: 10rpx;
+  width: 80rpx;
+  height: 80rpx;
+  margin-bottom: 15rpx;
+  margin-top: 15rpx;
 }
 
 .item-image {
@@ -107,10 +115,10 @@
 }
 
 .item-name text {
-  font-size: 22rpx;
-  color: #ffffff;
+  font-size: 26rpx;
+  color: #333333;
   font-weight: bold;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2rpx 4rpx rgba(255, 255, 255, 0.8);
 }
 
 .item-price {
@@ -177,6 +185,7 @@
   right: 0;
   text-align: center;
   z-index: 100;
+  pointer-events: none;
 }
 
 .tip-text {

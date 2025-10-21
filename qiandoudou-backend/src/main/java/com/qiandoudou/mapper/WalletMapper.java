@@ -16,11 +16,14 @@ import java.util.Map;
 public interface WalletMapper extends BaseMapper<Wallet> {
 
     /**
-     * 获取用户钱包列表（包含AI伴侣信息）
+     * 获取用户钱包列表（包含AI伴侣信息和梦想钱包字段）
      */
     @Select("SELECT w.id, w.user_id, w.name, CAST(w.type AS UNSIGNED) as type, w.balance, " +
             "w.background_image as backgroundImage, w.ai_partner_id, w.is_public, " +
             "w.create_time, w.update_time, w.deleted, " +
+            "w.dream_type as dreamType, w.dream_target_amount as dreamTargetAmount, " +
+            "w.dream_progress as dreamProgress, w.dream_item_name as dreamItemName, " +
+            "w.dream_item_image as dreamItemImage, w.dream_destination as dreamDestination, " +
             "ap.name as ai_partner_name, ap.avatar as ai_partner_avatar " +
             "FROM wallets w " +
             "LEFT JOIN ai_partners ap ON w.ai_partner_id = ap.id " +
@@ -79,10 +82,10 @@ public interface WalletMapper extends BaseMapper<Wallet> {
             "u.nickname as owner_nickname, u.avatar as owner_avatar, " +
             "(" +
             "  SELECT COUNT(*) FROM user_follows uf2 " +
-            "  WHERE uf2.following_id = w.user_id AND uf2.deleted = 0" +
+            "  WHERE uf2.wallet_id = w.id AND uf2.deleted = 0" +
             ") as participantCount " +
             "FROM user_follows uf " +
-            "INNER JOIN wallets w ON uf.following_id = w.user_id " +
+            "INNER JOIN wallets w ON uf.wallet_id = w.id " +
             "LEFT JOIN users u ON w.user_id = u.id " +
             "WHERE uf.follower_id = #{userId} AND uf.deleted = 0 AND w.deleted = 0 AND w.is_public = 1 " +
             "ORDER BY uf.create_time DESC")

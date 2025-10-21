@@ -266,7 +266,6 @@
 
 .wallet-type {
   font-size: 12px;
-  color: #ffffff;
   opacity: 0.8;
   background: rgba(255, 255, 255, 0.2);
   padding: 2px 8px;
@@ -279,20 +278,17 @@
 
 .partner-label {
   font-size: 12px;
-  color: #ffffff;
   opacity: 0.8;
 }
 
 .partner-name {
   font-size: 12px;
-  color: #ffffff;
   font-weight: 500;
 }
 
 .wallet-title {
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
   margin-bottom: 12px;
   line-height: 22px;
 }
@@ -305,7 +301,6 @@
 .amount-text {
   font-size: 24px;
   font-weight: 600;
-  color: #ffffff;
   line-height: 33px;
 }
 
@@ -1739,7 +1734,6 @@
 
 .wallet-type {
   font-size: 12px;
-  color: #ffffff;
   opacity: 0.8;
   background: rgba(255, 255, 255, 0.2);
   padding: 2px 8px;
@@ -1752,20 +1746,17 @@
 
 .partner-label {
   font-size: 12px;
-  color: #ffffff;
   opacity: 0.8;
 }
 
 .partner-name {
   font-size: 12px;
-  color: #ffffff;
   font-weight: 500;
 }
 
 .wallet-title {
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
   margin-bottom: 12px;
   line-height: 22px;
 }
@@ -1778,7 +1769,6 @@
 .amount-text {
   font-size: 24px;
   font-weight: 600;
-  color: #ffffff;
   line-height: 33px;
 }
 

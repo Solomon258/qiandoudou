@@ -20,6 +20,8 @@ Page({
   },
 
   onLoad(options) {
+    console.log('dream-create页面加载，参数:', options)
+    
     const { 
       dreamType, type, itemId, itemName, itemIcon, suggestedAmount, suggestedPrice, landmark,
       walletName, carType, departureCity, destinationCity, travelDays, selectedTag
@@ -29,11 +31,11 @@ Page({
     const dreamTypeValue = dreamType || type || 'shopping'
     const actualType = dreamTypeValue === '1' ? 'shopping' : dreamTypeValue === '2' ? 'travel' : dreamTypeValue
     
-    this.setData({
+    const decodedData = {
       type: actualType,
       itemId: parseInt(itemId) || 1,
       itemName: decodeURIComponent(itemName || ''),
-      itemIcon: decodeURIComponent(itemIcon || ''),
+      itemIcon: decodeURIComponent(itemIcon || '') || '/static/icon/default-product.png',
       suggestedPrice: suggestedAmount || suggestedPrice || '',
       landmark: decodeURIComponent(landmark || ''),
       walletName: walletName ? decodeURIComponent(walletName) : 
@@ -46,7 +48,15 @@ Page({
       departureCity: departureCity ? decodeURIComponent(departureCity) : '',
       destinationCity: destinationCity ? decodeURIComponent(destinationCity) : '',
       selectedTag: selectedTag ? decodeURIComponent(selectedTag) : ''
-    })
+    }
+    
+    console.log('解码后的数据:', decodedData)
+    
+    this.setData(decodedData)
+  },
+
+  onShow() {
+    console.log('dream-create页面显示，当前数据:', this.data)
   },
 
   // 输入钱包名称
@@ -72,8 +82,13 @@ Page({
 
   // 创建梦想钱包
   createDreamWallet() {
+    console.log('🚀 用户点击了创建梦想钱包按钮!')
+    console.log('开始创建梦想钱包...')
+    
     const { walletName, targetAmount, type, itemId, travelDays } = this.data
     const userId = app.globalData.userInfo?.id
+    
+    console.log('创建参数:', { walletName, targetAmount, type, itemId, travelDays, userId })
 
     if (!userId) {
       wx.showToast({
@@ -121,6 +136,8 @@ Page({
       type === 'travel' ? travelDays : null
     )
       .then(result => {
+        console.log('创建梦想钱包成功，返回数据:', result)
+        
         wx.showToast({
           title: '创建成功',
           icon: 'success'
@@ -135,10 +152,28 @@ Page({
           }
         }
         
+        // 获取钱包ID
+        const walletId = result.data?.walletId || result.data?.id || result.walletId || result.id
+        console.log('提取的钱包ID:', walletId)
+        
+        if (!walletId) {
+          console.error('无法获取钱包ID，返回数据:', result)
+          wx.showToast({
+            title: '创建成功，但跳转失败',
+            icon: 'none'
+          })
+          // 如果没有钱包ID，就返回首页
+          setTimeout(() => {
+            wx.navigateBack({ delta: 2 })
+          }, 1500)
+          return
+        }
+        
         setTimeout(() => {
-          // 返回到首页
-          wx.navigateBack({
-            delta: 2
+          // 跳转到梦想详情页
+          console.log('准备跳转到详情页，钱包ID:', walletId)
+          wx.redirectTo({
+            url: `/pages/dream-detail/dream-detail?walletId=${walletId}`
           })
         }, 1500)
       })
