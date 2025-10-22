@@ -268,7 +268,7 @@
         <view class="wallet-type-option {{selectedWalletType === 'dream' ? 'selected' : ''}}"
           bindtap="selectWalletType" data-type="dream">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="/static/icon/paopao/标题图标.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/dream_child.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">梦想攒钱</text>

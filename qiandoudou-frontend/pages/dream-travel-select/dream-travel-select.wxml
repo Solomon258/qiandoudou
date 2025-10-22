@@ -25,7 +25,7 @@
         >
           <!-- 气泡背景 -->
           <view class="bubble-bg">
-            <image src="/static/icon/paopao/pao/泡泡@3x.png" class="bubble-image" mode="aspectFit" />
+            <image src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/paopao.png" class="bubble-image" mode="aspectFit" />
           </view>
 
           <!-- 目的地图标 -->
