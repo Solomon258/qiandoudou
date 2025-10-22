@@ -28,7 +28,7 @@
         <text class="current-amount">{{dreamWallet.formattedCurrentAmount}}</text>
         <text class="amount-label">已攒梦想基金(元)</text>
       </view>
-      
+
       <!-- 进度条和节点 -->
       <view class="progress-container">
         <view class="progress-bar-wrapper">
@@ -37,7 +37,8 @@
           </view>
           <!-- 进度节点徽章 -->
           <view class="progress-badges">
-            <view wx:for="{{progressBadges}}" wx:key="index" class="badge-item" style="left: {{item.position}}%" bindtap="onBadgeTap" data-index="{{index}}" data-badge="{{item}}">
+            <view wx:for="{{progressBadges}}" wx:key="index" class="badge-item" style="left: {{item.position}}%"
+              bindtap="onBadgeTap" data-index="{{index}}" data-badge="{{item}}">
               <image wx:if="{{item.completed}}" class="badge-icon completed" src="{{item.activeIcon}}" />
               <image wx:else class="badge-icon" src="{{item.inactiveIcon}}" />
             </view>
@@ -60,7 +61,8 @@
 
       <scroll-view class="itinerary-scroll" scroll-y="{{true}}" enhanced="{{true}}">
         <view class="itinerary-content">
-          <rich-text class="itinerary-rich-text" nodes="{{dreamWallet.dreamItineraryHtml || 'AI正在为您生成详细的旅行行程，请稍后刷新查看...'}}" user-select></rich-text>
+          <rich-text class="itinerary-rich-text"
+            nodes="{{dreamWallet.dreamItineraryHtml || 'AI正在为您生成详细的旅行行程，请稍后刷新查看...'}}" user-select></rich-text>
         </view>
       </scroll-view>
     </view>
@@ -76,7 +78,7 @@
           <text class="record-amount {{item.type === 'out' ? 'negative' : 'positive'}}">{{item.amountText}}</text>
         </view>
       </view>
-      
+
       <!-- 空状态 -->
       <view wx:if="{{records.length === 0 && !loadingRecords}}" class="empty-records">
         <text class="empty-text">暂无攒钱记录</text>
@@ -95,77 +97,91 @@
   </view>
 
   <!-- 限时挑战弹窗 -->
-  <view class="challenge-modal-mask {{showChallengeModal ? 'show' : ''}}" bindtap="closeChallengeModal" catchtouchmove="preventTouchMove">
+  <view class="challenge-modal-mask {{showChallengeModal ? 'show' : ''}}" bindtap="closeChallengeModal"
+    catchtouchmove="preventTouchMove">
     <view class="challenge-modal {{showChallengeModal ? 'show' : ''}}" catchtap="stopPropagation">
+      <image src="/static/icon/activity/time_changel.png" class="bg_time" mode="" />
       <!-- 弹窗头部 -->
       <view class="challenge-header">
-        <image class="header-icon-left" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/clock.jpg" mode="aspectFit" />
+        <!-- <image class="header-icon-left" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/clock.jpg" mode="aspectFit" />
         <text class="challenge-title">限时挑战</text>
-        <image class="header-icon-right" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/coins.jpg" mode="aspectFit" />
+        <image class="header-icon-right" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/coins.jpg" mode="aspectFit" /> -->
         <view class="close-btn" bindtap="closeChallengeModal">
           <text class="close-icon">×</text>
         </view>
       </view>
+      <view class="time-content">
+        <!-- 倒计时 -->
+        <view class="countdown-section">
+          <text class="countdown-text">距离结束仅剩 {{countdown}}</text>
+        </view>
 
-      <!-- 倒计时 -->
-      <view class="countdown-section">
-        <text class="countdown-text">距离结束仅剩 {{countdown}}</text>
+        <!-- 挑战卡片列表 -->
+        <view class="challenge-cards">
+          <!-- 挑战1 -->
+          <view class="challenge-card active">
+            <view class="card-header">
+              <text class="card-title">挑战 1</text>
+            </view>
+            <image class="card-icon"
+              src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg"
+              mode="aspectFit" />
+            <text class="card-reward">叠加1%券</text>
+            <view class="card-status">进行中</view>
+          </view>
+
+          <!-- 挑战2 -->
+          <view class="challenge-card locked">
+            <view class="card-header">
+              <text class="card-title">挑战 2</text>
+            </view>
+            <image class="card-icon"
+              src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/lihe.jpg"
+              mode="aspectFit" />
+            <text class="card-reward">汽车贷款减免金</text>
+            <view class="card-status">待解锁</view>
+          </view>
+
+          <!-- 挑战3 -->
+          <view class="challenge-card locked">
+            <view class="card-header">
+              <text class="card-title">挑战 3</text>
+            </view>
+            <image class="card-icon"
+              src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg"
+              mode="aspectFit" />
+            <text class="card-reward">叠加2%券</text>
+            <view class="card-status">待解锁</view>
+          </view>
+        </view>
+
+        <!-- 任务详情 -->
+        <view class="task-detail">
+          <text class="task-title">挑战1:完成以下任务得年收益叠加1%券</text>
+
+          <!-- 任务1: 剧本攒 -->
+          <view class="task-item">
+            <image class="task-icon"
+              src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/jubenzan.jpg"
+              mode="aspectFit" />
+            <text class="task-desc">剧本攒完成3章内容</text>
+            <button class="task-btn" bindtap="goToScriptList">去完成</button>
+          </view>
+
+          <!-- 分割线 -->
+          <view class="task-divider"></view>
+
+          <!-- 任务2: 邀请好友 -->
+          <view class="task-item">
+            <image class="task-icon"
+              src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/email.jpg"
+              mode="aspectFit" />
+            <text class="task-desc">邀请一个成员为你助力</text>
+            <button class="task-btn" bindtap="openSharePage">邀请</button>
+          </view>
+        </view>
       </view>
 
-      <!-- 挑战卡片列表 -->
-      <view class="challenge-cards">
-        <!-- 挑战1 -->
-        <view class="challenge-card active">
-          <view class="card-header">
-            <text class="card-title">挑战 1</text>
-          </view>
-          <image class="card-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg" mode="aspectFit" />
-          <text class="card-reward">叠加1%券</text>
-          <view class="card-status">进行中</view>
-        </view>
-
-        <!-- 挑战2 -->
-        <view class="challenge-card locked">
-          <view class="card-header">
-            <text class="card-title">挑战 2</text>
-          </view>
-          <image class="card-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/lihe.jpg" mode="aspectFit" />
-          <text class="card-reward">汽车贷款减免金</text>
-          <view class="card-status">待解锁</view>
-        </view>
-
-        <!-- 挑战3 -->
-        <view class="challenge-card locked">
-          <view class="card-header">
-            <text class="card-title">挑战 3</text>
-          </view>
-          <image class="card-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg" mode="aspectFit" />
-          <text class="card-reward">叠加2%券</text>
-          <view class="card-status">待解锁</view>
-        </view>
-      </view>
-
-      <!-- 任务详情 -->
-      <view class="task-detail">
-        <text class="task-title">挑战1:完成以下任务得年收益叠加1%券</text>
-
-        <!-- 任务1: 剧本攒 -->
-        <view class="task-item">
-          <image class="task-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/jubenzan.jpg" mode="aspectFit" />
-          <text class="task-desc">剧本攒完成3章内容</text>
-          <button class="task-btn" bindtap="goToScriptList">去完成</button>
-        </view>
-
-        <!-- 分割线 -->
-        <view class="task-divider"></view>
-
-        <!-- 任务2: 邀请好友 -->
-        <view class="task-item">
-          <image class="task-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/email.jpg" mode="aspectFit" />
-          <text class="task-desc">邀请一个成员为你助力</text>
-          <button class="task-btn" bindtap="openSharePage">邀请</button>
-        </view>
-      </view>
     </view>
   </view>
 </view>

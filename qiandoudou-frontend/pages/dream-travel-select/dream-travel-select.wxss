@@ -2,7 +2,7 @@
 .container {
   min-height: 100vh;
   height: 100vh;
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  background: linear-gradient(135deg, #fa6402 0%, #0984e3 100%);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -278,7 +278,7 @@
 }
 
 .modal-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 /* 旅行标签选择 */
@@ -300,8 +300,8 @@
 }
 
 .travel-tag-item.selected {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
   color: #ffffff;
 }
 
@@ -332,7 +332,7 @@
 }
 
 .city-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 .city-separator {
@@ -360,8 +360,8 @@
 }
 
 .quick-city-item:active {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
 }
 
 .quick-city-item:active text {
@@ -392,7 +392,7 @@
 }
 
 .days-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 /* 按钮区域 */
@@ -419,6 +419,6 @@
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  background: #fa6402;
   color: #ffffff;
 }

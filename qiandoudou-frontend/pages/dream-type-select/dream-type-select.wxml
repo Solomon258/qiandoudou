@@ -27,7 +27,7 @@
             bindtap="selectShoppingItem" 
             data-id="{{item.id}}">
         <!-- 泡泡背景 -->
-        <image class="bubble-bg" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/paopao.png" mode="aspectFit" />
+        <image class="bubble-bg" src="/static/icon/paopao/pao/泡泡@3x.png" mode="aspectFit" />
         <!-- 商品图标 -->
         <image class="bubble-icon" src="{{item.icon}}" mode="aspectFit" />
         <text class="bubble-name">{{item.name}}</text>
@@ -59,68 +59,74 @@
   </view>
 
   <!-- 购物梦想弹框 -->
-  <view class="modal-overlay" wx:if="{{showShoppingModal}}" bindtap="closeShoppingModal">
+  <view class="modal-overlay travel-modal-overlay" wx:if="{{showShoppingModal}}" bindtap="closeShoppingModal">
     <view class="modal-content" catchtap="preventModalClose">
       <!-- 弹框头部 -->
       <view class="modal-header">
-        <text class="modal-title">选择轿车</text>
-        <image class="modal-icon" src="/static/icon/goods/轿车@3x.png" mode="aspectFit" />
-      </view>
-
-      <!-- 梦想名称输入 -->
-      <view class="modal-section">
-        <text class="modal-label">请输入梦想攒的名称</text>
-        <input 
-          class="modal-input" 
-          placeholder="XXX的钱包" 
-          value="{{shoppingModalData.walletName}}" 
-          bindinput="onShoppingWalletNameInput" 
-          maxlength="20" />
-      </view>
-
-      <!-- 车型选择 -->
-      <view class="modal-section">
-        <view class="car-types">
-          <view 
-            wx:for="{{shoppingModalData.carTypes}}" 
-            wx:key="*this" 
-            class="car-type-item {{shoppingModalData.selectedCarType === item ? 'selected' : ''}}"
-            data-type="{{item}}"
-            bindtap="selectCarType">
-            <text>{{item}}</text>
-          </view>
+        <view class="modal-title"> 
+          <text class="title_name">选择轿车</text>
+        </view>
+        <view class="modal-icon-sel"> 
+          <image class="modal-icon" src="/static/icon/sel-car.png" mode="aspectFit" />
         </view>
       </view>
+      <view class="sel_content">
+        
+        <!-- 梦想名称输入 -->
+        <view class="modal-section">
+          <text class="modal-label">请输入梦想攒的名称</text>
+          <input 
+            class="modal-input" 
+            placeholder="XXX的钱包" 
+            value="{{shoppingModalData.walletName}}" 
+            bindinput="onShoppingWalletNameInput" 
+            maxlength="20" />
+        </view>
 
-      <!-- 金额输入 -->
-      <view class="modal-section">
-        <text class="modal-label">请输入梦想攒的金额</text>
-        <input 
-          class="modal-input" 
-          placeholder="¥1" 
-          value="{{shoppingModalData.targetAmount}}" 
-          bindinput="onShoppingTargetAmountInput" 
-          type="digit" />
-      </view>
-
-      <!-- 快捷金额选择 -->
-      <view class="modal-section">
-        <view class="quick-amounts">
-          <view 
-            wx:for="{{shoppingModalData.quickAmounts}}" 
-            wx:key="*this" 
-            class="quick-amount-item"
-            data-amount="{{item}}"
-            bindtap="selectShoppingQuickAmount">
-            <text>{{item}}</text>
+        <!-- 车型选择 -->
+        <view class="modal-section">
+          <view class="car-types">
+            <view 
+              wx:for="{{shoppingModalData.carTypes}}" 
+              wx:key="*this" 
+              class="car-type-item {{shoppingModalData.selectedCarType === item ? 'selected' : ''}}"
+              data-type="{{item}}"
+              bindtap="selectCarType">
+              <text>{{item}}</text>
+            </view>
           </view>
         </view>
-      </view>
 
-      <!-- 按钮区域 -->
-      <view class="modal-buttons">
-        <button class="modal-btn cancel-btn" bindtap="closeShoppingModal">取消</button>
-        <button class="modal-btn confirm-btn" bindtap="confirmCreateShopping">确认</button>
+        <!-- 金额输入 -->
+        <view class="modal-section">
+          <text class="modal-label">请输入梦想攒的金额</text>
+          <input 
+            class="modal-input" 
+            placeholder="¥1" 
+            value="{{shoppingModalData.targetAmount}}" 
+            bindinput="onShoppingTargetAmountInput" 
+            type="digit" />
+        </view>
+
+        <!-- 快捷金额选择 -->
+        <view class="modal-section">
+          <view class="quick-amounts">
+            <view 
+              wx:for="{{shoppingModalData.quickAmounts}}" 
+              wx:key="*this" 
+              class="quick-amount-item"
+              data-amount="{{item}}"
+              bindtap="selectShoppingQuickAmount">
+              <text>{{item}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 按钮区域 -->
+        <view class="modal-buttons">
+          <button class="modal-btn cancel-btn" bindtap="closeShoppingModal">取消</button>
+          <button class="modal-btn confirm-btn" bindtap="confirmCreateShopping">确认</button>
+        </view>
       </view>
     </view>
   </view>
@@ -129,11 +135,19 @@
   <view class="modal-overlay travel-modal-overlay" wx:if="{{showTravelModal}}" bindtap="closeTravelModal">
     <view class="modal-content travel-modal-content" catchtap="preventModalClose">
       <!-- 弹框头部 -->
-      <view class="modal-header travel-modal-header">
+      <!-- <view class="modal-header travel-modal-header">
         <text class="modal-title">选择旅游地点</text>
         <image class="modal-icon travel-modal-icon" src="{{travelModalData.itemIcon}}" mode="aspectFit" />
-      </view>
+      </view> -->
+     <!-- 弹框头部 -->
+     <view class="modal-header">
+        <view class="modal-title"> 
+          <text class="title_name">选择旅游地点</text>
+        </view>
+          <image class="modal-icon-travel" src="/static/icon/travel.png" mode="aspectFit" />
 
+      </view>
+      <view class="sel_content">
       <!-- 梦想名称输入 -->
       <view class="modal-section">
         <text class="modal-label">请输入梦想攒的名称</text>
@@ -206,6 +220,7 @@
       <view class="modal-buttons">
         <button class="modal-btn cancel-btn" bindtap="closeTravelModal">取消</button>
         <button class="modal-btn confirm-btn" bindtap="confirmCreateTravel">确认</button>
+      </view>
       </view>
     </view>
   </view>

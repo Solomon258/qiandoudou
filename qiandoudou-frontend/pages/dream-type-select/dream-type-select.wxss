@@ -203,10 +203,22 @@
   justify-content: center;
   z-index: 1000;
 }
-
+.model-heade_top{
+  width: 100%;
+  display: inline-block;
+}
+.sel_content {
+  background: #fff;
+  padding: 40rpx;
+  border-radius: 0 30rpx 30rpx 30rpx;
+  margin-top: -2px;
+}
+.title_name {
+  margin-left: 40rpx;
+}
 .modal-content {
   width: 100%;
-  background: #ffffff;
+  /* background: #ffffff; */
   border-radius: 30rpx 30rpx 0 0;
   padding: 40rpx;
   position: relative;
@@ -225,28 +237,57 @@
 }
 
 .modal-header {
-  position: relative;
+  /* position: relative; */
   text-align: left;
-  margin-bottom: 40rpx;
-  padding-top: 20rpx;
+  /* margin-bottom: 40rpx; */
+  /* padding-top: 20rpx; */
   height: 100rpx;
+  display: flex;
+  justify-content: flex-start;
+  /* width: 50%;
+  background: #fff; */
 }
 
 .modal-title {
+  width: 50%;
+  background: #fff;
+  border-radius: 30rpx 30rpx 0 0;
   font-size: 36rpx;
   font-weight: bold;
   color: #333333;
   line-height: 100rpx;
 }
+.modal-icon-sel {
+  border-radius: 0 0 30rpx 0;
+  width: 50%;
+  height: 100rpx;
+}
 
 .modal-icon {
-  width: 120rpx;
+  /* width: 120rpx;
   height: 120rpx;
   position: absolute;
   right: 40rpx;
-  top: -20rpx;
+  top: -20rpx; */
+  position: absolute;
+  right: -50rpx;
+  top: 56rpx;
+  z-index: 999;
+  height: 100rpx;
+  width: 100%;
 }
-
+.modal-icon-travel {
+  /* position: absolute;
+  left: 161rpx;
+  top: 56rpx;
+  z-index: 999;
+  height: 540rpx;
+  scale: 0.6; */
+  scale: 0.7;
+  position: fixed;
+  top: 56rpx;
+  left: 223rpx;
+}
 .modal-section {
   margin-bottom: 30rpx;
 }
@@ -271,7 +312,7 @@
 }
 
 .modal-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 /* 车型选择 */
@@ -293,8 +334,8 @@
 }
 
 .car-type-item.selected {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
   color: #ffffff;
 }
 
@@ -325,8 +366,8 @@
 }
 
 .quick-amount-item:active {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
 }
 
 .quick-amount-item:active text {
@@ -357,8 +398,8 @@
 }
 
 .travel-tag-item.selected {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
   color: #ffffff;
 }
 
@@ -389,7 +430,7 @@
 }
 
 .city-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 /* 目的地输入框置灰 */
@@ -423,14 +464,14 @@
 }
 
 .quick-city-item.selected {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
   color: #ffffff;
 }
 
 .quick-city-item:active {
-  background: #74b9ff;
-  border-color: #74b9ff;
+  background: #fa6402;
+  border-color: #fa6402;
 }
 
 .quick-city-item:active text {
@@ -465,7 +506,7 @@
 }
 
 .days-input:focus {
-  border-color: #74b9ff;
+  border-color: #fa6402;
 }
 
 /* 按钮区域 */
@@ -487,12 +528,14 @@
 }
 
 .cancel-btn {
-  background: #f8f9fa;
-  color: #666666;
+  background: #fff;
+  color: #fa6402;
+  border-radius: 80rpx;
+  border: 2rpx solid #fa6402;
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+  background: #fa6402;
   color: #ffffff;
 }
 
@@ -502,10 +545,10 @@
 }
 
 .travel-modal-content {
-  width: 85%;
-  max-width: 600rpx;
+  /* width: 85%; */
+  /* max-width: 600rpx; */
   border-radius: 30rpx; /* 四周都是圆角 */
-  max-height: 75vh;
+  /* max-height: 75vh; */
   padding-top: 100rpx; /* 为右上角图标留出空间 */
 }
 
