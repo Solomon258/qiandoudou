@@ -120,18 +120,21 @@
         <view class="challenge-cards">
           <!-- 挑战1 -->
           <view class="challenge-card active">
-            <view class="card-header">
-              <text class="card-title">挑战 1</text>
-            </view>
             <image class="card-icon"
               src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg"
               mode="aspectFit" />
+            <view class="card-header">
+              <text class="card-title">挑战 1</text>
+            </view>
+         
             <text class="card-reward">叠加1%券</text>
-            <view class="card-status">进行中</view>
+            <view class="card-status">
+              <text>进行中</text>
+            </view>
           </view>
 
           <!-- 挑战2 -->
-          <view class="challenge-card locked">
+          <view class="challenge-card active">
             <view class="card-header">
               <text class="card-title">挑战 2</text>
             </view>
@@ -139,11 +142,11 @@
               src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/lihe.jpg"
               mode="aspectFit" />
             <text class="card-reward">汽车贷款减免金</text>
-            <view class="card-status">待解锁</view>
+            <view class="card-status lock-text">待解锁</view>
           </view>
 
           <!-- 挑战3 -->
-          <view class="challenge-card locked">
+          <view class="challenge-card active">
             <view class="card-header">
               <text class="card-title">挑战 3</text>
             </view>
@@ -151,7 +154,7 @@
               src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/activity/youhuiquan.jpg"
               mode="aspectFit" />
             <text class="card-reward">叠加2%券</text>
-            <view class="card-status">待解锁</view>
+            <view class="card-status lock-text">待解锁</view>
           </view>
         </view>
 

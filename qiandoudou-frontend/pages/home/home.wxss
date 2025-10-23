@@ -977,7 +977,7 @@
   height: 48px;
   background: #FA6402 !important;
   border: none;
-  border-radius: 22px;
+  border-radius: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
