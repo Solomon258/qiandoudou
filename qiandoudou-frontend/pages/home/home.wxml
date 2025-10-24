@@ -46,6 +46,7 @@
     <view wx:if="{{wallets.length > 0}}" class="wallet-list-section">
       <view wx:for="{{wallets}}" wx:key="id" class="wallet-card" style="{{item.backgroundStyle}}"
         bindtap="handleWalletTap" data-id="{{item.id}}" data-type="{{item.type}}" data-wallet="{{item}}">
+        <view class="background-overlay"></view>
         <!-- 钱兜兜信息 -->
         <view class="wallet-info" style="{{item.textColorStyle}}">
           <view class="wallet-header">

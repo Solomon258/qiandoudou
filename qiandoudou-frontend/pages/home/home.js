@@ -446,11 +446,12 @@ console.log(selectedWalletType)
       // 阶段3 (40-60%): 开始变暗，使用白色文字
       // 阶段4 (60-80%): 较暗，使用白色文字
       // 阶段5 (80-100%): 深色完整汽车，使用白色文字
-      if (progress < 40) {
-        return '#000000' // 前两个阶段使用黑色文字
-      } else {
-        return '#ffffff' // 后三个阶段使用白色文字
-      }
+      // if (progress < 40) {
+      //   return '#000000' // 前两个阶段使用黑色文字
+      // } else {
+      //   return '#ffffff' // 后三个阶段使用白色文字
+      // }
+      return '#ffffff'
     }
 
     // 获取背景设置

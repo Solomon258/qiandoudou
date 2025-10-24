@@ -270,11 +270,12 @@
   right: 40rpx;
   top: -20rpx; */
   position: absolute;
-  right: -50rpx;
-  top: 56rpx;
+  right: -130rpx;
+  top: 34rpx;
   z-index: 999;
   height: 100rpx;
   width: 100%;
+  scale: 1.3;
 }
 .modal-icon-travel {
   /* position: absolute;
@@ -289,7 +290,7 @@
   left: 223rpx;
 }
 .modal-section {
-  margin-bottom: 30rpx;
+  margin-bottom: 64rpx;
 }
 
 .modal-label {

@@ -18,9 +18,9 @@ App({
     userInfo: null,
     token: null,
     baseUrl: 'http://localhost:8080/api', // 后端API地址
-    apiUrl: 'http://localhost:8080/api', // 后端API地址（兼容）
+    // apiUrl: 'http://localhost:8080/api', // 后端API地址（兼容）
     // baseUrl: 'https://heartllo.cn/api', // 后端API地址（生产环境）
-    // apiUrl: 'https://heartllo.cn/api', // 后端API地址（兼容）
+    apiUrl: 'https://heartllo.cn/api', // 后端API地址（兼容）
     // 简单的事件总线
     eventBus: {
       events: {},

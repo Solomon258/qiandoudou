@@ -18,7 +18,8 @@ Page({
     })
 
     wx.request({
-      url: app.globalData.apiUrl + '/buddy/groups',
+      // url: app.globalData.apiUrl + '/buddy/groups',
+      url: 'https://heartllo.cn/api/buddy/groups',
       method: 'GET',
       header: {
         'Authorization': 'Bearer ' + wx.getStorageSync('token')

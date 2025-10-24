@@ -21,7 +21,8 @@ Page({
   // 测试搭子API是否可用
   testBuddyApi() {
     wx.request({
-      url: app.globalData.apiUrl + '/buddy/test',
+      // url: app.globalData.apiUrl + '/buddy/test',
+      url:' https://heartllo.cn/api/buddy/test',
       method: 'GET',
       success: (res) => {
         console.log('搭子API测试结果:', res)
@@ -39,7 +40,8 @@ Page({
     })
 
     wx.request({
-      url: app.globalData.apiUrl + '/buddy/characters/free',
+      // url: app.globalData.apiUrl + '/buddy/characters/free',
+      url: 'https://heartllo.cn/api/buddy/characters/free',
       method: 'GET',
       header: {
         'Authorization': 'Bearer ' + wx.getStorageSync('token')
