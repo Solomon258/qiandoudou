@@ -27,7 +27,7 @@
             bindtap="selectShoppingItem" 
             data-id="{{item.id}}">
         <!-- 泡泡背景 -->
-        <image class="bubble-bg" src="/static/icon/paopao/pao/泡泡@3x.png" mode="aspectFit" />
+        <image class="bubble-bg" src="/static/icon/paopao/pao/paopao.png" mode="aspectFit" />
         <!-- 商品图标 -->
         <image class="bubble-icon" src="{{item.icon}}" mode="aspectFit" />
         <text class="bubble-name">{{item.name}}</text>
