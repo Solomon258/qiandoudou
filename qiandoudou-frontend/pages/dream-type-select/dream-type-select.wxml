@@ -98,7 +98,7 @@
         </view>
 
         <!-- 金额输入 -->
-        <view class="modal-section">
+        <view class="modal-section" style="margin-top:40rpx">
           <text class="modal-label">请输入梦想攒的金额</text>
           <input 
             class="modal-input" 
@@ -174,7 +174,7 @@
       </view>
 
       <!-- 出发地与目的地输入 -->
-      <view class="modal-section">
+      <view class="modal-section" style="margin-top: 40rpx;">
         <text class="modal-label">请输入出发地与目的地</text>
         <view class="city-inputs">
           <input
@@ -206,7 +206,7 @@
       </view>
 
       <!-- 旅行天数输入 -->
-      <view class="modal-section travel-days-section">
+      <view class="modal-section travel-days-section" style="margin-top: 40rpx;">
         <text class="modal-label">请输入旅行天数</text>
         <input
           class="days-input"

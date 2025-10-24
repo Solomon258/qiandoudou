@@ -286,11 +286,11 @@
   scale: 0.6; */
   scale: 0.7;
   position: fixed;
-  top: -10rpx;
+  top: 48rpx;
   left: 223rpx;
 }
 .modal-section {
-  margin-bottom: 64rpx;
+  margin-bottom: 24rpx;
 }
 
 .modal-label {
@@ -514,7 +514,7 @@
 .modal-buttons {
   display: flex;
   gap: 20rpx;
-  margin-top: 40rpx;
+  margin-top: 64rpx;
 }
 
 .modal-btn {
