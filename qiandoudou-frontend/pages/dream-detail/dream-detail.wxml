@@ -11,7 +11,7 @@
   <!-- 主要内容 -->
   <view wx:else class="main-content">
     <!-- 头部视觉模块 -->
-    <view class="header-visual">
+    <view class="header-visual" style="{{ isFixedTop? 'display: none;' : 'display: block;' }}">
       <!-- 限时奖励标签 -->
       <view class="reward-tag" bindtap="openChallengeModal">
         <image class="reward-icon" src="/static/icon/activity/xianshijiangli.jpg" mode="aspectFit" />
@@ -22,7 +22,7 @@
     </view>
 
     <!-- 进度与目标展示模块 -->
-    <view class="progress-target-section">
+    <view class="progress-target-section" style="{{ isFixedTop? 'display: none;' : 'display: block;' }}">
       <!-- 已攒金额 -->
       <view class="amount-display">
         <text class="current-amount">{{dreamWallet.formattedCurrentAmount}}</text>
@@ -53,13 +53,13 @@
     </view>
 
     <!-- 旅行行程模块（仅旅行类型显示） -->
-    <view wx:if="{{dreamWallet.dreamType === 2}}" class="travel-itinerary-section">
+    <view wx:if="{{dreamWallet.dreamType === 2}}" class="{{ isFixedTop ? 'title-to-top travel-itinerary-section' : 'travel-itinerary-section' }}">
       <!-- 行程标题 -->
       <view wx:if="{{dreamWallet.dreamItineraryTitle}}" class="itinerary-title">
         <text class="title-text">{{dreamWallet.dreamItineraryTitle}}</text>
       </view>
 
-      <scroll-view class="itinerary-scroll" scroll-y="{{true}}" enhanced="{{true}}">
+      <scroll-view class="itinerary-scroll" scroll-y="{{true}}" enhanced="{{true}}" bindscroll="onScrollContent">
         <view class="itinerary-content">
           <rich-text class="itinerary-rich-text"
             nodes="{{dreamWallet.dreamItineraryHtml || 'AI正在为您生成详细的旅行行程，请稍后刷新查看...'}}" user-select></rich-text>

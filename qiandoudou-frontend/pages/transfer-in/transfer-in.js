@@ -381,6 +381,11 @@ Page({
 
   // 确认转入
   confirmTransfer() {
+    console.log(this.data.transferLoading,'this.data.transferLoadingthis.data.transferLoading')
+    if(this.data.transferLoading) {
+      return
+    }
+    this.setData({ transferLoading: true })
     if (this.data.activeTab === 'auto') {
       // 自动攒逻辑
       this.confirmAutoSave()
@@ -412,9 +417,6 @@ Page({
       })
       return
     }
-
-    this.setData({ transferLoading: true })
-
     const amount = parseFloat(transferAmount)
     const description = transferNote || '转入'
     const imageUrl = this.data.uploadedImage || null
@@ -451,8 +453,6 @@ Page({
             this.refreshAndGoBack()
           }, 1500)
         }
-
-        this.setData({ transferLoading: false })
       })
       .catch(error => {
 

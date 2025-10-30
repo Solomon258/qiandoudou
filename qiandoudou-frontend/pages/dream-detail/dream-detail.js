@@ -7,6 +7,8 @@ Page({
    * 页面的初始数据
    */
   data: {
+    isFixedTop: false,
+    lastScrollTop: 0,
     // 加载状态
     loading: true,
     loadingRecords: false,
@@ -890,5 +892,42 @@ Page({
         })
       }
     })
+  },
+  onPageScroll(e) {
+    console.log(e,'用户外部滚动了1111')
+    const scrollTop = e.scrollTop
+    const threshod = 100 //阀值
+    console.log(this.data.isFixedTop,'this.data.isFixedTopthis.data.isFixedTop')
+    if(this.data.isFixedTop && ( scrollTop < 20)) {
+        this.setData({
+          isFixedTop: false
+        })
+      }
+    if(scrollTop > threshod && !this.data.isFixedTop) {
+      this.setData({
+        isFixedTop: true
+      })
+    }
+  },
+  onScrollContent(e) {
+    console.log(e,'用户文章部分滚动了')
+    const scrollTop = e.detail.scrollTop
+    const threshod = 30 //阀值
+    const lastScrollTop = this.data.lastScrollTop
+    if(scrollTop >= lastScrollTop && scrollTop > threshod) {
+      this.setData({
+        isFixedTop: true
+      })
+    }
+     else if(scrollTop < lastScrollTop && ( scrollTop < 10)) {
+      this.setData({
+        isFixedTop: false
+      })
+    }
+    //更新上一次滚动位置
+    this.setData({
+      lastScrollTop: scrollTop
+    })
+
   }
 })
