@@ -118,26 +118,26 @@
 
 .progress-bar-bg {
   width: 100%;
-  height: 16rpx;
+  height: 8rpx;
   background: #EEEEEE;
-  border-radius: 8rpx;
+  border-radius: 4rpx;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
   background: #FF6B35;
-  border-radius: 8rpx;
+  border-radius: 4rpx;
   transition: width 0.3s ease;
-  min-width: 16rpx;
+  min-width: 8rpx;
 }
 
 .progress-badges {
   position: absolute;
-  top: -16rpx;
+  top: -19rpx;
   left: 0;
   right: 0;
-  height: 48rpx;
+  height: 70rpx;
 }
 
 .badge-item {
@@ -147,14 +147,20 @@
 }
 
 .badge-icon {
-  width: 48rpx;
-  height: 48rpx;
+  width: 54rpx;
+  height: 54rpx;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
 
 .badge-icon.completed {
   transform: scale(1.1);
+}
+
+/* gift.png 和 black_gift.png 放大到125% */
+.badge-item:nth-child(3) .badge-icon {
+  width: 67.5rpx;
+  height: 67.5rpx;
 }
 
 /* 进度标签（百分比和目标金额） */

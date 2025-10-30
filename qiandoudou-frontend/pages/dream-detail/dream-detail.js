@@ -44,36 +44,36 @@ Page({
       {
         position: 20,
         completed: false,
-        activeIcon: '/static/icon/car/huizhang-1.jpg',
-        inactiveIcon: '/static/icon/car/black_huizhang-1.jpg',
+        activeIcon: '/static/icon/car/right.png',
+        inactiveIcon: '/static/icon/car/blakc_right.png',
         achieveDate: null // 达成日期
       },
       {
         position: 40,
         completed: false,
-        activeIcon: '/static/icon/car/huizhang-2.jpg',
-        inactiveIcon: '/static/icon/car/black_huizhang-2.jpg',
+        activeIcon: '/static/icon/car/right.png',
+        inactiveIcon: '/static/icon/car/blakc_right.png',
         achieveDate: null
       },
       {
         position: 60,
         completed: false,
-        activeIcon: '/static/icon/car/huizhang-3.jpg',
-        inactiveIcon: '/static/icon/car/black_huizhang-3.jpg',
+        activeIcon: '/static/icon/car/gift.png',
+        inactiveIcon: '/static/icon/car/black_gift.png',
         achieveDate: null
       },
       {
         position: 80,
         completed: false,
-        activeIcon: '/static/icon/car/huizhang-4.jpg',
-        inactiveIcon: '/static/icon/car/black_huizhang-4.jpg',
+        activeIcon: '/static/icon/car/right.png',
+        inactiveIcon: '/static/icon/car/blakc_right.png',
         achieveDate: null
       },
       {
         position: 100,
         completed: false,
-        activeIcon: '/static/icon/car/huizhang-5.jpg',
-        inactiveIcon: '/static/icon/car/black_huizhang-5.jpg',
+        activeIcon: '/static/icon/car/why_gift.png',
+        inactiveIcon: '/static/icon/car/balck_why_gift.png',
         achieveDate: null
       }
     ],
