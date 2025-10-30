@@ -903,11 +903,11 @@ Page({
           isFixedTop: false
         })
       }
-    if(scrollTop > threshod && !this.data.isFixedTop) {
-      this.setData({
-        isFixedTop: true
-      })
-    }
+    // if(scrollTop > threshod && !this.data.isFixedTop) {
+    //   this.setData({
+    //     isFixedTop: true
+    //   })
+    // }
   },
   onScrollContent(e) {
     console.log(e,'用户文章部分滚动了')
