@@ -507,27 +507,34 @@ console.log(selectedWalletType)
     return wallet.type === 2 ? '#ffffff' : '#ffffff'
   },
 
-  // 根据进度获取梦想钱包的图片URL（支持多种商品）
+  // 根据进度获取梦想钱包的图片URL（仅用于购物类型）
   async getDreamWalletImageUrl(wallet) {
+    const dreamType = wallet.dreamType || wallet.type === 4 ? 1 : 2
+
+    // 此方法仅用于购物类型，旅行类型不应调用此方法
+    if (dreamType === 2) {
+      console.warn('getDreamWalletImageUrl 不应用于旅行类型！')
+      return wallet.dreamItemImage || wallet.dream_item_image || wallet.itemImage || wallet.item_image || ''
+    }
+
     // 计算进度百分比
     const targetAmount = wallet.dreamTargetAmount || wallet.dream_target_amount || wallet.targetAmount || 0
     const currentAmount = wallet.balance || wallet.currentAmount || 0
     const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
 
-    const dreamType = wallet.dreamType || 1
     const dreamItemName = wallet.dreamItemName || wallet.dream_item_name || ''
 
-    console.log('getDreamWalletImageUrl 调试信息:')
+    console.log('getDreamWalletImageUrl 调试信息（购物类型）:')
     console.log('- walletId:', wallet.id)
     console.log('- dreamType:', dreamType)
     console.log('- dreamItemName:', dreamItemName)
     console.log('- 进度百分比:', progress)
 
-    // 尝试从API获取动态图片
+    // 尝试从API获取购物商品的动态进度图片
     if (dreamItemName && dreamType === 1) {
       try {
-        console.log('准备调用API获取进度图片，dreamType=' + dreamType + ', itemName=' + dreamItemName)
-        const result = await dreamImageAPI.getProgressImages(dreamType, dreamItemName)
+        console.log('准备调用API获取进度图片，dreamType=1, itemName=' + dreamItemName)
+        const result = await dreamImageAPI.getProgressImages(1, dreamItemName)
         console.log('API返回结果:', result)
 
         if (result && result.data && result.data.length > 0) {
@@ -540,16 +547,16 @@ console.log(selectedWalletType)
           else if (progress >= 20) selectedImage = progressImages[1]
           else selectedImage = progressImages[0]
 
-          console.log('成功获取图片:', selectedImage)
+          console.log('成功获取购物进度图片:', selectedImage)
           return selectedImage
         }
       } catch (error) {
-        console.warn('获取进度图片配置失败，使用硬编码备选方案:', error)
+        console.warn('获取购物进度图片配置失败，使用硬编码备选方案:', error)
       }
     }
 
     // 降级方案：使用硬编码的汽车图片
-    console.log('使用硬编码的备选图片')
+    console.log('使用硬编码的汽车进度图片备选方案')
     const fallbackImages = [
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 0-20%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 20-40%
@@ -565,7 +572,7 @@ console.log(selectedWalletType)
     else if (progress >= 40) imageIndex = 2
     else if (progress >= 20) imageIndex = 1
 
-    console.log('最终返回备选图片:', fallbackImages[imageIndex])
+    console.log('最终返回汽车备选图片:', fallbackImages[imageIndex])
     return fallbackImages[imageIndex]
   },
 
@@ -581,13 +588,25 @@ console.log(selectedWalletType)
       // 梦想钱包：根据类型使用不同背景
       let dreamImage
 
-      // Type 5 = 旅行钱包，使用目的地图片
+      // Type 5 = 旅行钱包，直接使用dream_items表中的image_url字段
       if (wallet.type === 5) {
+        console.log('getWalletBackground - 旅行钱包，使用dreamItemImage')
+        // 旅行钱包直接使用目的地原始图片
         dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
-                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
-      } else {
-        // Type 4 = 购物钱包，动态获取商品图片
+                     wallet.itemImage || wallet.item_image ||
+                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default-travel.png'
+        console.log('旅行钱包背景图URL:', dreamImage)
+      } else if (wallet.type === 4) {
+        // Type 4 = 购物钱包，动态获取商品进度图片
+        console.log('getWalletBackground - 购物钱包，获取进度图片')
         dreamImage = await this.getDreamWalletImageUrl(wallet)
+        console.log('购物钱包背景图URL:', dreamImage)
+      } else {
+        // 备选处理
+        console.log('getWalletBackground - 未知类型的梦想钱包')
+        dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
+                     wallet.itemImage || wallet.item_image ||
+                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
       }
 
       return `background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%); background-image: url('${dreamImage}'); background-size: cover; background-position: center;`
@@ -614,9 +633,24 @@ console.log(selectedWalletType)
                          (wallet.dreamTargetAmount !== undefined)
 
     if (isDreamWallet) {
-      // 梦想钱包默认使用渐变背景
-      let dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
-                       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
+      // 梦想钱包默认使用梦想项目的背景图
+      let dreamImage
+
+      if (wallet.type === 5) {
+        // 旅行钱包：使用dream_items的image_url
+        console.log('getWalletBackgroundSync - 旅行钱包')
+        dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
+                     wallet.itemImage || wallet.item_image ||
+                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/default-travel.png'
+      } else {
+        // 购物钱包或其他：使用默认梦想钱包图
+        console.log('getWalletBackgroundSync - 购物钱包或其他梦想钱包')
+        dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
+                     wallet.itemImage || wallet.item_image ||
+                     'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
+      }
+
+      console.log('getWalletBackgroundSync梦想钱包背景图:', dreamImage)
       return `background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%); background-image: url('${dreamImage}'); background-size: cover; background-position: center;`
     }
 
@@ -1151,9 +1185,23 @@ console.log(selectedWalletType)
     if (isDreamWallet) {
       // 梦想钱包: 根据类型跳转到不同的分享页面
       if (wallet.type === 5) {
-        // 旅行梦想攒: 跳转到旅行分享页面
+        // 旅行梦想攒: 跳转到旅行分享页面，传递必要的数据
+        // ⭐ 旅行钱包使用dreamDestination字段（存储英文name，如"agra"）
+        // 兼容下划线和驼峰两种格式
+        const dreamItemName = wallet.dreamDestination || wallet.dream_destination || ''
+        console.log('旅行钱包分享 - wallet对象:', wallet)
+        console.log('旅行钱包分享 - dreamItemName:', dreamItemName)
+
+        if (!dreamItemName) {
+          wx.showToast({
+            title: '目的地信息缺失',
+            icon: 'none'
+          })
+          return
+        }
+
         wx.navigateTo({
-          url: `/pages/dream-share/dream-share?walletId=${wallet.id}`
+          url: `/pages/dream-share/dream-share?walletId=${wallet.id}&dreamItemName=${encodeURIComponent(dreamItemName)}`
         })
       } else {
         // 购物梦想攒: 打开最高等级徽章的分享页面

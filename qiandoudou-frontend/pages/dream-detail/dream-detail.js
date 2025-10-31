@@ -184,32 +184,30 @@ Page({
         const dreamProgress = responseData.currentProgress || walletData.dreamProgress || 0
         let imageUrl
 
-        if (dreamType === 2) {
-          // 旅行类型：从后端获取图片或使用降级方案
-          imageUrl = responseData.currentStageImage || walletData.dreamItemImage
+        console.log('选择图片逻辑 - dreamType:', dreamType, 'walletData:', walletData)
 
-          // 如果都没有，尝试异步加载
-          if (!imageUrl) {
-            try {
-              imageUrl = await this.getCarImageByProgress(dreamProgress)
-            } catch (error) {
-              console.error('加载旅行图片失败:', error)
-              imageUrl = '/static/icon/default-travel.png'  // 默认图片
-            }
-          }
+        if (dreamType === 2) {
+          // 旅行类型：直接使用梦想项目的背景图（dream_items表中的image_url）
+          // 不使用currentStageImage（因为旅行不需要显示进度图片）
+          console.log('旅行类型 - 使用dreamItemImage')
+          imageUrl = walletData.dreamItemImage || '/static/icon/default-travel.png'
+          console.log('最终旅行图片URL:', imageUrl)
         } else {
-          // 购物类型：优先从后端获取，然后尝试异步加载
+          // 购物类型：优先从后端获取进度图片，然后尝试异步加载
+          console.log('购物类型 - 尝试获取currentStageImage或进度图片')
           imageUrl = responseData.currentStageImage || walletData.dreamItemImage
 
           // 如果都没有，异步加载最新的进度图片
           if (!imageUrl) {
             try {
+              console.log('购物类型 - 异步加载进度图片')
               imageUrl = await this.getCarImageByProgress(dreamProgress)
             } catch (error) {
               console.error('加载购物图片失败:', error)
               imageUrl = '/static/icon/default-shopping.png'  // 默认图片
             }
           }
+          console.log('最终购物图片URL:', imageUrl)
         }
 
         // 格式化行程文本（转换Markdown为HTML）
@@ -315,9 +313,10 @@ Page({
       }
     }
 
-    // 只有购物类型和旅行类型都需要根据进度更新图片
-    if (this.data.dreamWallet.dreamType === 1 || this.data.dreamWallet.dreamType === 2) {
+    // ⭐ 只有购物类型才需要根据进度更新图片，旅行类型始终显示固定的目的地背景图
+    if (this.data.dreamWallet.dreamType === 1) {
       try {
+        console.log('购物类型 - 根据进度更新图片')
         const imageUrl = await this.getCarImageByProgress(finalPercentage)
         if (imageUrl) {
           updateData['dreamWallet.itemInfo.imageUrl'] = imageUrl
@@ -326,6 +325,8 @@ Page({
       } catch (error) {
         console.error('更新进度图片失败:', error)
       }
+    } else if (this.data.dreamWallet.dreamType === 2) {
+      console.log('旅行类型 - 不更新图片，保持原有的目的地背景图')
     }
 
     this.setData(updateData)

@@ -1,9 +1,9 @@
 // utils/api.js - 微信小程序API工具函数
 const app = getApp()
 
-后端API基础地址
-// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
- const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
+// 后端API基础地址
+const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+//  const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 
 
 /**

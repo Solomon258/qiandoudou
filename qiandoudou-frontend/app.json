@@ -37,11 +37,6 @@
     "navigationBarTextStyle": "black",
     "backgroundColor": "#f5f5f5"
   },
-  "permission": {
-    "scope.record": {
-      "desc": "用于录制语音消息"
-    }
-  },
   "requiredBackgroundModes": ["audio"],
   "style": "v2",
   "sitemapLocation": "sitemap.json",

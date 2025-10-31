@@ -106,14 +106,9 @@ public class DreamWalletServiceImpl implements DreamWalletService {
                 wallet.setDreamDestination(dreamItem.getName());  // ⭐ 使用 name（英文标识符）而不是 displayName
                 wallet.setDreamDays(days);
 
-                // 从 dream_image_config 获取初始进度图片（第1张，0-20%）
-                List<String> progressImages = dreamImageConfigService.getProgressImages(dreamType, dreamItem.getName());
-                if (progressImages != null && !progressImages.isEmpty()) {
-                    wallet.setDreamItemImage(progressImages.get(0));  // 使用第1张进度图片
-                } else {
-                    // 降级方案：使用 dream_items 的图标
-                    wallet.setDreamItemImage(dreamItem.getImageUrl());
-                }
+                // ⭐ 旅行钱包直接使用 dream_items 表中的 image_url 作为背景图
+                // 不存储进度图片，进度图片由前端根据进度动态获取
+                wallet.setDreamItemImage(dreamItem.getImageUrl());
 
                 // 先设置默认行程文本
                 wallet.setDreamItinerary("AI正在为您生成详细的旅行行程，请稍后刷新查看...");
@@ -556,19 +551,8 @@ public class DreamWalletServiceImpl implements DreamWalletService {
             // 降级方案：返回商品图片或空值
             return wallet.getDreamItemImage();
         } else {
-            // 旅行类型 - 从数据库配置中获取进度图片
-            String itemName = wallet.getDreamDestination();
-            if (itemName != null) {
-                List<String> progressImages = dreamImageConfigService.getProgressImages(2, itemName);
-                if (progressImages != null && !progressImages.isEmpty()) {
-                    if (progress >= 80) return progressImages.get(4);
-                    if (progress >= 60) return progressImages.get(3);
-                    if (progress >= 40) return progressImages.get(2);
-                    if (progress >= 20) return progressImages.get(1);
-                    return progressImages.get(0);
-                }
-            }
-            // 降级方案：返回目的地图片
+            // ⭐ 旅行类型 - 直接返回dreamItemImage（背景图），不使用进度图片
+            // 旅行钱包不需要根据进度显示不同的图片，始终显示目的地背景图
             return wallet.getDreamItemImage();
         }
     }

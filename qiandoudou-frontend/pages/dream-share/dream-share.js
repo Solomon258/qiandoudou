@@ -1,6 +1,6 @@
 // pages/dream-share/dream-share.js
 const app = getApp()
-const { walletAPI } = require('../../utils/api.js')
+const { walletAPI, dreamImageAPI } = require('../../utils/api.js')
 
 Page({
   data: {
@@ -16,7 +16,7 @@ Page({
   },
 
   onLoad(options) {
-    const { walletId } = options
+    const { walletId, dreamItemName } = options
 
     if (!walletId) {
       wx.showToast({
@@ -31,6 +31,7 @@ Page({
 
     this.setData({
       walletId,
+      dreamItemName: dreamItemName ? decodeURIComponent(dreamItemName) : '',
       currentDate: this.formatCurrentDate()
     })
 
@@ -55,7 +56,13 @@ Page({
         // 提取数据
         const targetAmount = walletData.dreamTargetAmount || walletData.targetAmount || responseData.targetAmount || 0
         const currentAmount = walletData.balance || walletData.currentAmount || responseData.currentAmount || 0
-        const cityName = walletData.dreamItemName || walletData.itemName || '乌鲁木齐'
+        // ⭐ 旅行钱包使用dreamDestination字段获取英文name
+        const dreamItemName = this.data.dreamItemName ||
+                              walletData.dreamDestination || walletData.dream_destination ||
+                              'wulumuqi'
+
+        console.log('dream-share加载数据 - dreamItemName:', dreamItemName)
+        console.log('dream-share加载数据 - walletData:', walletData)
 
         // 获取转账记录
         const transferCountData = await walletAPI.getWalletTransactions(this.data.walletId)
@@ -68,8 +75,21 @@ Page({
         const createTime = walletData.createTime || walletData.createdAt
         const daysCount = this.calculateDays(createTime)
 
-        // 构建分享图片URL
-        const travelShareImage = `https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/travel/travel/${cityName}_share.jpg`
+        // 获取分享图片URL - 从dream_image_config表中获取share_image_url
+        let travelShareImage = ''
+        try {
+          const imageConfigResult = await dreamImageAPI.getShareImage(2, dreamItemName)
+          if (imageConfigResult && imageConfigResult.data) {
+            travelShareImage = imageConfigResult.data
+          }
+        } catch (error) {
+          console.warn('获取分享图片配置失败，使用备选方案:', error)
+        }
+
+        // 如果API获取失败，使用备选图片URL
+        if (!travelShareImage) {
+          travelShareImage = `https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/travel/travel/${dreamItemName}_share.jpg`
+        }
 
         this.setData({
           travelShareImage,
@@ -87,8 +107,9 @@ Page({
       console.error('加载钱包数据失败:', error)
 
       // 即使加载失败，也使用默认图片和默认数据
+      const defaultItemName = this.data.dreamItemName || '乌鲁木齐'
       this.setData({
-        travelShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/travel/travel/乌鲁木齐_share.jpg',
+        travelShareImage: `https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/travel/travel/${defaultItemName}_share.jpg`,
         transferCount: 0,
         currentAmount: '0.00',
         remainingPercent: 0,

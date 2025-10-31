@@ -63,23 +63,30 @@ public class DreamImageConfigServiceImpl extends ServiceImpl<DreamImageConfigMap
         String baseUrl = config.getProgressImageBaseUrl();
 
         // 生成5张进度图片的URL，分别对应20%、40%、60%、80%、100%
-        // 支持两种格式：
-        // 1. 包含 {progress} 占位符的：/static/icon/progress/progress-camera-{progress}.png
-        // 2. 以 / 结尾的目录：/static/icon/progress/progress-camera/
+        // 支持三种格式：
+        // 1. 包含 {{partX}} 模板变量的：https://oss.../image/dream/goods/car/{{partX}}.png
+        // 2. 包含 {progress} 占位符的（兼容旧格式）：/static/icon/progress/progress-camera-{progress}.png
+        // 3. 以 / 结尾的目录（兼容旧格式）：/static/icon/progress/progress-camera/
         for (int i = 1; i <= 5; i++) {
             String imageUrl;
 
-            if (baseUrl.contains("{progress}")) {
-                // 格式1：替换 {progress} 占位符为实际进度编号（1-5）
+            if (baseUrl.contains("{{partX}}")) {
+                // 格式1：替换 {{partX}} 模板变量为实际进度编号（part1, part2, ..., part5）
+                imageUrl = baseUrl.replace("{{partX}}", "part" + i);
+                log.debug("使用{{partX}}模板格式，第{}张图片: {}", i, imageUrl);
+            } else if (baseUrl.contains("{progress}")) {
+                // 格式2：替换 {progress} 占位符为实际进度编号（1-5）
                 imageUrl = baseUrl.replace("{progress}", String.valueOf(i));
+                log.debug("使用{{progress}}占位符格式，第{}张图片: {}", i, imageUrl);
             } else {
-                // 格式2：拼接目录和文件名
+                // 格式3：拼接目录和文件名
                 // 去掉末尾的斜杠如果有的话
                 String url = baseUrl;
                 if (url.endsWith("/")) {
                     url = url.substring(0, url.length() - 1);
                 }
                 imageUrl = url + "/part" + i + ".png";
+                log.debug("使用目录拼接格式，第{}张图片: {}", i, imageUrl);
             }
 
             progressImages.add(imageUrl);
