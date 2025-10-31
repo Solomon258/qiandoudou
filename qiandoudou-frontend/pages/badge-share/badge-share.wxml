@@ -53,27 +53,27 @@
     <!-- 其他分享选项 -->
     <view class="share-options">
       <view class="share-option-item" bindtap="onSaveImage">
-        <image class="option-icon" src="/static/icon/download.png" mode="aspectFit" />
+        <image class="option-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/download.png" mode="aspectFit" />
         <text class="option-text">保存图片</text>
       </view>
 
       <view class="share-option-item" bindtap="onShareToDouyin">
-        <image class="option-icon" src="/static/icon/douyin.png" mode="aspectFit" />
+        <image class="option-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/douyin.png" mode="aspectFit" />
         <text class="option-text">抖音</text>
       </view>
 
       <view class="share-option-item" bindtap="onShareToXiaohongshu">
-        <image class="option-icon" src="/static/icon/xiaohongshu.png" mode="aspectFit" />
+        <image class="option-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/xiaohongshu.png" mode="aspectFit" />
         <text class="option-text">小红书</text>
       </view>
 
       <view class="share-option-item" bindtap="onShareToWeibo">
-        <image class="option-icon" src="/static/icon/weibo.png" mode="aspectFit" />
+        <image class="option-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/weibo.png" mode="aspectFit" />
         <text class="option-text">微博</text>
       </view>
 
       <view class="share-option-item" bindtap="onShareToKuaishou">
-        <image class="option-icon" src="/static/icon/kuaishou.png" mode="aspectFit" />
+        <image class="option-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/kuaishou.png" mode="aspectFit" />
         <text class="option-text">快手</text>
       </view>
     </view>

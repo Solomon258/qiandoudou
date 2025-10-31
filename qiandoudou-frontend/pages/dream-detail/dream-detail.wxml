@@ -14,7 +14,7 @@
     <view class="header-visual" style="{{ isFixedTop? 'display: none;' : 'display: block;' }}">
       <!-- 限时奖励标签 -->
       <view class="reward-tag" bindtap="openChallengeModal">
-        <image class="reward-icon" src="/static/icon/activity/xianshijiangli.jpg" mode="aspectFit" />
+        <image class="reward-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/xianshijiangli.jpg" mode="aspectFit" />
       </view>
 
       <!-- 显示图片（购物类型显示汽车，旅行类型显示目的地） -->

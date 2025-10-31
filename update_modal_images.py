@@ -21,17 +21,17 @@ DB_CONFIG = {
 # 更新映射：商品名称 -> 弹框图片 URL
 MODAL_IMAGE_MAP = {
     # 购物商品
-    'car': '/static/icon/sel-car.png',
-    'suv': '/static/icon/sel-suv.png',
-    'supercar': '/static/icon/sel-supercar.png',
-    'bag': '/static/icon/sel-bag.png',
-    'rolex': '/static/icon/sel-rolex.png',
+    'car': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-car.png',
+    'suv': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-suv.png',
+    'supercar': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-supercar.png',
+    'bag': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-bag.png',
+    'rolex': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-rolex.png',
     # 旅行目的地
-    'beijing': '/static/icon/sel-beijing.png',
-    'xian': '/static/icon/sel-xian.png',
-    'urumqi': '/static/icon/sel-urumqi.png',
-    'sydney': '/static/icon/sel-sydney.png',
-    'tokyo': '/static/icon/sel-tokyo.png',
+    'beijing': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-beijing.png',
+    'xian': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-xian.png',
+    'urumqi': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-urumqi.png',
+    'sydney': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-sydney.png',
+    'tokyo': 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/sel-tokyo.png',
 }
 
 def update_modal_images():

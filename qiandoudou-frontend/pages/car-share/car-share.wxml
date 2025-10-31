@@ -17,34 +17,34 @@
   <view class="share-actions">
     <!-- 主要分享按钮 -->
     <button class="main-share-btn" open-type="share">
-      <image class="share-icon" src="/static/icon/share_friend_circle.png" mode="aspectFit" />
+      <image class="share-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/share_friend_circle.png" mode="aspectFit" />
       <text class="share-text">分享到朋友圈</text>
     </button>
 
     <!-- 社交平台按钮 -->
     <view class="social-buttons">
       <view class="social-btn" bindtap="onSaveImage">
-        <image class="social-icon" src="/static/icon/download.png" mode="aspectFit" />
+        <image class="social-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/download.png" mode="aspectFit" />
         <text class="social-label">保存图片</text>
       </view>
 
       <view class="social-btn" bindtap="onShareToDouyin">
-        <image class="social-icon" src="/static/icon/douyin.png" mode="aspectFit" />
+        <image class="social-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/douyin.png" mode="aspectFit" />
         <text class="social-label">抖音</text>
       </view>
 
       <view class="social-btn" bindtap="onShareToXiaohongshu">
-        <image class="social-icon" src="/static/icon/xiaohongshu.png" mode="aspectFit" />
+        <image class="social-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/xiaohongshu.png" mode="aspectFit" />
         <text class="social-label">小红书</text>
       </view>
 
       <view class="social-btn" bindtap="onShareToWeibo">
-        <image class="social-icon" src="/static/icon/weibo.png" mode="aspectFit" />
+        <image class="social-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/weibo.png" mode="aspectFit" />
         <text class="social-label">微博</text>
       </view>
 
       <view class="social-btn" bindtap="onShareToKuaishou">
-        <image class="social-icon" src="/static/icon/kuaishou.png" mode="aspectFit" />
+        <image class="social-icon" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/kuaishou.png" mode="aspectFit" />
         <text class="social-label">快手</text>
       </view>
     </view>

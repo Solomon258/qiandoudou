@@ -219,7 +219,7 @@
         <view class="wallet-type-option {{selectedWalletType === 'personal' ? 'selected' : ''}}"
           bindtap="selectWalletType" data-type="personal">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="/static/icon/gerenzan.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/gerenzan.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">自己攒钱</text>
@@ -236,7 +236,7 @@
         <view class="wallet-type-option {{selectedWalletType === 'couple' ? 'selected' : ''}}"
           bindtap="selectWalletType" data-type="couple">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="/static/icon/qinglv.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/qinglv.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">情侣攒钱</text>
@@ -252,7 +252,7 @@
         <view class="wallet-type-option {{selectedWalletType === 'couple2' ? 'selected' : ''}}"
           bindtap="selectWalletType" data-type="couple2">
           <view class="option-icon couple">
-            <image class="couple-avatar-image" src="/static/icon/dazi.png" mode="aspectFill"></image>
+            <image class="couple-avatar-image" src="https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/icon/dazi.png" mode="aspectFill"></image>
           </view>
           <view class="option-content">
             <text class="option-title">搭子攒钱</text>
