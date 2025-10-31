@@ -286,7 +286,7 @@
   scale: 0.6; */
   scale: 0.7;
   position: fixed;
-  top: 48rpx;
+  top: 85rpx;
   left: 223rpx;
 }
 .modal-section {

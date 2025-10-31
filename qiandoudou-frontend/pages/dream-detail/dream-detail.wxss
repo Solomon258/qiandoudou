@@ -172,6 +172,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 10rpx;
 }
 
 .progress-percentage {
@@ -333,7 +334,7 @@
   /* padding: 24rpx; */
 }
 .title-to-top .itinerary-scroll {
-  max-height: 100vh !important;
+  max-height: 74vh !important;
 }
 .itinerary-content {
   width: 100%;

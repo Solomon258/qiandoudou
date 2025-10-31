@@ -59,7 +59,7 @@
         <text class="title-text">{{dreamWallet.dreamItineraryTitle}}</text>
       </view>
 
-      <scroll-view class="itinerary-scroll" scroll-y="{{true}}" enhanced="{{true}}" bindscroll="onScrollContent">
+      <scroll-view class="{{  isFixedTop ? 'title-to-top itinerary-scroll' : 'itinerary-scroll' }}" scroll-y="{{true}}" enhanced="{{true}}" bindscroll="onScrollContent">
         <view class="itinerary-content">
           <rich-text class="itinerary-rich-text"
             nodes="{{dreamWallet.dreamItineraryHtml || 'AI正在为您生成详细的旅行行程，请稍后刷新查看...'}}" user-select></rich-text>

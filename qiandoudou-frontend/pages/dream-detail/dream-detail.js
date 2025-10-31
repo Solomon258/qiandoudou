@@ -619,14 +619,16 @@ Page({
         if (result && result.data && result.data.length > 0) {
           const progressImages = result.data
           // 根据进度百分比选择对应的图片
+          // part0: 0-20%, part1: 20-40%, part2: 40-60%, part3: 60-80%, part4: 80-100%, part5: 100%
           let selectedImage
-          if (progress >= 80) selectedImage = progressImages[4]
-          else if (progress >= 60) selectedImage = progressImages[3]
-          else if (progress >= 40) selectedImage = progressImages[2]
-          else if (progress >= 20) selectedImage = progressImages[1]
-          else selectedImage = progressImages[0]
+          if (progress >= 100) selectedImage = progressImages[5]  // >= 100% 时返回 part5
+          else if (progress >= 80) selectedImage = progressImages[4]  // >= 80% && < 100% 时返回 part4
+          else if (progress >= 60) selectedImage = progressImages[3]  // >= 60% && < 80% 时返回 part3
+          else if (progress >= 40) selectedImage = progressImages[2]  // >= 40% && < 60% 时返回 part2
+          else if (progress >= 20) selectedImage = progressImages[1]  // >= 20% && < 40% 时返回 part1
+          else selectedImage = progressImages[0]  // < 20% 时返回 part0
 
-          console.log('选中的图片:', selectedImage)
+          console.log('选中的图片:', selectedImage, '图片索引:', progressImages.indexOf(selectedImage))
           return selectedImage
         }
       } catch (error) {
@@ -637,19 +639,21 @@ Page({
     // 降级方案：使用硬编码的图片
     console.log('使用硬编码的图片')
     const carImages = [
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 0-20%
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 20-40%
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png', // 40-60%
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png', // 60-80%
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'  // 80-100%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段0@3x.png', // 0-20%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 20-40%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 40-60%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png', // 60-80%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png', // 80-100%
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'  // 100%
     ]
 
     let selectedImage
-    if (progress >= 80) selectedImage = carImages[4]
-    else if (progress >= 60) selectedImage = carImages[3]
-    else if (progress >= 40) selectedImage = carImages[2]
-    else if (progress >= 20) selectedImage = carImages[1]
-    else selectedImage = carImages[0]
+    if (progress >= 100) selectedImage = carImages[5]  // >= 100% 时返回汽车阶段5
+    else if (progress >= 80) selectedImage = carImages[4]  // >= 80% && < 100% 时返回汽车阶段4
+    else if (progress >= 60) selectedImage = carImages[3]  // >= 60% && < 80% 时返回汽车阶段3
+    else if (progress >= 40) selectedImage = carImages[2]  // >= 40% && < 60% 时返回汽车阶段2
+    else if (progress >= 20) selectedImage = carImages[1]  // >= 20% && < 40% 时返回汽车阶段1
+    else selectedImage = carImages[0]  // < 20% 时返回汽车阶段0
 
     console.log('最终返回的硬编码图片:', selectedImage)
     return selectedImage
