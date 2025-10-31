@@ -1,6 +1,6 @@
 // pages/badge-share/badge-share.js
 const app = getApp()
-const { walletAPI } = require('../../utils/api.js')
+const { walletAPI, dreamImageAPI } = require('../../utils/api.js')
 
 Page({
   data: {
@@ -14,7 +14,10 @@ Page({
     achieveDate: '', // 达成日期
     walletName: '', // 钱包名称
     showShareModal: false, // 是否显示分享弹窗
-    shareImageUrl: '' // 分享图片地址
+    shareImageUrl: '', // 分享图片地址
+    dreamType: 1, // 梦想类型 1=购物, 2=旅行
+    dreamItemName: '', // 购物梦想的商品名称
+    dreamDestination: '' // 旅行梦想的目的地
   },
 
   onLoad(options) {
@@ -65,15 +68,24 @@ Page({
         const createTime = walletData.createTime || walletData.createdAt
         const daysCount = this.calculateDays(createTime)
 
-        // 获取汽车图片
-        const carImageUrl = this.getCarImageByProgress(this.data.badgeProgress)
+        // 获取梦想类型和商品信息
+        const dreamType = walletData.dreamType || 1
+        const dreamItemName = walletData.dreamItemName || ''
+        const dreamDestination = walletData.dreamDestination || ''
 
+        // 保存梦想信息
         this.setData({
+          dreamType: dreamType,
+          dreamItemName: dreamItemName,
+          dreamDestination: dreamDestination,
           formattedAmount: this.formatAmount(currentAmount),
           daysCount: daysCount,
-          carImageUrl: carImageUrl,
           walletName: walletData.name || '梦想钱包'
         })
+
+        // 异步获取进度图片
+        const carImageUrl = await this.getCarImageByProgress(this.data.badgeProgress)
+        this.setData({ carImageUrl })
       }
     } catch (error) {
       console.error('加载钱包数据失败:', error)
@@ -112,27 +124,70 @@ Page({
     }
   },
 
-  // 根据进度获取汽车图片
-  getCarImageByProgress(progress) {
-    // 如果是分享图片类型，使用指定的分享图片
-    if (this.data.shareImageType === 'car_share') {
-      return 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+  // 根据进度获取图片（动态获取，支持多种商品）
+  async getCarImageByProgress(progress) {
+    const dreamType = this.data.dreamType || 1
+
+    console.log('badge-share getCarImageByProgress 调试信息:')
+    console.log('- 进度百分比:', progress)
+    console.log('- dreamType:', dreamType)
+    console.log('- dreamItemName:', this.data.dreamItemName)
+    console.log('- dreamDestination:', this.data.dreamDestination)
+
+    // 确定要使用的商品名称
+    let itemName = null
+    if (dreamType === 1) {
+      itemName = this.data.dreamItemName
+    } else {
+      itemName = this.data.dreamDestination
     }
 
-    // 默认使用阶段性汽车图片
-    const carImages = [
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png',
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png',
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png',
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png',
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'
+    console.log('- 最终itemName:', itemName)
+
+    // 如果有商品名称，尝试从API获取
+    if (itemName) {
+      try {
+        console.log('准备调用API获取进度图片，dreamType=' + dreamType + ', itemName=' + itemName)
+        const result = await dreamImageAPI.getProgressImages(dreamType, itemName)
+        console.log('API返回结果:', result)
+
+        if (result && result.data && result.data.length > 0) {
+          const progressImages = result.data
+          // 根据进度百分比选择对应的图片
+          let selectedImage
+          if (progress >= 80) selectedImage = progressImages[4]
+          else if (progress >= 60) selectedImage = progressImages[3]
+          else if (progress >= 40) selectedImage = progressImages[2]
+          else if (progress >= 20) selectedImage = progressImages[1]
+          else selectedImage = progressImages[0]
+
+          console.log('选中的图片:', selectedImage)
+          return selectedImage
+        }
+      } catch (error) {
+        console.warn('获取进度图片配置失败，使用硬编码备选方案:', error)
+      }
+    }
+
+    // 降级方案：如果无法从API获取，使用硬编码的图片（默认汽车图片）
+    console.log('使用硬编码的备选图片')
+    const fallbackImages = [
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part1.png',
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part2.png',
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part3.png',
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part4.png',
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part5.png'
     ]
 
-    if (progress >= 80) return carImages[4]
-    if (progress >= 60) return carImages[3]
-    if (progress >= 40) return carImages[2]
-    if (progress >= 20) return carImages[1]
-    return carImages[0]
+    let selectedImage
+    if (progress >= 80) selectedImage = fallbackImages[4]
+    else if (progress >= 60) selectedImage = fallbackImages[3]
+    else if (progress >= 40) selectedImage = fallbackImages[2]
+    else if (progress >= 20) selectedImage = fallbackImages[1]
+    else selectedImage = fallbackImages[0]
+
+    console.log('最终返回的备选图片:', selectedImage)
+    return selectedImage
   },
 
   // 格式化金额

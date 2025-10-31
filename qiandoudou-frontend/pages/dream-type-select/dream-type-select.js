@@ -31,16 +31,19 @@ Page({
       itemId: '',
       itemName: '',
       itemIcon: '',
+      modalImage: '', // 弹框中显示的商品图片
       walletName: '',
-      selectedCarType: '',
+      selectedOption: '', // 改为通用选项名称
       targetAmount: '',
-      carTypes: ['法拉利', '兰博基尼', '特斯拉'],
-      quickAmounts: ['¥10000', '¥50000', '¥100000']
+      options: [], // 动态选项列表（如：['法拉利', '兰博基尼', '特斯拉']）
+      quickAmounts: [], // 动态金额列表（根据选中选项变化）
+      optionConfig: null // 存储完整的选项配置
     },
     travelModalData: {
       itemId: '',
       itemName: '',
       itemIcon: '',
+      modalImage: '', // 弹框中显示的商品图片
       walletName: '',
       selectedTag: '',
       departureCity: '深圳',
@@ -76,8 +79,12 @@ Page({
           id: item.id,
           name: item.displayName,
           icon: item.bubbleImageUrl || item.imageUrl,
-          price: item.suggestedAmount ? item.suggestedAmount.toString() : '0'
+          modalImage: item.modalImageUrl || item.imageUrl, // 弹框图片，fallback到image_url
+          price: item.suggestedAmount ? item.suggestedAmount.toString() : '0',
+          optionConfig: item.optionConfig ? JSON.parse(item.optionConfig) : null // 解析选项配置
         }))
+
+        console.log('映射后的购物商品:', items)
 
         this.setData({
           shoppingItems: items,
@@ -106,8 +113,11 @@ Page({
           id: item.id,
           name: item.displayName,
           icon: item.bubbleImageUrl || item.imageUrl,
+          modalImage: item.modalImageUrl || item.imageUrl, // 弹框图片，fallback到image_url
           landmark: item.description || ''
         }))
+
+        console.log('映射后的旅行目的地:', items)
 
         this.setData({
           travelItems: items,
@@ -144,15 +154,44 @@ Page({
   selectShoppingItem(e) {
     const itemId = e.currentTarget.dataset.id
     const item = this.data.shoppingItems.find(item => item.id == itemId)
-    
+
     if (item) {
-      this.setData({ 
+      console.log('selectShoppingItem - 选中的商品:', item)
+
+      // 设置选项配置
+      let options = []
+      let quickAmounts = []
+      let optionConfig = null
+
+      if (item.optionConfig && item.optionConfig.options) {
+        optionConfig = item.optionConfig
+        options = item.optionConfig.options.map(opt => opt.label)
+
+        // 默认选中第一个选项，并设置对应的金额
+        if (item.optionConfig.options.length > 0) {
+          const firstOption = item.optionConfig.options[0]
+          quickAmounts = firstOption.suggestedAmounts.map(amount => `¥${amount}`)
+          this.setData({
+            'shoppingModalData.selectedOption': firstOption.label
+          })
+        }
+      } else {
+        // 如果没有配置，使用默认值（向后兼容）
+        options = ['法拉利', '兰博基尼', '特斯拉']
+        quickAmounts = ['¥10000', '¥50000', '¥100000']
+      }
+
+      this.setData({
         showShoppingModal: true,
         'shoppingModalData.itemId': item.id,
         'shoppingModalData.itemName': item.name,
         'shoppingModalData.itemIcon': item.icon,
+        'shoppingModalData.modalImage': item.modalImage || item.icon, // 使用modalImage或fallback到icon
         'shoppingModalData.walletName': `我的${item.name}`,
-        'shoppingModalData.targetAmount': item.price || ''
+        'shoppingModalData.targetAmount': item.price || '',
+        'shoppingModalData.options': options,
+        'shoppingModalData.quickAmounts': quickAmounts,
+        'shoppingModalData.optionConfig': optionConfig
       })
     }
   },
@@ -163,13 +202,15 @@ Page({
   selectTravelItem(e) {
     const itemId = e.currentTarget.dataset.id
     const item = this.data.travelItems.find(item => item.id == itemId)
-    
+
     if (item) {
-      this.setData({ 
+      console.log('selectTravelItem - 选中的目的地:', item)
+      this.setData({
         showTravelModal: true,
         'travelModalData.itemId': item.id,
         'travelModalData.itemName': item.name,
         'travelModalData.itemIcon': item.icon,
+        'travelModalData.modalImage': item.modalImage || item.icon, // 使用modalImage或fallback到icon
         'travelModalData.walletName': `${item.name}之旅`,
         'travelModalData.destinationCity': item.name
       })
@@ -260,13 +301,28 @@ Page({
   },
 
   /**
-   * 选择车型
+   * 选择产品选项（车型、品牌等）
    */
-  selectCarType(e) {
-    const carType = e.currentTarget.dataset.type
-    this.setData({
-      'shoppingModalData.selectedCarType': carType
-    })
+  selectProductOption(e) {
+    const selectedOption = e.currentTarget.dataset.type
+    const { optionConfig } = this.data.shoppingModalData
+
+    if (optionConfig && optionConfig.options) {
+      // 根据选中的选项找到对应建议金额
+      const selectedOptionConfig = optionConfig.options.find(opt => opt.label === selectedOption)
+      if (selectedOptionConfig) {
+        const quickAmounts = selectedOptionConfig.suggestedAmounts.map(amount => `¥${amount}`)
+        this.setData({
+          'shoppingModalData.selectedOption': selectedOption,
+          'shoppingModalData.quickAmounts': quickAmounts
+        })
+      }
+    } else {
+      // 向后兼容：使用默认选项
+      this.setData({
+        'shoppingModalData.selectedOption': selectedOption
+      })
+    }
   },
 
   /**

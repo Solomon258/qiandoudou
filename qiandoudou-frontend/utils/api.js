@@ -1,7 +1,7 @@
 // utils/api.js - 微信小程序API工具函数
 const app = getApp()
 
-// 后端API基础地址
+后端API基础地址
 // const BASE_URL = 'http://localhost:8080/api'  // 本地开发
  const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 
@@ -869,12 +869,55 @@ const scriptAPI = {
   }
 }
 
+// 梦想攒图片配置API
+const dreamImageAPI = {
+  // 获取图片配置
+  getImageConfig: (dreamType, itemName) => {
+    return request({
+      url: `/dream-image-config/get?dreamType=${dreamType}&itemName=${itemName}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取进度图片列表
+  getProgressImages: (dreamType, itemName) => {
+    return request({
+      url: `/dream-image-config/progress-images?dreamType=${dreamType}&itemName=${itemName}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取分享图片URL
+  getShareImage: (dreamType, itemName) => {
+    return request({
+      url: `/dream-image-config/share-image?dreamType=${dreamType}&itemName=${itemName}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取梦想类型的所有启用的图片配置
+  getActiveByType: (dreamType) => {
+    return request({
+      url: `/dream-image-config/list/${dreamType}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取梦想详情页所需的完整图片信息
+  getCompleteImageInfo: (dreamType, itemName) => {
+    return request({
+      url: `/dream-image-config/complete-info?dreamType=${dreamType}&itemName=${itemName}`,
+      method: 'GET'
+    })
+  }
+}
 
 module.exports = {
   request,
   authAPI,
   walletAPI,
   shareImageAPI,
+  dreamImageAPI,
   uploadFile,
   uploadUserImage,
   scriptAPI

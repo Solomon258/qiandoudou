@@ -63,12 +63,12 @@
     <view class="modal-content" catchtap="preventModalClose">
       <!-- 弹框头部 -->
       <view class="modal-header">
-        <view class="modal-title"> 
-          <text class="title_name">选择轿车</text>
+        <view class="modal-title">
+          <text class="title_name">选择{{shoppingModalData.itemName}}</text>
         </view>
-        <view class="modal-icon-sel"> 
-          <image class="modal-icon" src="/static/icon/sel-car.png" mode="aspectFit" />
-        </view>
+          <view class="modal-icon-sel">
+            <image class="modal-icon" src="{{shoppingModalData.modalImage}}" mode="aspectFit" />
+          </view>
       </view>
       <view class="sel_content">
         
@@ -83,15 +83,15 @@
             maxlength="20" />
         </view>
 
-        <!-- 车型选择 -->
+        <!-- 产品选项选择 -->
         <view class="modal-section">
           <view class="car-types">
-            <view 
-              wx:for="{{shoppingModalData.carTypes}}" 
-              wx:key="*this" 
-              class="car-type-item {{shoppingModalData.selectedCarType === item ? 'selected' : ''}}"
+            <view
+              wx:for="{{shoppingModalData.options}}"
+              wx:key="*this"
+              class="car-type-item {{shoppingModalData.selectedOption === item ? 'selected' : ''}}"
               data-type="{{item}}"
-              bindtap="selectCarType">
+              bindtap="selectProductOption">
               <text>{{item}}</text>
             </view>
           </view>
@@ -141,10 +141,10 @@
       </view> -->
      <!-- 弹框头部 -->
      <view class="modal-header">
-        <view class="modal-title"> 
-          <text class="title_name">选择旅游地点</text>
+        <view class="modal-title">
+          <text class="title_name">选择{{travelModalData.itemName || '旅游地点'}}</text>
         </view>
-          <image class="modal-icon-travel" src="/static/icon/travel.png" mode="aspectFit" />
+          <image class="modal-icon-travel" src="{{travelModalData.modalImage || '/static/icon/travel.png'}}" mode="aspectFit" />
 
       </view>
       <view class="sel_content">

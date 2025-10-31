@@ -12,9 +12,6 @@
     <!-- 汽车图片 -->
     <view class="car-image-container">
       <image class="car-image" src="{{carImageUrl}}" mode="aspectFill" />
-      <view class="badge-tag">
-        <text class="badge-text">已有组件：{{badgeLabel}}</text>
-      </view>
     </view>
 
     <!-- 梦想信息 -->

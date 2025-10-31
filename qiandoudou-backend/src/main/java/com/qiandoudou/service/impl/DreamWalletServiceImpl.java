@@ -4,6 +4,7 @@ import com.qiandoudou.entity.*;
 import com.qiandoudou.mapper.*;
 import com.qiandoudou.service.AiService;
 import com.qiandoudou.service.DreamWalletService;
+import com.qiandoudou.service.DreamImageConfigService;
 import com.qiandoudou.service.TransactionService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -50,6 +51,9 @@ public class DreamWalletServiceImpl implements DreamWalletService {
     @Autowired
     private AiService aiService;
 
+    @Autowired
+    private DreamImageConfigService dreamImageConfigService;
+
     @Override
     public List<DreamItem> getDreamItems(Integer category) {
         return dreamItemMapper.selectByCategory(category);
@@ -87,13 +91,29 @@ public class DreamWalletServiceImpl implements DreamWalletService {
 
             if (dreamType == 1) {
                 // 购物类型
-                wallet.setDreamItemName(dreamItem.getDisplayName());
-                wallet.setDreamItemImage(dreamItem.getImageUrl());
+                wallet.setDreamItemName(dreamItem.getName());  // ⭐ 使用 name（英文标识符）而不是 displayName
+
+                // 从 dream_image_config 获取初始进度图片（第1张，0-20%）
+                List<String> progressImages = dreamImageConfigService.getProgressImages(dreamType, dreamItem.getName());
+                if (progressImages != null && !progressImages.isEmpty()) {
+                    wallet.setDreamItemImage(progressImages.get(0));  // 使用第1张进度图片
+                } else {
+                    // 降级方案：使用 dream_items 的图标
+                    wallet.setDreamItemImage(dreamItem.getImageUrl());
+                }
             } else {
                 // 旅行类型
-                wallet.setDreamDestination(dreamItem.getDisplayName());
+                wallet.setDreamDestination(dreamItem.getName());  // ⭐ 使用 name（英文标识符）而不是 displayName
                 wallet.setDreamDays(days);
-                wallet.setDreamItemImage(dreamItem.getImageUrl());
+
+                // 从 dream_image_config 获取初始进度图片（第1张，0-20%）
+                List<String> progressImages = dreamImageConfigService.getProgressImages(dreamType, dreamItem.getName());
+                if (progressImages != null && !progressImages.isEmpty()) {
+                    wallet.setDreamItemImage(progressImages.get(0));  // 使用第1张进度图片
+                } else {
+                    // 降级方案：使用 dream_items 的图标
+                    wallet.setDreamItemImage(dreamItem.getImageUrl());
+                }
 
                 // 先设置默认行程文本
                 wallet.setDreamItinerary("AI正在为您生成详细的旅行行程，请稍后刷新查看...");
@@ -343,15 +363,37 @@ public class DreamWalletServiceImpl implements DreamWalletService {
 
     @Override
     public String generateShareImage(Long walletId, Integer progress) {
-        // TODO: 实现分享图片生成逻辑
-        // 这里先返回默认图片，后续可以集成图片合成服务
         Wallet wallet = walletMapper.selectById(walletId);
         if (wallet == null) {
             return null;
         }
 
-        String stageImage = getCurrentStageImage(wallet, progress);
-        return stageImage;
+        // 根据梦想类型获取分享图片
+        if (wallet.getDreamType() == 1) {
+            // 购物类型 - 获取该商品的分享图片
+            String itemName = wallet.getDreamItemName();
+            if (itemName != null) {
+                String shareImage = dreamImageConfigService.getShareImage(1, itemName);
+                if (shareImage != null) {
+                    log.info("获取购物分享图片成功，商品: {}，URL: {}", itemName, shareImage);
+                    return shareImage;
+                }
+            }
+        } else {
+            // 旅游类型 - 获取该目的地的分享图片
+            String destination = wallet.getDreamDestination();
+            if (destination != null) {
+                String shareImage = dreamImageConfigService.getShareImage(2, destination);
+                if (shareImage != null) {
+                    log.info("获取旅游分享图片成功，目的地: {}，URL: {}", destination, shareImage);
+                    return shareImage;
+                }
+            }
+        }
+
+        // 降级方案：返回当前阶段图片
+        log.warn("未找到分享图片配置，使用阶段图片作为降级方案");
+        return getCurrentStageImage(wallet, progress);
     }
 
     @Override
@@ -498,14 +540,35 @@ public class DreamWalletServiceImpl implements DreamWalletService {
      */
     private String getCurrentStageImage(Wallet wallet, Integer progress) {
         if (wallet.getDreamType() == 1) {
-            // 购物类型 - 汽车图片
-            if (progress >= 80) return "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png";
-            if (progress >= 60) return "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png";
-            if (progress >= 40) return "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png";
-            if (progress >= 20) return "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png";
-            return "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png";
+            // 购物类型 - 从数据库配置中获取进度图片
+            String itemName = wallet.getDreamItemName();
+            if (itemName != null) {
+                List<String> progressImages = dreamImageConfigService.getProgressImages(1, itemName);
+                if (progressImages != null && !progressImages.isEmpty()) {
+                    // 根据进度百分比选择对应的图片（0-20%返回第1张，20-40%返回第2张，以此类推）
+                    if (progress >= 80) return progressImages.get(4);
+                    if (progress >= 60) return progressImages.get(3);
+                    if (progress >= 40) return progressImages.get(2);
+                    if (progress >= 20) return progressImages.get(1);
+                    return progressImages.get(0);
+                }
+            }
+            // 降级方案：返回商品图片或空值
+            return wallet.getDreamItemImage();
         } else {
-            // 旅行类型 - 目的地图片
+            // 旅行类型 - 从数据库配置中获取进度图片
+            String itemName = wallet.getDreamDestination();
+            if (itemName != null) {
+                List<String> progressImages = dreamImageConfigService.getProgressImages(2, itemName);
+                if (progressImages != null && !progressImages.isEmpty()) {
+                    if (progress >= 80) return progressImages.get(4);
+                    if (progress >= 60) return progressImages.get(3);
+                    if (progress >= 40) return progressImages.get(2);
+                    if (progress >= 20) return progressImages.get(1);
+                    return progressImages.get(0);
+                }
+            }
+            // 降级方案：返回目的地图片
             return wallet.getDreamItemImage();
         }
     }

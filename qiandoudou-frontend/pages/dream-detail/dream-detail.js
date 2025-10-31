@@ -1,6 +1,6 @@
 // pages/dream-detail/dream-detail.js
 const app = getApp()
-const { walletAPI } = require('../../utils/api.js')
+const { walletAPI, dreamImageAPI } = require('../../utils/api.js')
 
 Page({
   /**
@@ -181,13 +181,35 @@ Page({
         
         // 根据梦想类型选择图片
         const dreamType = walletData.dreamType || 1
+        const dreamProgress = responseData.currentProgress || walletData.dreamProgress || 0
         let imageUrl
+
         if (dreamType === 2) {
-          // 旅行类型：使用目的地图片
-          imageUrl = walletData.dreamItemImage || responseData.currentStageImage
+          // 旅行类型：从后端获取图片或使用降级方案
+          imageUrl = responseData.currentStageImage || walletData.dreamItemImage
+
+          // 如果都没有，尝试异步加载
+          if (!imageUrl) {
+            try {
+              imageUrl = await this.getCarImageByProgress(dreamProgress)
+            } catch (error) {
+              console.error('加载旅行图片失败:', error)
+              imageUrl = '/static/icon/default-travel.png'  // 默认图片
+            }
+          }
         } else {
-          // 购物类型：使用当前阶段汽车图片
-          imageUrl = responseData.currentStageImage || this.getCarImageByProgress(responseData.currentProgress || 0)
+          // 购物类型：优先从后端获取，然后尝试异步加载
+          imageUrl = responseData.currentStageImage || walletData.dreamItemImage
+
+          // 如果都没有，异步加载最新的进度图片
+          if (!imageUrl) {
+            try {
+              imageUrl = await this.getCarImageByProgress(dreamProgress)
+            } catch (error) {
+              console.error('加载购物图片失败:', error)
+              imageUrl = '/static/icon/default-shopping.png'  // 默认图片
+            }
+          }
         }
 
         // 格式化行程文本（转换Markdown为HTML）
@@ -213,6 +235,8 @@ Page({
             formattedTargetAmount: this.formatAmount(targetAmount),
             formattedCurrentAmount: this.formatAmount(currentAmount),
             dreamType: dreamType,
+            dreamItemName: walletData.dreamItemName || '',
+            dreamDestination: walletData.dreamDestination || '',
             dreamItinerary: itinerary,
             dreamItineraryTitle: itineraryTitle,
             dreamItineraryHtml: itineraryHtml,
@@ -223,16 +247,16 @@ Page({
               price: targetAmount
             }
           }
-        }, () => {
+        }, async () => {
           // 在setData完成后执行
           console.log('setData完成，准备加载存入记录，walletId:', walletId)
           console.log('setData完成后，this.data.dreamWallet.id:', this.data.dreamWallet.id)
           console.log('setData完成后，this.data.dreamWallet:', this.data.dreamWallet)
-          
+
           // 计算进度
           console.log('准备计算进度...')
-          this.calculateProgress()
-          
+          await this.calculateProgress()
+
           // 加载存入记录 - 使用确定的walletId
           this.loadDepositRecords(1, true, walletId)
         })
@@ -252,23 +276,23 @@ Page({
   /**
    * 计算进度和更新徽章
    */
-  calculateProgress() {
+  async calculateProgress() {
     const { currentAmount, targetAmount } = this.data.dreamWallet
-    
+
     console.log('calculateProgress 调试信息:')
     console.log('- currentAmount:', currentAmount, typeof currentAmount)
     console.log('- targetAmount:', targetAmount, typeof targetAmount)
-    
+
     if (targetAmount <= 0) {
       console.log('目标金额为0或负数，跳过进度计算')
       return
     }
-    
+
     const percentage = Math.min((parseFloat(currentAmount) / parseFloat(targetAmount)) * 100, 100)
     const completed = percentage >= 100
-    
+
     console.log('- 计算的进度百分比:', percentage)
-    
+
     // 计算当前阶段 (0-5)
     let stage = 0
     if (percentage >= 80) stage = 4
@@ -276,12 +300,12 @@ Page({
     else if (percentage >= 40) stage = 2
     else if (percentage >= 20) stage = 1
     else stage = 0
-    
+
     const finalPercentage = Math.round(percentage * 100) / 100
-    
+
     console.log('- 最终进度百分比:', finalPercentage)
     console.log('- 阶段:', stage)
-    
+
     // 构建更新对象
     const updateData = {
       progress: {
@@ -291,20 +315,28 @@ Page({
       }
     }
 
-    // 只有购物类型才根据进度更新汽车图片
-    if (this.data.dreamWallet.dreamType === 1) {
-      updateData['dreamWallet.itemInfo.imageUrl'] = this.getCarImageByProgress(finalPercentage)
+    // 只有购物类型和旅行类型都需要根据进度更新图片
+    if (this.data.dreamWallet.dreamType === 1 || this.data.dreamWallet.dreamType === 2) {
+      try {
+        const imageUrl = await this.getCarImageByProgress(finalPercentage)
+        if (imageUrl) {
+          updateData['dreamWallet.itemInfo.imageUrl'] = imageUrl
+          console.log('进度图片已更新:', imageUrl)
+        }
+      } catch (error) {
+        console.error('更新进度图片失败:', error)
+      }
     }
 
     this.setData(updateData)
-    
+
     console.log('进度更新完成，当前progress:', this.data.progress)
-    
+
     // 强制触发页面更新
     setTimeout(() => {
       console.log('延迟检查进度数据:', this.data.progress)
     }, 100)
-    
+
     // 更新徽章状态
     this.updateProgressBadges(percentage)
   },
@@ -554,9 +586,55 @@ Page({
   },
 
   /**
-   * 根据进度获取汽车图片
+   * 根据进度获取图片
+   * 优先从数据库配置加载，降级到硬编码图片
    */
-  getCarImageByProgress(progress) {
+  async getCarImageByProgress(progress) {
+    const dreamWallet = this.data.dreamWallet
+    const dreamType = dreamWallet.dreamType || 1
+
+    console.log('getCarImageByProgress 调试信息:')
+    console.log('- 进度百分比:', progress)
+    console.log('- dreamType:', dreamType)
+    console.log('- dreamItemName:', dreamWallet.dreamItemName)
+    console.log('- dreamDestination:', dreamWallet.dreamDestination)
+
+    // 购物梦想用itemName，旅游梦想用destination
+    let itemName = null
+    if (dreamType === 1) {
+      itemName = dreamWallet.dreamItemName
+    } else {
+      itemName = dreamWallet.dreamDestination
+    }
+
+    console.log('- 最终itemName:', itemName)
+
+    if (itemName) {
+      try {
+        // 尝试从后端获取进度图片列表
+        console.log('准备调用API获取进度图片，dreamType=' + dreamType + ', itemName=' + itemName)
+        const result = await dreamImageAPI.getProgressImages(dreamType, itemName)
+        console.log('API返回结果:', result)
+        if (result && result.data && result.data.length > 0) {
+          const progressImages = result.data
+          // 根据进度百分比选择对应的图片
+          let selectedImage
+          if (progress >= 80) selectedImage = progressImages[4]
+          else if (progress >= 60) selectedImage = progressImages[3]
+          else if (progress >= 40) selectedImage = progressImages[2]
+          else if (progress >= 20) selectedImage = progressImages[1]
+          else selectedImage = progressImages[0]
+
+          console.log('选中的图片:', selectedImage)
+          return selectedImage
+        }
+      } catch (error) {
+        console.warn('获取进度图片配置失败，使用本地硬编码图片:', error)
+      }
+    }
+
+    // 降级方案：使用硬编码的图片
+    console.log('使用硬编码的图片')
     const carImages = [
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 0-20%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 20-40%
@@ -564,13 +642,16 @@ Page({
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png', // 60-80%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'  // 80-100%
     ]
-    
-    // 根据进度百分比选择图片
-    if (progress >= 80) return carImages[4]
-    if (progress >= 60) return carImages[3]
-    if (progress >= 40) return carImages[2]
-    if (progress >= 20) return carImages[1]
-    return carImages[0]
+
+    let selectedImage
+    if (progress >= 80) selectedImage = carImages[4]
+    else if (progress >= 60) selectedImage = carImages[3]
+    else if (progress >= 40) selectedImage = carImages[2]
+    else if (progress >= 20) selectedImage = carImages[1]
+    else selectedImage = carImages[0]
+
+    console.log('最终返回的硬编码图片:', selectedImage)
+    return selectedImage
   },
 
   /**

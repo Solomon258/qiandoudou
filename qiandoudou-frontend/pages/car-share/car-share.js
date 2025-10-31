@@ -1,8 +1,10 @@
 // pages/car-share/car-share.js
+const { walletAPI, dreamImageAPI } = require('../../utils/api.js')
+
 Page({
   data: {
     walletId: '',
-    carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+    carShareImage: ''
   },
 
   onLoad(options) {
@@ -10,6 +12,75 @@ Page({
 
     if (walletId) {
       this.setData({ walletId })
+      this.loadShareImage()
+    }
+  },
+
+  // 加载分享图片
+  async loadShareImage() {
+    try {
+      wx.showLoading({
+        title: '加载中...'
+      })
+
+      // 获取钱包详情
+      const walletResult = await walletAPI.getDreamWalletDetail(this.data.walletId)
+      console.log('[car-share] 钱包详情返回:', walletResult)
+
+      if (walletResult && walletResult.data) {
+        const walletData = walletResult.data.wallet || walletResult.data
+        const dreamItemName = walletData.dreamItemName
+        console.log('[car-share] dreamItemName:', dreamItemName)
+
+        if (!dreamItemName) {
+          console.warn('[car-share] dreamItemName为空，使用默认图片')
+          wx.hideLoading()
+          this.setData({
+            carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+          })
+          return
+        }
+
+        try {
+          // 从后端API获取分享图片URL
+          console.log('[car-share] 调用API获取分享图片, dreamType=1, itemName=' + dreamItemName)
+          const shareImageResult = await dreamImageAPI.getShareImage(1, dreamItemName)
+          console.log('[car-share] API返回结果:', shareImageResult)
+
+          if (shareImageResult && shareImageResult.data) {
+            console.log('[car-share] 成功获取分享图片:', shareImageResult.data)
+            this.setData({
+              carShareImage: shareImageResult.data
+            })
+          } else {
+            console.warn('[car-share] API返回数据为空，使用降级方案')
+            // 降级方案
+            this.setData({
+              carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+            })
+          }
+        } catch (apiError) {
+          console.error('[car-share] 获取分享图片配置失败，使用默认图片:', apiError)
+          // 降级方案
+          this.setData({
+            carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+          })
+        }
+
+        wx.hideLoading()
+      } else {
+        wx.hideLoading()
+        this.setData({
+          carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+        })
+      }
+    } catch (error) {
+      wx.hideLoading()
+      console.error('加载分享图片失败:', error)
+      // 加载失败时使用默认图片
+      this.setData({
+        carShareImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/car_share_compressed.jpg'
+      })
     }
   },
 

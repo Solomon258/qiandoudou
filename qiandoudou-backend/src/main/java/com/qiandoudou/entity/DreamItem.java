@@ -55,6 +55,18 @@ public class DreamItem implements Serializable {
     private String bubbleImageUrl;
 
     /**
+     * 弹框中显示的商品图片URL（用于梦想类型选择页面）
+     */
+    @TableField("modal_image_url")
+    private String modalImageUrl;
+
+    /**
+     * 产品选项配置JSON（包含品牌选项和建议金额数组）
+     */
+    @TableField("option_config")
+    private String optionConfig;
+
+    /**
      * 商品描述
      */
     private String description;

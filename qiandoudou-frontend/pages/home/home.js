@@ -1,6 +1,6 @@
 // pages/home/home.js
 const app = getApp()
-const { walletAPI, shareImageAPI } = require('../../utils/api.js')
+const { walletAPI, shareImageAPI, dreamImageAPI } = require('../../utils/api.js')
 
 Page({
   data: {
@@ -184,21 +184,38 @@ Page({
           return
         }
         
-        // 为每个钱包计算背景样式和文字颜色
-        const walletsWithBackground = wallets.map(wallet => {
-          const backgroundStyle = this.getWalletBackground(wallet)
+        // 为每个钱包计算背景样式和文字颜色（异步处理梦想钱包的图片）
+        Promise.all(wallets.map(async (wallet) => {
+          const backgroundStyle = await this.getWalletBackground(wallet)
           const textColor = this.getTextColorForBackground(wallet)
           return {
             ...wallet,
             backgroundStyle: backgroundStyle,
             textColorStyle: `color: ${textColor};`
           }
-        })
-        
-        this.setData({
-          wallets: walletsWithBackground,
-          loading: false,
-          isFirstTimeUser: false
+        })).then(walletsWithBackground => {
+          this.setData({
+            wallets: walletsWithBackground,
+            loading: false,
+            isFirstTimeUser: false
+          })
+        }).catch(error => {
+          console.error('处理钱包背景时出错:', error)
+          // 即使出错也显示钱包，使用默认背景
+          const walletsWithBackground = wallets.map(wallet => {
+            const backgroundStyle = this.getWalletBackgroundSync(wallet)
+            const textColor = this.getTextColorForBackground(wallet)
+            return {
+              ...wallet,
+              backgroundStyle: backgroundStyle,
+              textColorStyle: `color: ${textColor};`
+            }
+          })
+          this.setData({
+            wallets: walletsWithBackground,
+            loading: false,
+            isFirstTimeUser: false
+          })
         })
         
         // 如果当前在社交页面，重新加载动态数据以使用真实钱包ID
@@ -490,20 +507,56 @@ console.log(selectedWalletType)
     return wallet.type === 2 ? '#ffffff' : '#ffffff'
   },
 
-  // 根据进度获取梦想钱包的汽车图片URL
-  getDreamWalletImageUrl(wallet) {
-    const dreamImages = [
+  // 根据进度获取梦想钱包的图片URL（支持多种商品）
+  async getDreamWalletImageUrl(wallet) {
+    // 计算进度百分比
+    const targetAmount = wallet.dreamTargetAmount || wallet.dream_target_amount || wallet.targetAmount || 0
+    const currentAmount = wallet.balance || wallet.currentAmount || 0
+    const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
+
+    const dreamType = wallet.dreamType || 1
+    const dreamItemName = wallet.dreamItemName || wallet.dream_item_name || ''
+
+    console.log('getDreamWalletImageUrl 调试信息:')
+    console.log('- walletId:', wallet.id)
+    console.log('- dreamType:', dreamType)
+    console.log('- dreamItemName:', dreamItemName)
+    console.log('- 进度百分比:', progress)
+
+    // 尝试从API获取动态图片
+    if (dreamItemName && dreamType === 1) {
+      try {
+        console.log('准备调用API获取进度图片，dreamType=' + dreamType + ', itemName=' + dreamItemName)
+        const result = await dreamImageAPI.getProgressImages(dreamType, dreamItemName)
+        console.log('API返回结果:', result)
+
+        if (result && result.data && result.data.length > 0) {
+          const progressImages = result.data
+          // 根据进度百分比选择对应的图片
+          let selectedImage
+          if (progress >= 80) selectedImage = progressImages[4]
+          else if (progress >= 60) selectedImage = progressImages[3]
+          else if (progress >= 40) selectedImage = progressImages[2]
+          else if (progress >= 20) selectedImage = progressImages[1]
+          else selectedImage = progressImages[0]
+
+          console.log('成功获取图片:', selectedImage)
+          return selectedImage
+        }
+      } catch (error) {
+        console.warn('获取进度图片配置失败，使用硬编码备选方案:', error)
+      }
+    }
+
+    // 降级方案：使用硬编码的汽车图片
+    console.log('使用硬编码的备选图片')
+    const fallbackImages = [
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png', // 0-20%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段2@3x.png', // 20-40%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段3@3x.png', // 40-60%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段4@3x.png', // 60-80%
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段5@3x.png'  // 80-100%
     ]
-
-    // 计算进度百分比
-    const targetAmount = wallet.dreamTargetAmount || wallet.dream_target_amount || wallet.targetAmount || 0
-    const currentAmount = wallet.balance || wallet.currentAmount || 0
-    const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
 
     // 根据进度选择图片
     let imageIndex = 0
@@ -512,11 +565,12 @@ console.log(selectedWalletType)
     else if (progress >= 40) imageIndex = 2
     else if (progress >= 20) imageIndex = 1
 
-    return dreamImages[imageIndex]
+    console.log('最终返回备选图片:', fallbackImages[imageIndex])
+    return fallbackImages[imageIndex]
   },
 
-  // 获取钱包背景样式
-  getWalletBackground(wallet) {
+  // 获取钱包背景样式（异步版本，支持动态获取梦想钱包图片）
+  async getWalletBackground(wallet) {
     // 梦想钱包类型（type=4购物, type=5旅行）
     const isDreamWallet = wallet.type === 4 || wallet.type === 5 ||
                          (wallet.dreamType !== undefined) ||
@@ -532,13 +586,18 @@ console.log(selectedWalletType)
         dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
                      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
       } else {
-        // Type 4 = 购物钱包，使用汽车图片
-        dreamImage = this.getDreamWalletImageUrl(wallet)
+        // Type 4 = 购物钱包，动态获取商品图片
+        dreamImage = await this.getDreamWalletImageUrl(wallet)
       }
 
       return `background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%); background-image: url('${dreamImage}'); background-size: cover; background-position: center;`
     }
 
+    return this.getWalletBackgroundSync(wallet)
+  },
+
+  // 获取钱包背景样式（同步版本，用于备选）
+  getWalletBackgroundSync(wallet) {
     const backgroundOptions = {
       'gradient1': 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);',
       'gradient2': 'background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);',
@@ -546,6 +605,19 @@ console.log(selectedWalletType)
       'gradient4': 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);',
       'gradient5': 'background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);',
       'gradient6': 'background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);'
+    }
+
+    // 梦想钱包：使用默认渐变背景
+    const isDreamWallet = wallet.type === 4 || wallet.type === 5 ||
+                         (wallet.dreamType !== undefined) ||
+                         (wallet.dream_target_amount !== undefined) ||
+                         (wallet.dreamTargetAmount !== undefined)
+
+    if (isDreamWallet) {
+      // 梦想钱包默认使用渐变背景
+      let dreamImage = wallet.dreamItemImage || wallet.dream_item_image ||
+                       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/car/汽车阶段1@3x.png'
+      return `background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%); background-image: url('${dreamImage}'); background-size: cover; background-position: center;`
     }
 
     // 获取背景设置（兼容不同的字段名）
