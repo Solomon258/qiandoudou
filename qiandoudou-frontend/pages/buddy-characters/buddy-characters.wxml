@@ -1,0 +1,96 @@
+<!--pages/buddy-characters/buddy-characters.wxml-->
+<view class="container">
+  <!-- 顶部导航 -->
+  <view class="header">
+    <view class="nav-bar">
+      <view class="back-btn" bindtap="goBack">
+        <image class="back-icon" src="/static/icon/arrow_left.svg"/>
+      </view>
+      <text class="nav-title">
+        {{mode === 'circle' ? circleName : '选择搭子角色'}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载角色中...</text>
+  </view>
+
+  <!-- 角色选择内容 -->
+  <view wx:else class="content">
+    <!-- 当前选中角色展示区 -->
+    <view class="character-display">
+      <image class="character-bg" src="{{selectedCharacter.fullImage}}" mode="aspectFill"/>
+      <view class="character-overlay">
+        <view class="character-info">
+          <text class="character-name">{{selectedCharacter.name}}</text>
+          <view class="character-tags">
+            <text wx:for="{{selectedCharacter.tags}}" wx:key="*this" class="tag">{{item}}</text>
+          </view>
+          <text class="character-intro">{{selectedCharacter.introText}}</text>
+          
+          <!-- 语音播放按钮 -->
+          <view class="voice-btn" bindtap="playIntroVoice">
+            <image class="voice-icon" src="/static/icon/voice.svg"/>
+            <text class="voice-text">听听我的声音</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 角色轮播选择 -->
+    <view class="character-selector">
+      <swiper class="character-swiper" 
+              current="{{currentIndex}}" 
+              bindchange="onSwiperChange"
+              display-multiple-items="3"
+              previous-margin="60rpx"
+              next-margin="60rpx">
+        <swiper-item wx:for="{{characters}}" wx:key="id">
+          <view class="character-card {{selectedIds.includes(item.id) ? 'selected' : ''}}"
+                bindtap="toggleCharacter" data-character="{{item}}">
+            <image class="character-avatar" src="{{item.avatar}}" mode="aspectFill"/>
+            <text class="character-name-small">{{item.name}}</text>
+            <view class="select-indicator">
+              <image wx:if="{{selectedIds.includes(item.id)}}" 
+                     class="check-icon" src="/static/icon/check_circle.svg"/>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 已选角色预览 -->
+    <view class="selected-preview">
+      <view class="preview-header">
+        <text class="preview-title">已选搭子</text>
+        <text class="preview-count">({{selectedCharacters.length}}/4)</text>
+      </view>
+      
+      <view wx:if="{{selectedCharacters.length > 0}}" class="selected-list">
+        <view wx:for="{{selectedCharacters}}" wx:key="id" class="selected-item">
+          <image class="selected-avatar" src="{{item.avatar}}" mode="aspectFill"/>
+          <text class="selected-name">{{item.name}}</text>
+          <view class="remove-btn" bindtap="removeCharacter" data-id="{{item.id}}">
+            <image class="remove-icon" src="/static/icon/close.svg"/>
+          </view>
+        </view>
+      </view>
+      
+      <view wx:else class="empty-selection">
+        <text class="empty-text">请选择3-4个搭子角色</text>
+      </view>
+    </view>
+
+    <!-- 确认按钮 -->
+    <view class="confirm-section">
+      <button class="confirm-btn {{selectedCharacters.length >= 3 && selectedCharacters.length <= 4 ? 'enabled' : ''}}" 
+              bindtap="confirmSelection"
+              disabled="{{creating || selectedCharacters.length < 3 || selectedCharacters.length > 4}}">
+        {{creating ? '创建中...' : '确认创建搭子钱包'}}
+      </button>
+    </view>
+  </view>
+</view>

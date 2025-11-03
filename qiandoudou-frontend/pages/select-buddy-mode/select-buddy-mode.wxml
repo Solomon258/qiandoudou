@@ -1,0 +1,82 @@
+<!--pages/select-buddy-mode/select-buddy-mode.wxml-->
+<view class="container">
+  <!-- 顶部导航 -->
+  <view class="header">
+    <view class="nav-bar">
+      <view class="back-btn" bindtap="goBack">
+        <image class="back-icon" src="/static/icon/arrow_left.svg"/>
+      </view>
+      <text class="nav-title">选择搭子模式</text>
+    </view>
+    
+    <view class="header-content">
+      <text class="main-title">选择你的攒钱搭子</text>
+      <text class="sub-title">为"{{walletName}}"选择合适的搭子方式</text>
+    </view>
+  </view>
+
+  <!-- 模式选择卡片 -->
+  <view class="mode-cards">
+    <!-- 自由选搭 -->
+    <view class="mode-card" bindtap="selectFreeMode">
+      <view class="card-header">
+        <image class="mode-icon" src="/static/icon/free-select.png"/>
+        <view class="mode-info">
+          <text class="mode-title">自由选搭</text>
+          <text class="mode-desc">从默认角色中自由选择3-4个搭子</text>
+        </view>
+      </view>
+      
+      <view class="mode-features">
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">个性化组合</text>
+        </view>
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">灵活搭配</text>
+        </view>
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">独特体验</text>
+        </view>
+      </view>
+      
+      <view class="card-footer">
+        <text class="action-text">立即选择</text>
+        <image class="arrow-icon" src="/static/icon/arrow_right.svg"/>
+      </view>
+    </view>
+
+    <!-- 加入圈子 -->
+    <view class="mode-card" bindtap="selectCircleMode">
+      <view class="card-header">
+        <image class="mode-icon" src="/static/icon/join-circle.png"/>
+        <view class="mode-info">
+          <text class="mode-title">加入圈子</text>
+          <text class="mode-desc">加入经典IP圈子，体验团队攒钱</text>
+        </view>
+      </view>
+      
+      <view class="mode-features">
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">经典IP角色</text>
+        </view>
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">团队氛围</text>
+        </view>
+        <view class="feature-item">
+          <image class="feature-icon" src="/static/icon/check.svg"/>
+          <text class="feature-text">剧情互动</text>
+        </view>
+      </view>
+      
+      <view class="card-footer">
+        <text class="action-text">浏览圈子</text>
+        <image class="arrow-icon" src="/static/icon/arrow_right.svg"/>
+      </view>
+    </view>
+  </view>
+</view>
