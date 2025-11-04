@@ -45,20 +45,24 @@ public class WalletController {
 
     /**
      * 获取用户钱包列表
+     * @param userId 用户ID
+     * @param onlyPublic true 时只返回公开的钱包，false 或不传时返回所有钱包
      */
     @GetMapping("/list")
-    public Result<List<Map<String, Object>>> getUserWallets(@RequestParam Long userId) {
+    public Result<List<Map<String, Object>>> getUserWallets(
+            @RequestParam Long userId,
+            @RequestParam(value = "onlyPublic", required = false, defaultValue = "false") Boolean onlyPublic) {
         try {
-            System.out.println("查询用户钱包列表，用户ID: " + userId);
-            List<Map<String, Object>> wallets = walletService.getUserWallets(userId);
+            System.out.println("查询用户钱包列表，用户ID: " + userId + ", onlyPublic: " + onlyPublic);
+            List<Map<String, Object>> wallets = walletService.getUserWallets(userId, onlyPublic);
             System.out.println("找到 " + wallets.size() + " 个钱包");
-            
+
             // 如果没有钱包，输出调试信息
             if (wallets.isEmpty()) {
                 System.out.println("用户 " + userId + " 没有钱包，检查用户是否存在");
                 // 这里可以添加更多调试逻辑
             }
-            
+
             return Result.success(wallets);
         } catch (Exception e) {
             System.err.println("获取用户钱包列表失败: " + e.getMessage());
@@ -701,8 +705,8 @@ public class WalletController {
             Map<String, Object> debugInfo = new HashMap<>();
             debugInfo.put("queryUserId", userId);
             
-            // 1. 查询用户的钱包
-            List<Map<String, Object>> wallets = walletService.getUserWallets(userId);
+            // 1. 查询用户的钱包（返回所有钱包）
+            List<Map<String, Object>> wallets = walletService.getUserWallets(userId, false);
             debugInfo.put("walletCount", wallets.size());
             debugInfo.put("wallets", wallets);
             

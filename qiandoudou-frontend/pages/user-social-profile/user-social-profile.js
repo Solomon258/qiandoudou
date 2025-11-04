@@ -44,11 +44,6 @@ Page({
   onShow() {
     // 页面显示时重新加载用户信息，确保头像等信息是最新的
     this.loadUserInfo()
-
-    // 重新加载钱包数据，确保关注列表是最新的
-    if (this.data.userId) {
-      this.loadUserData(this.data.userId)
-    }
   },
 
   // 加载用户信息
@@ -204,17 +199,17 @@ Page({
 
   // 加载用户的公开钱包
   loadPublicWallets(userId) {
-    return walletAPI.getUserWallets(userId)
+    return walletAPI.getUserWallets(userId, true)
       .then(result => {
         const wallets = result.data || []
-        
-        // 保存第一个钱包信息用于头像显示
-        if (wallets.length > 0) {
-          this.setData({ firstWallet: wallets[0] })
-        }
-        
-        // 假设所有钱包都是公开的，后续可以根据实际情况过滤
+
+        // 后端已经过滤了 is_public = 1 的钱包，直接转换格式
         const publicWallets = wallets.map(wallet => {
+          // 保存第一个公开钱包信息用于头像显示
+          if (!this.data.firstWallet) {
+            this.setData({ firstWallet: wallet })
+          }
+
           return {
             id: wallet.id,
             title: wallet.name || '未命名钱包',
@@ -226,13 +221,18 @@ Page({
             backgroundStyle: this.getWalletBackground(wallet)
           }
         })
-        
+
+        console.log('公开钱包加载完成:', {
+          总数: publicWallets.length,
+          数据: publicWallets
+        })
+
         this.setData({ publicWallets })
 
         return publicWallets
       })
       .catch(error => {
-
+        console.error('加载公开钱包失败:', error)
         return []
       })
   },

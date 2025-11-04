@@ -14,8 +14,10 @@ public interface WalletService extends IService<Wallet> {
 
     /**
      * 获取用户钱包列表
+     * @param userId 用户ID
+     * @param onlyPublic true 时只返回公开的钱包，false 时返回所有钱包
      */
-    List<Map<String, Object>> getUserWallets(Long userId);
+    List<Map<String, Object>> getUserWallets(Long userId, Boolean onlyPublic);
 
     /**
      * 创建钱包
