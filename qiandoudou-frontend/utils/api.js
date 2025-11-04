@@ -191,11 +191,12 @@ const authAPI = {
  */
 const walletAPI = {
   // 获取用户钱包列表
-  getUserWallets(userId) {
+  // onlyPublic: true 时只返回公开的钱包，false 时返回所有钱包
+  getUserWallets(userId, onlyPublic = false) {
     return request({
       url: '/wallet/list',
       method: 'GET',
-      data: { userId }
+      data: { userId, onlyPublic }
     })
   },
 

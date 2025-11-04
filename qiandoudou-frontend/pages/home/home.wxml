@@ -153,15 +153,15 @@
             <text class="description">{{item.description}}</text>
           </view>
 
-          <!-- 最新两笔账单 -->
+          <!-- 最新一笔账单 -->
           <view class="recent-transactions">
-            <view wx:for="{{item.recent_transactions}}" wx:for-item="transaction" wx:key="id" class="transaction-item">
+            <view wx:if="{{item.recent_transactions && item.recent_transactions.length > 0}}" class="transaction-item">
               <view class="transaction-user-avatar">
-                <text class="avatar-text">{{transaction.user_nickname.charAt(0)}}</text>
+                <text class="avatar-text">{{item.recent_transactions[0].user_nickname.charAt(0)}}</text>
               </view>
               <view class="transaction-content">
-                <text class="transaction-desc">{{transaction.user_nickname}}：{{transaction.comment}}</text>
-                <text wx:if="{{transaction.amount > 0}}" class="amount-change">+¥{{transaction.amount}}</text>
+                <text class="transaction-desc">{{item.recent_transactions[0].user_nickname}}：{{item.recent_transactions[0].comment}}</text>
+                <text wx:if="{{item.recent_transactions[0].amount > 0}}" class="amount-change">+¥{{item.recent_transactions[0].amount}}</text>
               </view>
             </view>
           </view>

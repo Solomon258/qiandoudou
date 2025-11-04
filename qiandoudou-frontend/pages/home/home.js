@@ -83,20 +83,17 @@ Page({
     if (app.isLoggedIn()) {
 
       this.loadData()
-      
-      // 强制刷新钱兜兜列表以获取最新的背景设置
-      this.loadWallets()
-      
+
       // 只在社交数据未加载时才刷新
       if (!this.data.socialDataLoaded) {
         this.loadPosts(true)
         this.setData({ socialDataLoaded: true })
       }
-      
+
       // 加载未读消息数量
       this.loadUnreadMessageCount()
     }
-    
+
     // 重置刷新标记
     this.setData({ shouldRefresh: false })
   },
@@ -808,7 +805,7 @@ console.log(selectedWalletType)
             total_amount: parseFloat(wallet.balance || 0).toFixed(2),
             tags: walletType === 2 ? ['情感', '情侣', wallet.ai_partner_name || 'AI伴侣'] : (walletType === 3 ? ['生活', '搭子', '攒钱'] : ['生活', '攒钱', '个人']),
             description: this.generateWalletDescription({...wallet, type: walletType}, recentTransactions),
-            backgroundStyle: this.getWalletBackground({
+            backgroundStyle: this.getWalletBackgroundSync({
               ...wallet,
               type: walletType,
               backgroundImage: wallet.backgroundImage || wallet.background_image

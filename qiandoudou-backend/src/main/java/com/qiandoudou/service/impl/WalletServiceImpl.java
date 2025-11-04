@@ -42,8 +42,22 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     private AiService aiService;
 
     @Override
-    public List<Map<String, Object>> getUserWallets(Long userId) {
-        return baseMapper.getUserWalletsWithPartner(userId);
+    public List<Map<String, Object>> getUserWallets(Long userId, Boolean onlyPublic) {
+        List<Map<String, Object>> wallets = baseMapper.getUserWalletsWithPartner(userId);
+
+        // 如果只需要公开的钱包，进行过滤
+        if (onlyPublic != null && onlyPublic) {
+            wallets = wallets.stream()
+                    .filter(wallet -> {
+                        Object isPublic = wallet.get("is_public");
+                        // 兼容数字1、字符串'1'和布尔值true
+                        return isPublic == null ? false :
+                               (isPublic.equals(1) || isPublic.equals("1") || isPublic.equals(true));
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        return wallets;
     }
 
     @Override

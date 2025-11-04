@@ -1157,6 +1157,7 @@
   min-height: 100vh;
   background: #f2f3f7;
   position: relative;
+  top: 91px;
 }
 
 
@@ -1309,6 +1310,7 @@
 .social-posts-scroll {
   height: calc(100vh - 280rpx); /* 减去顶部导航和底部导航高度 */
   padding: 32rpx;
+  padding-top: 16rpx;
   width: calc(100% - 64rpx);
 }
 
@@ -1360,7 +1362,6 @@
   margin-bottom: 24rpx;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%); /* 默认渐变背景 */
 }
 
 .social-post-card .post-bg {
