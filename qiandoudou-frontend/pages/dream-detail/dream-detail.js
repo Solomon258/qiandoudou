@@ -84,7 +84,8 @@ Page({
     records: [],
     hasMoreRecords: true,
     currentPage: 1,
-    pageSize: 20
+    pageSize: 20,
+    havePulldowm: false
   },
 
   /**
@@ -980,40 +981,19 @@ Page({
     })
   },
   onPageScroll(e) {
-    console.log(e,'用户外部滚动了1111')
     const scrollTop = e.scrollTop
-    const threshod = 100 //阀值
-    console.log(this.data.isFixedTop,'this.data.isFixedTopthis.data.isFixedTop')
-    if(this.data.isFixedTop && ( scrollTop < 20)) {
+    const threshod = 100 //吸顶阀值
+    const threshodDown = 5 //恢复阀值
+    console.log(this.data.isFixedTop,'是否吸顶')
+    if( ( scrollTop > threshod && !this.data.isFixedTop)) {
+        this.setData({
+          isFixedTop: true
+        })
+      }
+      else if( scrollTop < threshodDown && this.data.isFixedTop) {
         this.setData({
           isFixedTop: false
         })
       }
-    // if(scrollTop > threshod && !this.data.isFixedTop) {
-    //   this.setData({
-    //     isFixedTop: true
-    //   })
-    // }
-  },
-  onScrollContent(e) {
-    console.log(e,'用户文章部分滚动了')
-    const scrollTop = e.detail.scrollTop
-    const threshod = 30 //阀值
-    const lastScrollTop = this.data.lastScrollTop
-    if(scrollTop >= lastScrollTop && scrollTop > threshod) {
-      this.setData({
-        isFixedTop: true
-      })
-    }
-     else if(scrollTop < lastScrollTop && ( scrollTop < 10)) {
-      this.setData({
-        isFixedTop: false
-      })
-    }
-    //更新上一次滚动位置
-    this.setData({
-      lastScrollTop: scrollTop
-    })
-
   }
 })

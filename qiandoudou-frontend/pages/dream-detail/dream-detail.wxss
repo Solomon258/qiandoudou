@@ -52,8 +52,8 @@
   /* overflow: hidden; */
 }
 .title-to-top {
-  position: sticky;
-  top: 0;
+  /* position: absolute;
+  top: 0; */
 }
 
 .reward-tag {
@@ -189,6 +189,7 @@
 /* 账单流水模块 */
 .records-section {
   padding: 0 32rpx 24rpx;
+  padding-bottom: 200rpx;
 }
 
 .record-card {
@@ -249,7 +250,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 100rpx 0;
 }
 
 .empty-text {
@@ -319,6 +319,20 @@
   padding: 24rpx 0 16rpx;
   margin-bottom: 16rpx;
 }
+.itinerary-title-top {
+  position: fixed;
+  top: 0;
+  background: #fff;
+  width: 100%;
+  height: 82rpx;
+  z-index: 999;
+  left: 0;
+  padding: 24rpx;
+  margin-top: -1rpx;
+}
+.itinerary-scroll-top {
+  margin-top: 140rpx;
+}
 
 .title-text {
   font-size: 36rpx;
@@ -333,9 +347,12 @@
   border-radius: 16rpx;
   /* padding: 24rpx; */
 }
-.title-to-top .itinerary-scroll {
-  max-height: 74vh !important;
+/* .title-to-top .itinerary-scroll {
+  max-height: 75vh !important;
 }
+.have_data.itinerary-scroll {
+  max-height: 70vh !important;
+} */
 .itinerary-content {
   width: 100%;
   /* padding: 24rpx; */

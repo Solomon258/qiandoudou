@@ -55,16 +55,16 @@
     <!-- 旅行行程模块（仅旅行类型显示） -->
     <view wx:if="{{dreamWallet.dreamType === 2}}" class="{{ isFixedTop ? 'title-to-top travel-itinerary-section' : 'travel-itinerary-section' }}">
       <!-- 行程标题 -->
-      <view wx:if="{{dreamWallet.dreamItineraryTitle}}" class="itinerary-title">
+      <view wx:if="{{dreamWallet.dreamItineraryTitle}}" class="{{ isFixedTop ?'itinerary-title-top' : 'itinerary-title'}}">
         <text class="title-text">{{dreamWallet.dreamItineraryTitle}}</text>
       </view>
 
-      <scroll-view class="{{  isFixedTop ? 'title-to-top itinerary-scroll' : 'itinerary-scroll' }}" scroll-y="{{true}}" enhanced="{{true}}" bindscroll="onScrollContent">
+      <view class="{{ isFixedTop ?'itinerary-scroll-top' : 'itinerary-scroll'}}">
         <view class="itinerary-content">
           <rich-text class="itinerary-rich-text"
             nodes="{{dreamWallet.dreamItineraryHtml || 'AI正在为您生成详细的旅行行程，请稍后刷新查看...'}}" user-select></rich-text>
         </view>
-      </scroll-view>
+      </view>
     </view>
 
     <!-- 账单流水模块 -->
