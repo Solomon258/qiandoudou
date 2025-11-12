@@ -1,6 +1,9 @@
 /* pages/home/home.wxss */
 .container {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   background: #f8f9fa;
 }
 
@@ -536,7 +539,7 @@
 
 /* 社交页面样式 */
 .social-page {
-  padding-bottom: 80px;
+  padding-bottom: 0px;
 }
 
 .social-header {
@@ -1154,9 +1157,9 @@
 /* =============== 兜圈圈页面样式 =============== */
 
 .social-page {
-  min-height: 100vh;
   background: #f2f3f7;
   position: relative;
+  height: calc(100vh - 91px - 97px);
   top: 91px;
 }
 
@@ -1308,10 +1311,11 @@
 
 /* 动态列表 */
 .social-posts-scroll {
-  height: calc(100vh - 280rpx); /* 减去顶部导航和底部导航高度 */
-  padding: 32rpx;
-  padding-top: 16rpx;
-  width: calc(100% - 64rpx);
+  height: 100%; /* 减去顶部导航和底部导航高度 */
+  padding: 16rpx 0;
+  width: 100%;
+  margin: 0 16px;
+  box-sizing: border-box;
 }
 
 .social-empty-state {
@@ -1357,7 +1361,7 @@
 /* 动态卡片 */
 .social-post-card {
   position: relative;
-  width: 100%;
+  width: calc(100% - 32px);
   height: 309px;
   margin-bottom: 24rpx;
   border-radius: 12px;
@@ -1462,6 +1466,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.social-post-card .transaction-user-avatar .avatar-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 
 .social-post-card .transaction-user-avatar .avatar-text {
@@ -2599,7 +2610,6 @@
 /* =============== 兜圈圈页面样式 =============== */
 
 .social-page {
-  min-height: 100vh;
   background: #f2f3f7;
   position: relative;
 }

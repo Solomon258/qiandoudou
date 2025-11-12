@@ -46,6 +46,7 @@ public interface WalletMapper extends BaseMapper<Wallet> {
             "w.background_image as backgroundImage, w.create_time, " +
             "u.nickname as owner_nickname, u.avatar as owner_avatar, " +
             "ap.name as ai_partner_name, ap.avatar as ai_partner_avatar, " +
+            "COALESCE(fans_count.count, 0) as fansCount, " +
             "(" +
             "  SELECT JSON_ARRAYAGG(" +
             "    JSON_OBJECT(" +
@@ -65,6 +66,7 @@ public interface WalletMapper extends BaseMapper<Wallet> {
             "FROM wallets w " +
             "LEFT JOIN users u ON w.user_id = u.id " +
             "LEFT JOIN ai_partners ap ON w.ai_partner_id = ap.id " +
+            "LEFT JOIN (SELECT wallet_id, COUNT(*) as count FROM user_follows WHERE deleted = 0 GROUP BY wallet_id) fans_count ON w.id = fans_count.wallet_id " +
             "WHERE w.is_public = 1 AND w.deleted = 0 " +
             "ORDER BY w.update_time DESC " +
             "LIMIT #{size} OFFSET #{offset}")
@@ -81,6 +83,14 @@ public interface WalletMapper extends BaseMapper<Wallet> {
      */
     @Select("SELECT user_id FROM wallets WHERE id = #{walletId} AND deleted = 0")
     Long getWalletOwnerId(@Param("walletId") Long walletId);
+
+    /**
+     * 原子操作：增加钱包余额
+     * 使用数据库的原子操作 balance = balance + ?
+     * 避免读-改-写模式中的并发竞态条件
+     */
+    @org.apache.ibatis.annotations.Update("UPDATE wallets SET balance = balance + #{amount}, update_time = NOW() WHERE id = #{walletId} AND deleted = 0")
+    int incrementBalance(@Param("walletId") Long walletId, @Param("amount") java.math.BigDecimal amount);
 
     /**
      * 获取用户关注的钱包列表（包含社交统计数据）

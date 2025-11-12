@@ -62,11 +62,11 @@ public interface SocialService {
      * 标记消息为已读
      */
     void markMessagesAsRead(Long userId);
-    
+
     /**
-     * 检查用户关注状态
+     * 检查钱包关注状态
      */
-    Boolean checkUserFollowStatus(Long currentUserId, Long targetUserId);
+    Boolean checkWalletFollowStatus(Long userId, Long walletId);
 
     /**
      * 获取钱包社交统计数据

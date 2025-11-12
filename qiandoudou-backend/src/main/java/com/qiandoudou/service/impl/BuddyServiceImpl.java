@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -163,13 +164,43 @@ public class BuddyServiceImpl implements BuddyService {
             addBuddiesToWallet(wallet.getId(), buddyCharacterIds);
 
             logger.info("搭子钱包创建成功，钱包ID: {}, 搭子数量: {}", wallet.getId(), buddyCharacterIds.size());
-            
-            // 使用专门的初始化服务异步执行初始化，避免前端超时
+
+            // 异步初始化搭子转账，使用简化的方式直接调用transferIn确保交易记录正确创建
             try {
-                buddyWalletInitService.initializeBuddyWalletAsync(wallet.getId(), buddyCharacterIds);
-                logger.info("搭子钱包异步初始化已启动");
+                for (Long buddyCharacterId : buddyCharacterIds) {
+                    try {
+                        BuddyCharacter buddyCharacter = buddyCharacterMapper.selectById(buddyCharacterId);
+                        if (buddyCharacter != null) {
+                            // 异步为每个搭子创建初始转账
+                            CompletableFuture.runAsync(() -> {
+                                try {
+                                    // 等待钱包创建完成
+                                    Thread.sleep(2000);
+
+                                    String welcomeMessage = String.format("大家好！我是%s，很高兴加入这个搭子攒钱计划！让我们一起努力存钱吧！💪", buddyCharacter.getName());
+
+                                    // 直接使用walletService.transferIn确保交易记录正确创建
+                                    walletService.transferIn(
+                                        wallet.getId(),
+                                        new BigDecimal("0.01"),
+                                        "搭子初始转账",
+                                        null,
+                                        welcomeMessage
+                                    );
+
+                                    logger.info("搭子 {} 异步初始转账成功", buddyCharacter.getName());
+                                } catch (Exception e) {
+                                    logger.error("搭子 {} 异步初始转账失败", buddyCharacter.getName(), e);
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        logger.error("启动搭子初始转账失败，搭子ID: {}", buddyCharacterId, e);
+                    }
+                }
+                logger.info("搭子异步初始转账已启动");
             } catch (Exception e) {
-                logger.error("搭子钱包异步初始化启动失败", e);
+                logger.error("搭子异步初始转账启动失败", e);
             }
 
             // 返回创建结果
@@ -265,23 +296,26 @@ public class BuddyServiceImpl implements BuddyService {
     private void createBuddyInitialTransfer(Long walletId, BuddyCharacter buddyCharacter) {
         try {
             logger.info("开始为搭子创建初始转账，钱包ID: {}, 搭子: {}", walletId, buddyCharacter.getName());
-            
+
             BigDecimal initialAmount = new BigDecimal("0.01");
-            
+
             // 获取钱包信息
             Wallet wallet = walletService.getById(walletId);
             if (wallet == null) {
                 logger.error("钱包不存在，钱包ID: {}", walletId);
                 throw new RuntimeException("钱包不存在");
             }
-            
+
             logger.info("钱包信息获取成功，当前余额: {}", wallet.getBalance());
 
-            // 更新钱包余额
-            BigDecimal newBalance = wallet.getBalance().add(initialAmount);
-            wallet.setBalance(newBalance);
-            walletService.updateById(wallet);
-            
+            // 使用数据库原子操作更新钱包余额，避免并发问题
+            // 使用 Mapper 的自定义方法执行原子的余额增加操作
+            walletService.incrementWalletBalance(walletId, initialAmount);
+
+            // 重新获取钱包最新余额
+            Wallet updatedWallet = walletService.getById(walletId);
+            BigDecimal newBalance = updatedWallet != null ? updatedWallet.getBalance() : wallet.getBalance().add(initialAmount);
+
             logger.info("钱包余额更新成功，新余额: {}", newBalance);
 
             // 生成初始评论内容（简化版本，避免AI调用失败）

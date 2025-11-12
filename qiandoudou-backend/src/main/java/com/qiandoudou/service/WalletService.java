@@ -63,4 +63,15 @@ public interface WalletService extends IService<Wallet> {
      * 修复所有钱包余额
      */
     void fixAllWalletBalances();
+
+    /**
+     * 转账到其他钱包
+     */
+    void transferToWallet(Long fromWalletId, Long toWalletId, BigDecimal amount, String description, String imageUrl, String note);
+
+    /**
+     * 原子操作：增加钱包余额（避免并发问题）
+     * 使用数据库层面的原子操作，确保余额加法不会因并发而丢失
+     */
+    void incrementWalletBalance(Long walletId, BigDecimal amount);
 }

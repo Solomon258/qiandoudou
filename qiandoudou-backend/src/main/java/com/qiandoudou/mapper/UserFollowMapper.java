@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Map;
@@ -72,9 +74,18 @@ public interface UserFollowMapper extends BaseMapper<UserFollow> {
                                               @Param("pageSize") Integer pageSize);
 
     /**
-     * 取消关注钱包（软删除）
+     * 取消关注钱包（真删除）
+     * 改为真删除而不是软删除，这样可以彻底避免软删除导致的唯一约束问题
      */
-    @Delete("UPDATE user_follows SET deleted = 1 " +
+    @Delete("DELETE FROM user_follows " +
             "WHERE follower_id = #{followerId} AND wallet_id = #{walletId}")
-    void removeFollow(@Param("followerId") Long followerId, @Param("walletId") Long walletId);
+    int removeFollow(@Param("followerId") Long followerId, @Param("walletId") Long walletId);
+
+    /**
+     * 插入新的关注记录（使用INSERT IGNORE避免唯一约束冲突）
+     * 如果记录已存在则忽略，返回0；否则插入并返回1
+     */
+    @Insert("INSERT IGNORE INTO user_follows (follower_id, wallet_id, create_time, deleted) " +
+            "VALUES (#{followerId}, #{walletId}, NOW(), 0)")
+    int upsertFollow(@Param("followerId") Long followerId, @Param("walletId") Long walletId);
 }

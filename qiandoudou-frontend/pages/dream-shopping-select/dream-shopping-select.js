@@ -6,7 +6,7 @@ Page({
       { id: 1, displayName: '轿车', imageUrl: '/static/icon/goods/轿车@3x.png', suggestedAmount: 100000 },
       { id: 2, displayName: 'SUV', imageUrl: '/static/icon/goods/suv@3x.png', suggestedAmount: 150000 },
       { id: 3, displayName: '超跑', imageUrl: '/static/icon/goods/超跑@3x.png', suggestedAmount: 500000 },
-      { id: 4, displayName: '包包', imageUrl: '/static/icon/goods/包包@3x.png', suggestedAmount: 5000 },
+      { id: 4, displayName: '包包', imageUrl: '/static/icon/goods/包包@3x.png', suggestedAmount: 20000 },
       { id: 5, displayName: '劳力士', imageUrl: '/static/icon/goods/劳力士@3x.png', suggestedAmount: 50000 }
     ],
     modalData: {

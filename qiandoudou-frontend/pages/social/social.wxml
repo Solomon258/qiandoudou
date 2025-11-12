@@ -67,7 +67,8 @@
         <view class="interactions">
           <view wx:for="{{item.comments}}" wx:key="index" class="interaction-item">
             <view class="user-avatar" bindtap="navigateToCommentUserProfile" catchtap="navigateToCommentUserProfile" data-user-id="{{item.userId}}" data-username="{{item.username}}">
-              <text class="avatar-text">{{item.username.charAt(0)}}</text>
+              <image wx:if="{{item.avatar}}" class="user-avatar-image" src="{{item.avatar}}" mode="aspectFill"/>
+              <text wx:else class="avatar-text">{{item.username.charAt(0)}}</text>
             </view>
             <view class="interaction-content">
               <text class="user-name">{{item.username}}：</text>

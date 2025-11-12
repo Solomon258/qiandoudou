@@ -89,7 +89,7 @@ public class BuddyAutoCommentServiceImpl implements BuddyAutoCommentService {
                 CompletableFuture<Map<String, Object>> future = CompletableFuture.supplyAsync(() -> {
                     try {
                         // 随机延迟1-10秒，模拟真实互动
-                        Thread.sleep((random.nextInt(10) + 1) * 1000L);
+                        Thread.sleep((random.nextInt(5) + 1) * 1000L);
                         
                         return buddyService.generateBuddyComment(
                             transactionId, 

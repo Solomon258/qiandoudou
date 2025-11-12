@@ -129,6 +129,26 @@ public class WalletController {
     }
 
     /**
+     * 转账到其他钱包
+     */
+    @PostMapping("/transfer-to-wallet")
+    public Result<String> transferToWallet(@RequestBody Map<String, Object> request) {
+        try {
+            Long fromWalletId = Long.valueOf(request.get("fromWalletId").toString());
+            Long toWalletId = Long.valueOf(request.get("toWalletId").toString());
+            BigDecimal amount = new BigDecimal(request.get("amount").toString());
+            String description = request.get("description").toString();
+            String imageUrl = (String) request.get("imageUrl");
+            String note = (String) request.get("note");
+
+            walletService.transferToWallet(fromWalletId, toWalletId, amount, description, imageUrl, note);
+            return Result.success("转账成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * AI伴侣自动转账
      */
     @PostMapping("/ai-partner-transfer")
@@ -285,14 +305,16 @@ public class WalletController {
     @PostMapping("/upload-user-image")
     public Result<Map<String, String>> uploadUserImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "type", required = false, defaultValue = "general") String type) {
+            @RequestParam(value = "type", required = false, defaultValue = "general") String type,
+            @RequestParam(value = "userId", required = false) Long userId) {
         try {
             System.out.println("=== 开始处理用户图片上传 ===");
             System.out.println("文件名: " + file.getOriginalFilename());
             System.out.println("文件大小: " + file.getSize() + " bytes");
             System.out.println("文件类型: " + file.getContentType());
             System.out.println("图片类型: " + type);
-            
+            System.out.println("用户ID: " + userId);
+
             if (file.isEmpty()) {
                 System.err.println("文件为空");
                 return Result.error("请选择图片文件");
@@ -310,21 +332,32 @@ public class WalletController {
             }
 
             // 生成文件名
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String filename;
+            if ("avatar".equals(type) && userId != null) {
+                // 头像文件名为：userId.jpeg
+                filename = userId + ".jpeg";
+            } else {
+                // 其他类型文件名保持原逻辑
+                String originalFilename = file.getOriginalFilename();
+                String extension = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                filename = type + "_" + System.currentTimeMillis() + extension;
             }
-            String filename = type + "_" + System.currentTimeMillis() + extension;
-            
+
+            System.out.println("生成的文件名: " + filename);
+
             // 检查OSS服务是否可用
             if (ossService == null) {
                 return Result.error("OSS服务未初始化");
             }
-            
+
             // 上传到OSS用户图片目录
             String ossUrl = ossService.uploadUserImageData(file.getBytes(), filename);
-            
+
+            System.out.println("上传成功，OSS URL: " + ossUrl);
+
             // 返回OSS文件URL
             Map<String, String> result = new HashMap<>();
             result.put("imageUrl", ossUrl);

@@ -69,7 +69,8 @@ Page({
       nickname: '用户',
       avatar: '',
       hasCustomAvatar: false
-    }
+    },
+    followLoading: false // 关注按钮加载状态，防止快速点击
   },
 
   onLoad(options) {
@@ -101,32 +102,36 @@ Page({
     const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     
     if (walletId) {
-      this.setData({ 
+      this.setData({
         walletId,
         fromSocial: fromSocial,
         socialInfo: socialInfo,
         isOwnWallet: !fromSocial, // 如果来自社交圈，则不是自己的钱包
         currentDate: currentDate
       })
-      this.loadWalletDetail()
+
+      // 先加载钱包详情，然后再检查关注状态
+      this.loadWalletDetail().then(() => {
+        // 钱包详情加载完成后，再检查关注状态
+        if (!this.data.isOwnWallet) {
+          this.checkFollowStatus()
+        }
+      })
+
+      // 并行加载其他数据
       this.loadTransactions()
-      
+
       // 加载社交统计数据（钱包的粉丝、获赞、浏览数）
       this.loadSocialStats()
-      
+
       // 如果不是自己的钱包，记录浏览
       if (fromSocial) {
         this.recordWalletView()
       }
-      
+
       // 如果是自己的钱包，加载统计数据
       if (!fromSocial) {
         this.loadMonthlyStats()
-      }
-      
-      // 如果不是自己的钱包，检查关注状态
-      if (!this.data.isOwnWallet) {
-        this.checkFollowStatus()
       }
     }
   },
@@ -137,32 +142,40 @@ Page({
     // 重置音频播放状态，避免状态不一致
     console.log('重置音频状态...')
     this.resetAudioState()
-    
+
     // 页面显示时重新加载钱包详情、交易记录和背景样式
     if (this.data.walletId) {
       console.log('重新加载页面数据...')
 
       this.loadWalletDetail() // 重新加载钱包详情（包括余额）
       this.loadTransactions() // 刷新交易记录
-      
+
       // 如果已经有钱包数据，更新背景样式
       if (this.data.wallet && this.data.wallet.id) {
         this.updateBackgroundStyle()
       }
-      
+
       // 如果是自己的钱包且当前在统计标签页，刷新统计数据
       if (this.data.isOwnWallet && this.data.activeTab === 'stats') {
 
         this.loadMonthlyStats()
       }
-    }
-    
-    // 如果不是自己的钱包，重新检查关注状态
-    if (!this.data.isOwnWallet && this.data.walletId) {
 
+      // 如果是自己的钱包，重新加载剧本进度（可能会更新完成状态）
+      if (this.data.isOwnWallet) {
+        console.log('📖 重新加载剧本进度检查完成状态 - isOwnWallet:', this.data.isOwnWallet)
+        this.loadUserScriptProgress()
+      } else {
+        console.log('❌ 不是自己的钱包，不加载剧本进度')
+      }
+    }
+
+    // 重新检查关注状态（除非明确是自己的钱包）
+    if (this.data.walletId) {
+      console.log('📍 onShow - 重新检查关注状态，当前 isOwnWallet:', this.data.isOwnWallet)
       this.checkFollowStatus()
     }
-    
+
     // 延迟输出状态，确保数据已加载
     setTimeout(() => {
 
@@ -174,18 +187,18 @@ Page({
     const walletId = this.data.walletId
     if (!walletId) {
 
-      return
+      return Promise.reject('钱包ID不存在')
     }
 
-    walletAPI.getWalletDetail(walletId)
+    return walletAPI.getWalletDetail(walletId)
       .then(result => {
         const wallet = result.data
-        
+
         // 调试：检查关键字段
         if (wallet.isPublic !== wallet.is_public && (wallet.isPublic !== null && wallet.isPublic !== undefined)) {
           console.warn('字段映射问题:', { isPublic: wallet.isPublic, is_public: wallet.is_public })
         }
-        
+
         if (!wallet) {
           wx.showToast({
             title: '钱包不存在',
@@ -194,7 +207,7 @@ Page({
           setTimeout(() => {
             wx.navigateBack()
           }, 1500)
-          return
+          return Promise.reject('钱包不存在')
         }
 
         // 验证是否为自己的钱包
@@ -214,16 +227,16 @@ Page({
           // 从公开钱包API获取的数据可能已经包含owner信息，直接使用
 
         }
-        
+
         // 如果来自社交圈，即使不是自己的钱包也要显示详情
         if (!isOwnWallet && !this.data.fromSocial) {
 
           wx.redirectTo({
             url: `/pages/user-profile/user-profile?userId=${wallet.userId || wallet.user_id}&walletId=${walletId}`
           })
-          return
+          return Promise.reject('重定向到用户档案页')
         }
-        
+
         // 如果来自社交圈，显示为只读模式
         if (!isOwnWallet && this.data.fromSocial) {
 
@@ -236,17 +249,17 @@ Page({
             wallet.followers_count = socialInfo.fansCount
             wallet.likes_count = socialInfo.likeCount
             wallet.comments_count = 0 // 暂时设为0
-            
+
             // 初始设置社交统计数据为0，确保新钱包显示正确
+            // 注意：不要在这里设置 isFollowing，由 checkFollowStatus() 来异步设置
             this.setData({
               socialStats: {
                 fansCount: 0,  // 新钱包粉丝数为0
                 likesCount: 0, // 新钱包获赞数为0
                 viewsCount: 0  // 新钱包浏览数为0
-              },
-              isFollowing: false // 默认未关注，实际应该从API获取
+              }
             })
-            
+
             // 从后端获取真实的社交统计数据
             this.loadSocialStats()
           }
@@ -257,12 +270,12 @@ Page({
           // 如果来自社交圈但不是自己的钱包，也要加载钱包所有者的社交统计数据
           this.loadSocialStats()
         }
-        
+
         // 如果来自社交圈但没有社交信息，从后端获取真实统计数据
         if (this.data.fromSocial && !this.data.socialInfo) {
           this.loadSocialStats()
         }
-        
+
         // 确保钱包公开状态有正确的默认值 - 处理字段名映射问题
         // 后端可能返回isPublic（驼峰）或is_public（下划线）
         if (wallet.isPublic !== null && wallet.isPublic !== undefined) {
@@ -271,7 +284,7 @@ Page({
           // 如果两个字段都没有设置，默认为私密状态
           wallet.is_public = 0
         }
-        
+
         console.log('最终is_public值:', wallet.is_public)
 
         console.log('=== 钱包详情数据 ===')
@@ -293,17 +306,20 @@ Page({
 
         // 加载钱包所有者的头像信息
         this.loadWalletOwnerAvatar(wallet.userId || wallet.user_id)
-        
+
         // 更新背景样式
         this.updateBackgroundStyle()
-        
+
         console.log('=== 背景样式更新后 ===')
         console.log('walletBackgroundStyle:', this.data.walletBackgroundStyle)
-        
+
         // 如果是自己的钱包，加载"重新养小时候的自己"剧本进度
         if (isOwnWallet) {
           this.loadUserScriptProgress()
         }
+
+        // 返回Promise，使得.then()可以在调用处链接
+        return Promise.resolve(wallet)
       })
       .catch(error => {
 
@@ -311,6 +327,7 @@ Page({
           title: error.message || '加载钱包详情失败',
           icon: 'none'
         })
+        return Promise.reject(error)
       })
   },
 
@@ -822,6 +839,7 @@ Page({
   editWalletName() {
     this.setData({
       showNameEditModal: true,
+      showWalletSettings: false, // 关闭外层的钱包设置弹框
       editingName: this.data.wallet.name || ''
     })
   },
@@ -830,6 +848,7 @@ Page({
   hideNameEditModal() {
     this.setData({
       showNameEditModal: false,
+      showWalletSettings: false, // 同时关闭钱包设置弹框
       editingName: ''
     })
   },
@@ -844,10 +863,18 @@ Page({
   // 确认修改钱包名称
   confirmNameEdit() {
     const newName = this.data.editingName.trim()
-    
+
     if (!newName) {
       wx.showToast({
         title: '钱包名称不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (newName.length > 12) {
+      wx.showToast({
+        title: '名称请少于12字',
         icon: 'none'
       })
       return
@@ -1760,49 +1787,31 @@ Page({
       })
   },
 
-  // 检查关注状态
+  // 检查钱包关注状态
   checkFollowStatus() {
     const currentUserId = app.globalData.userInfo?.id
     const walletId = this.data.walletId
-    
+
+    console.log('🔍 检查钱包关注状态 - currentUserId:', currentUserId, 'walletId:', walletId)
+
     if (!currentUserId || !walletId) {
+      console.log('❌ 缺少必要参数，设置 isFollowing: false')
       this.setData({ isFollowing: false })
       return
     }
 
-    // 先获取钱包所有者ID
-    walletAPI.getWalletOwnerId(walletId)
+    // 直接检查钱包关注状态
+    walletAPI.checkWalletFollowStatus(currentUserId, walletId)
       .then(result => {
-        const walletOwnerId = result.data
-
-        if (!walletOwnerId || walletOwnerId === currentUserId) {
-          // 如果是自己的钱包
-
-          this.setData({ 
-            isFollowing: false,
-            isOwnWallet: true
-          })
-          return
-        }
-        
-        // 设置为别人的钱包
-
-        this.setData({ isOwnWallet: false })
-        
-        // 检查是否已关注该用户
-
-        return walletAPI.checkFollowStatus(currentUserId, walletOwnerId)
-      })
-      .then(result => {
+        console.log('📊 钱包关注状态检查结果:', result)
         if (result) {
           const isFollowing = result.data || false
-
+          console.log('👁️ 设置 isFollowing:', isFollowing)
           this.setData({ isFollowing })
-
         }
       })
       .catch(error => {
-
+        console.error('❌ 检查钱包关注状态失败:', error)
         this.setData({ isFollowing: false })
       })
   },
@@ -1811,6 +1820,11 @@ Page({
   toggleFollow() {
     if (this.data.isOwnWallet) {
       return // 不能关注自己
+    }
+
+    // 防止重复点击：如果正在加载，直接返回
+    if (this.data.followLoading) {
+      return
     }
 
     const currentUserId = app.globalData.userInfo?.id
@@ -1825,51 +1839,64 @@ Page({
     }
 
     const isFollowing = this.data.isFollowing
-    
-    // 先更新UI状态，提供即时反馈
-    const socialStats = { ...this.data.socialStats }
-    socialStats.fansCount += isFollowing ? -1 : 1
-    
+
+    // 设置加载状态，禁用按钮
     this.setData({
-      isFollowing: !isFollowing,
-      socialStats
+      followLoading: true
     })
 
-    const apiCall = isFollowing ? 
+    const apiCall = isFollowing ?
       walletAPI.unfollowWallet(currentUserId, this.data.walletId) :
       walletAPI.followWallet(currentUserId, this.data.walletId)
 
     apiCall
       .then(result => {
+        // 后端成功后才更新UI状态
+        const socialStats = { ...this.data.socialStats }
+        socialStats.fansCount += isFollowing ? -1 : 1
+
+        this.setData({
+          isFollowing: !isFollowing,
+          socialStats,
+          followLoading: false
+        })
+
         wx.showToast({
-          title: isFollowing ? '取消关注' : '关注成功',
+          title: isFollowing ? '取消关注成功' : '关注成功',
           icon: 'success'
         })
-        
+
         // 通知用户社交主页刷新关注列表
         this.notifyUserSocialPageRefresh()
       })
       .catch(error => {
-
-        // 如果API失败，回滚UI状态
-        const revertStats = { ...this.data.socialStats }
-        revertStats.fansCount += isFollowing ? 1 : -1
-        
+        // 操作失败，UI保持不变
         this.setData({
-          isFollowing: isFollowing,
-          socialStats: revertStats
+          followLoading: false
         })
-        
+
+        console.error('关注操作失败:', error)
+
         // 如果是404错误，说明API接口不存在，使用模拟模式
         if (error.message && error.message.includes('404')) {
+          // 模拟模式：仍然更新UI
+          const socialStats = { ...this.data.socialStats }
+          socialStats.fansCount += isFollowing ? -1 : 1
+
+          this.setData({
+            isFollowing: !isFollowing,
+            socialStats
+          })
+
           wx.showToast({
-            title: isFollowing ? '取消关注' : '关注成功',
+            title: isFollowing ? '取消关注成功' : '关注成功',
             icon: 'success'
           })
 
           // 即使是模拟模式，也要通知用户社交主页刷新
           this.notifyUserSocialPageRefresh()
         } else {
+          // 真实错误：显示错误信息
           wx.showToast({
             title: error.message || '操作失败',
             icon: 'none'
@@ -2416,6 +2443,12 @@ Page({
 
     this.stopCurrentVoice()
     this.stopAiCommentVoice()
+
+    // 通知 home 页面需要刷新兜圈圈数据
+    const app = getApp()
+    if (app.globalData.eventBus) {
+      app.globalData.eventBus.emit('needRefreshSocialPosts', {})
+    }
   },
 
   // 页面隐藏时暂停语音
@@ -2860,12 +2893,15 @@ Page({
 
   // 加载用户剧本进度
   loadUserScriptProgress() {
+    console.log('🚀 开始加载用户剧本进度')
     const userId = app.globalData.userInfo?.id
     const walletId = this.data.walletId
     const scriptId = 3 // "重新养小时候的自己"剧本ID
 
-    if (!userId || !walletId) {
+    console.log('📋 剧本进度加载参数 - userId:', userId, 'walletId:', walletId, 'scriptId:', scriptId)
 
+    if (!userId || !walletId) {
+      console.warn('❌ 缺少必要参数，无法加载剧本进度')
       return
     }
 
@@ -2899,10 +2935,16 @@ Page({
 
         if (res.data && res.data.code === 200 && res.data.data) {
           const progressData = res.data.data
+          console.log('✅ 成功获取剧本进度数据:', progressData)
+
+          // 检查是否需要更新完成状态
+          console.log('🔍 开始检查并更新剧本完成状态')
+          this.checkAndUpdateScriptStatus(progressData, scriptId)
+
           this.setData({
             userScriptProgress: progressData
           })
-          
+
           // 获取当前章节的标题信息
           this.loadCurrentChapterTitle(scriptId, progressData.currentChapter || 1)
         } else {
@@ -2914,7 +2956,7 @@ Page({
           this.setData({
             userScriptProgress: defaultProgress
           })
-          
+
           // 获取第1集的标题信息
           this.loadCurrentChapterTitle(scriptId, 1)
         }
@@ -3302,6 +3344,183 @@ Page({
     }
     
     this.setData({ transactions })
+  },
+
+  // 手动检查剧本完成状态（用于调试和强制刷新）
+  manualCheckScriptStatus() {
+    console.log('🔧 手动检查剧本完成状态')
+    const scriptId = 3 // "重新养小时候的自己"剧本ID
+    const userId = app.globalData.userInfo?.id
+    const walletId = this.data.walletId
+
+    if (!userId || !walletId) {
+      console.warn('❌ 缺少必要参数')
+      return
+    }
+
+    // 重新加载剧本进度
+    wx.request({
+      url: `${app.globalData.baseUrl}/scripts/progress`,
+      method: 'GET',
+      data: {
+        userId: userId,
+        scriptId: scriptId,
+        walletId: walletId
+      },
+      success: (res) => {
+        if (res.data && res.data.code === 200 && res.data.data) {
+          const progressData = res.data.data
+          console.log('📊 手动检查 - 当前进度数据:', progressData)
+
+          // 检查并更新状态
+          this.checkAndUpdateScriptStatus(progressData, scriptId)
+
+          // 更新页面显示
+          this.setData({
+            userScriptProgress: progressData
+          })
+        }
+      },
+      fail: (error) => {
+        console.error('手动检查剧本进度失败:', error)
+      }
+    })
+  },
+
+  // 检查并更新剧本完成状态
+  checkAndUpdateScriptStatus(progressData, scriptId) {
+    const userId = app.globalData.userInfo?.id
+    const walletId = this.data.walletId
+
+    if (!userId || !walletId || !progressData) {
+      console.warn('❌ 缺少必要参数，无法检查剧本状态')
+      return
+    }
+
+    // 如果已经是完成状态，不需要检查
+    if (progressData.status === 2) {
+      console.log('✅ 剧本已经是完成状态')
+      return
+    }
+
+    console.log('🔍 检查剧本完成状态')
+    console.log('📊 进度数据:', {
+      currentChapter: progressData.currentChapter,
+      status: progressData.status,
+      choicesMade: progressData.choicesMade,
+      totalPaid: progressData.totalPaid
+    })
+
+    const currentChapter = progressData.currentChapter || 1
+
+    // 简化的完成状态判断：
+    // 如果用户已经完成了第20集，直接标记为已完成
+    if (currentChapter >= 20) {
+      console.log('🎯 检测到已完成第20集，标记为已完成')
+
+      // 直接更新状态为已完成
+      wx.request({
+        url: `${app.globalData.baseUrl}/scripts/update-status`,
+        method: 'POST',
+        data: {
+          userId: userId,
+          walletId: walletId,
+          scriptId: scriptId,
+          status: 2 // 已完成
+        },
+        success: (updateRes) => {
+          if (updateRes.data && updateRes.data.code === 200) {
+            // 更新本地状态
+            progressData.status = 2
+            progressData.completeTime = new Date().toISOString()
+            console.log('🎉 剧本状态已更新为已完成')
+            wx.showToast({
+              title: '恭喜完成剧本！',
+              icon: 'success'
+            })
+
+            // 更新页面显示
+            this.setData({
+              userScriptProgress: progressData
+            })
+          } else {
+            console.error('更新剧本状态失败:', updateRes.data)
+          }
+        },
+        fail: (error) => {
+          console.error('更新剧本状态失败:', error)
+        }
+      })
+      return
+    }
+
+    // 获取当前章节信息，检查是否还有下一章
+    wx.request({
+      url: `${app.globalData.baseUrl}/scripts/${scriptId}/chapters/${currentChapter}`,
+      method: 'GET',
+      data: {
+        userId: userId,
+        walletId: walletId
+      },
+      success: (res) => {
+        if (res.data && res.data.code === 200 && res.data.data) {
+          const chapterData = res.data.data.chapter || res.data.data
+          const hasNextChapter = chapterData.nextId != null
+
+          console.log('📖 章节信息:', {
+            currentChapter,
+            hasNextChapter,
+            nextId: chapterData.nextId
+          })
+
+          // 如果是最终章节（没有下一章），直接标记为已完成
+          if (!hasNextChapter) {
+            console.log('✅ 检测到最终章节，标记为已完成')
+
+            // 更新状态为已完成
+            wx.request({
+              url: `${app.globalData.baseUrl}/scripts/update-status`,
+              method: 'POST',
+              data: {
+                userId: userId,
+                walletId: walletId,
+                scriptId: scriptId,
+                status: 2 // 已完成
+              },
+              success: (updateRes) => {
+                if (updateRes.data && updateRes.data.code === 200) {
+                  // 更新本地状态
+                  progressData.status = 2
+                  progressData.completeTime = new Date().toISOString()
+                  console.log('🎉 剧本状态已更新为已完成')
+                  wx.showToast({
+                    title: '恭喜完成剧本！',
+                    icon: 'success'
+                  })
+
+                  // 更新页面显示
+                  this.setData({
+                    userScriptProgress: progressData
+                  })
+                } else {
+                  console.error('更新剧本状态失败:', updateRes.data)
+                }
+              },
+              fail: (error) => {
+                console.error('更新剧本状态失败:', error)
+              }
+            })
+          } else {
+            console.log('📖 还有下一章可解锁，继续当前进度')
+          }
+        } else {
+          console.error('获取章节信息失败:', res)
+        }
+      },
+      fail: (error) => {
+        console.error('获取章节信息失败:', error)
+      }
+    })
   }
 
 })

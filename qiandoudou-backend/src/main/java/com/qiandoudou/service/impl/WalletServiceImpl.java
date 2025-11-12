@@ -102,13 +102,22 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             throw new RuntimeException("钱包不存在");
         }
 
-        // 更新钱包余额
-        BigDecimal newBalance = wallet.getBalance().add(amount);
-        wallet.setBalance(newBalance);
-        updateById(wallet);
+        // 使用原子操作增加钱包余额，避免并发竞态条件
+        // 这确保即使多个线程同时执行，余额也不会丢失
+        int updatedRows = baseMapper.incrementBalance(walletId, amount);
+        if (updatedRows <= 0) {
+            throw new RuntimeException("钱包余额增加失败，钱包可能不存在");
+        }
+
+        // 重新获取钱包最新余额，用于后续操作
+        Wallet updatedWallet = getById(walletId);
+        BigDecimal newBalance = updatedWallet != null ? updatedWallet.getBalance() : wallet.getBalance().add(amount);
+
+        logger.info("钱包余额原子增加成功，钱包ID: {}, 增加金额: {}, 新余额: {}", walletId, amount, newBalance);
 
         // 如果是梦想钱包，更新进度
-        if (wallet.getType() == 3 || wallet.getType() == 4) { // 3-梦想攒钱(购物)，4-梦想攒钱(旅行)
+        // 修复：type=4 是梦想攒钱(购物)，type=5 是梦想攒钱(旅行)，type=3 是搭子钱包
+        if (wallet.getType() == 4 || wallet.getType() == 5) { // 4-梦想攒钱(购物)，5-梦想攒钱(旅行)
             try {
                 boolean reachedMilestone = dreamWalletService.updateDreamProgress(
                     walletId, newBalance, amount, 1); // 1-转入
@@ -133,7 +142,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
-        
+
         // 发布交易创建事件，触发AI情侣钱包互动
         try {
             eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
@@ -159,13 +168,22 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             throw new RuntimeException("余额不足");
         }
 
-        // 更新钱包余额
-        BigDecimal newBalance = wallet.getBalance().subtract(amount);
-        wallet.setBalance(newBalance);
-        updateById(wallet);
+        // 使用原子操作减少钱包余额，避免并发竞态条件
+        // 这确保即使多个线程同时执行，余额也不会出现问题
+        int updatedRows = baseMapper.incrementBalance(walletId, amount.negate());
+        if (updatedRows <= 0) {
+            throw new RuntimeException("钱包余额减少失败，钱包可能不存在");
+        }
+
+        // 重新获取钱包最新余额，用于后续操作
+        Wallet updatedWallet = getById(walletId);
+        BigDecimal newBalance = updatedWallet != null ? updatedWallet.getBalance() : wallet.getBalance().subtract(amount);
+
+        logger.info("钱包余额原子减少成功，钱包ID: {}, 减少金额: {}, 新余额: {}", walletId, amount, newBalance);
 
         // 如果是梦想钱包，更新进度
-        if (wallet.getType() == 3 || wallet.getType() == 4) { // 3-梦想攒钱(购物)，4-梦想攒钱(旅行)
+        // 修复：type=4 是梦想攒钱(购物)，type=5 是梦想攒钱(旅行)，type=3 是搭子钱包
+        if (wallet.getType() == 4 || wallet.getType() == 5) { // 4-梦想攒钱(购物)，5-梦想攒钱(旅行)
             try {
                 boolean reachedMilestone = dreamWalletService.updateDreamProgress(
                     walletId, newBalance, amount, 2); // 2-转出
@@ -190,7 +208,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
-        
+
         // 发布交易创建事件，触发AI情侣钱包互动
         try {
             eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
@@ -212,10 +230,17 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             throw new RuntimeException("钱包不存在");
         }
 
-        // 更新钱包余额
-        BigDecimal newBalance = wallet.getBalance().add(amount);
-        wallet.setBalance(newBalance);
-        updateById(wallet);
+        // 使用原子操作增加钱包余额，避免并发竞态条件
+        int updatedRows = baseMapper.incrementBalance(walletId, amount);
+        if (updatedRows <= 0) {
+            throw new RuntimeException("钱包余额增加失败，钱包可能不存在");
+        }
+
+        // 重新获取钱包最新余额，用于后续操作
+        Wallet updatedWallet = getById(walletId);
+        BigDecimal newBalance = updatedWallet != null ? updatedWallet.getBalance() : wallet.getBalance().add(amount);
+
+        logger.info("钱包余额原子增加成功，钱包ID: {}, 增加金额: {}, 新余额: {}", walletId, amount, newBalance);
 
         // 创建交易记录
         Transaction transaction = new Transaction();
@@ -229,7 +254,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         // 时间字段由MyBatis Plus自动填充，但我们也可以手动设置确保正确
         transaction.setCreateTime(java.time.LocalDateTime.now());
         transactionService.save(transaction);
-        
+
         // 发布交易创建事件，触发AI情侣钱包互动
         try {
             eventPublisher.publishEvent(new TransactionCreatedEvent(this, transaction.getId()));
@@ -304,10 +329,17 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
 
         logger.info("开始处理AI伴侣转账，钱包ID: {}, AI伴侣ID: {}, 金额: {}", walletId, aiPartnerId, amount);
 
-        // 更新钱包余额
-        BigDecimal newBalance = wallet.getBalance().add(amount);
-        wallet.setBalance(newBalance);
-        updateById(wallet);
+        // 使用原子操作增加钱包余额，避免并发竞态条件
+        int updatedRows = baseMapper.incrementBalance(walletId, amount);
+        if (updatedRows <= 0) {
+            throw new RuntimeException("钱包余额增加失败，钱包可能不存在");
+        }
+
+        // 重新获取钱包最新余额，用于后续操作
+        Wallet updatedWallet = getById(walletId);
+        BigDecimal newBalance = updatedWallet != null ? updatedWallet.getBalance() : wallet.getBalance().add(amount);
+
+        logger.info("钱包余额原子增加成功，钱包ID: {}, 增加金额: {}, 新余额: {}", walletId, amount, newBalance);
 
         // 构建转账描述内容用于AI生成
         String postContent = "转入" + amount + "元到情侣攒钱钱包";
@@ -374,7 +406,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     @Transactional
     public void recalculateWalletBalance(Long walletId) {
         logger.info("开始重新计算钱包余额，钱包ID: {}", walletId);
-        
+
         Wallet wallet = getById(walletId);
         if (wallet == null) {
             throw new RuntimeException("钱包不存在");
@@ -400,23 +432,33 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             }
         }
 
-        // 更新钱包余额
+        // 获取当前余额
         BigDecimal originalBalance = wallet.getBalance();
-        wallet.setBalance(calculatedBalance);
-        updateById(wallet);
 
-        logger.info("钱包余额重新计算完成，钱包ID: {}, 原余额: {}, 计算后余额: {}, 交易记录数: {}", 
-                   walletId, originalBalance, calculatedBalance, transactions.size());
+        // 计算需要调整的差额
+        BigDecimal difference = calculatedBalance.subtract(originalBalance);
+
+        if (difference.compareTo(BigDecimal.ZERO) != 0) {
+            // 使用原子操作更新余额
+            int updatedRows = baseMapper.incrementBalance(walletId, difference);
+            if (updatedRows <= 0) {
+                throw new RuntimeException("钱包余额重新计算失败，钱包可能不存在");
+            }
+            logger.info("钱包余额原子调整成功，钱包ID: {}, 调整金额: {}, 原余额: {}, 新余额: {}",
+                       walletId, difference, originalBalance, calculatedBalance);
+        } else {
+            logger.info("钱包余额无需调整，钱包ID: {}, 当前余额: {}", walletId, originalBalance);
+        }
     }
 
     @Override
     @Transactional
     public void fixAllWalletBalances() {
         logger.info("开始修复所有钱包余额");
-        
+
         List<Wallet> wallets = list(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Wallet>()
             .eq("deleted", 0));
-        
+
         int fixedCount = 0;
         for (Wallet wallet : wallets) {
             try {
@@ -426,7 +468,112 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
                 logger.error("修复钱包余额失败，钱包ID: {}, 错误: {}", wallet.getId(), e.getMessage());
             }
         }
-        
+
         logger.info("所有钱包余额修复完成，共修复 {} 个钱包", fixedCount);
+    }
+
+    @Override
+    @Transactional
+    public void transferToWallet(Long fromWalletId, Long toWalletId, BigDecimal amount, String description, String imageUrl, String note) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("转账金额必须大于0");
+        }
+
+        if (fromWalletId.equals(toWalletId)) {
+            throw new RuntimeException("不能转账到同一个钱包");
+        }
+
+        Wallet fromWallet = getById(fromWalletId);
+        if (fromWallet == null) {
+            throw new RuntimeException("源钱包不存在");
+        }
+
+        Wallet toWallet = getById(toWalletId);
+        if (toWallet == null) {
+            throw new RuntimeException("目标钱包不存在");
+        }
+
+        if (fromWallet.getBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("源钱包余额不足");
+        }
+
+        // 验证两个钱包属于同一个用户
+        if (!fromWallet.getUserId().equals(toWallet.getUserId())) {
+            throw new RuntimeException("只能转账到自己的钱包");
+        }
+
+        // 使用原子操作更新源钱包余额（减少）
+        int fromUpdatedRows = baseMapper.incrementBalance(fromWalletId, amount.negate());
+        if (fromUpdatedRows <= 0) {
+            throw new RuntimeException("源钱包余额减少失败，钱包可能不存在");
+        }
+
+        // 使用原子操作更新目标钱包余额（增加）
+        int toUpdatedRows = baseMapper.incrementBalance(toWalletId, amount);
+        if (toUpdatedRows <= 0) {
+            throw new RuntimeException("目标钱包余额增加失败，钱包可能不存在");
+        }
+
+        // 重新获取最新余额用于交易记录
+        Wallet updatedFromWallet = getById(fromWalletId);
+        Wallet updatedToWallet = getById(toWalletId);
+        BigDecimal fromNewBalance = updatedFromWallet != null ? updatedFromWallet.getBalance() : fromWallet.getBalance().subtract(amount);
+        BigDecimal toNewBalance = updatedToWallet != null ? updatedToWallet.getBalance() : toWallet.getBalance().add(amount);
+
+        // 为源钱包创建转出交易记录
+        Transaction fromTransaction = new Transaction();
+        fromTransaction.setWalletId(fromWalletId);
+        fromTransaction.setUserId(fromWallet.getUserId());
+        fromTransaction.setType(2); // 转出
+        fromTransaction.setAmount(amount);
+        fromTransaction.setBalanceAfter(fromNewBalance);
+        fromTransaction.setDescription(description + " (转账到：" + toWallet.getName() + ")");
+        fromTransaction.setImageUrl(imageUrl);
+        fromTransaction.setNote(note);
+        fromTransaction.setCreateTime(java.time.LocalDateTime.now());
+        transactionService.save(fromTransaction);
+
+        // 为目标钱包创建转入交易记录
+        Transaction toTransaction = new Transaction();
+        toTransaction.setWalletId(toWalletId);
+        toTransaction.setUserId(toWallet.getUserId());
+        toTransaction.setType(1); // 转入
+        toTransaction.setAmount(amount);
+        toTransaction.setBalanceAfter(toNewBalance);
+        toTransaction.setDescription(description + " (来自：" + fromWallet.getName() + ")");
+        toTransaction.setImageUrl(imageUrl);
+        toTransaction.setNote(note);
+        toTransaction.setCreateTime(java.time.LocalDateTime.now());
+        transactionService.save(toTransaction);
+
+        // 发布事件触发AI互动
+        try {
+            eventPublisher.publishEvent(new TransactionCreatedEvent(this, fromTransaction.getId()));
+            eventPublisher.publishEvent(new TransactionCreatedEvent(this, toTransaction.getId()));
+            logger.debug("发布钱包转账事件，从钱包ID: {}, 到钱包ID: {}", fromWalletId, toWalletId);
+        } catch (Exception e) {
+            logger.error("发布钱包转账事件失败，从钱包ID: {}, 到钱包ID: {}", fromWalletId, toWalletId, e);
+        }
+
+        logger.info("钱包转账成功，从钱包ID: {}, 到钱包ID: {}, 转账金额: {}", fromWalletId, toWalletId, amount);
+    }
+
+    @Override
+    @Transactional
+    public void incrementWalletBalance(Long walletId, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("增加金额必须大于0");
+        }
+
+        // 使用原子操作增加钱包余额，避免并发竞态条件
+        // 这个方法使用数据库的 UPDATE ... SET balance = balance + ? 语句
+        // 确保即使多个线程同时执行，余额也不会丢失
+        int updatedRows = baseMapper.incrementBalance(walletId, amount);
+
+        if (updatedRows <= 0) {
+            throw new RuntimeException("钱包余额增加失败，钱包可能不存在");
+        }
+
+        logger.debug("钱包余额原子增加成功，钱包ID: {}, 增加金额: {}", walletId, amount);
     }
 }

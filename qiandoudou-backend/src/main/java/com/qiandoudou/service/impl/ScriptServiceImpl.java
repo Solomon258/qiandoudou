@@ -234,4 +234,26 @@ public class ScriptServiceImpl extends ServiceImpl<ScriptMapper, Script> impleme
             return item;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public boolean updateScriptStatus(Long userId, Long walletId, Long scriptId, Integer status) {
+        try {
+            UserScriptProgress progress = getUserProgressByWallet(userId, walletId, scriptId);
+            if (progress == null) {
+                log.warn("未找到用户剧本进度记录: userId={}, walletId={}, scriptId={}", userId, walletId, scriptId);
+                return false;
+            }
+
+            progress.setStatus(status);
+            if (status == 2) {
+                progress.setCompleteTime(java.time.LocalDateTime.now());
+            }
+
+            return userScriptProgressMapper.updateById(progress) > 0;
+        } catch (Exception e) {
+            log.error("更新剧本状态失败: userId={}, walletId={}, scriptId={}, status={}", userId, walletId, scriptId, status, e);
+            return false;
+        }
+    }
 }

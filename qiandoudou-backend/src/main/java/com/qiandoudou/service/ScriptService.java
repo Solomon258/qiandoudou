@@ -59,4 +59,9 @@ public interface ScriptService extends IService<Script> {
      * 获取用户在指定钱包的所有剧本进度
      */
     List<Map<String, Object>> getUserScriptProgressByWallet(Long userId, Long walletId);
+
+    /**
+     * 更新剧本状态
+     */
+    boolean updateScriptStatus(Long userId, Long walletId, Long scriptId, Integer status);
 }

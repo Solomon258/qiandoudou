@@ -61,13 +61,23 @@ Page({
   // 处理消息数据
   processMessages(messages) {
     return messages.map(message => {
+      // 从title中提取昵称作为fallback
+      let nickname = message.user?.nickname || message.userName || '用户'
+      if (!nickname || nickname === '用户') {
+        const title = message.title || ''
+        const nameMatch = title.match(/^([^\s]+)/)
+        if (nameMatch) {
+          nickname = nameMatch[1]
+        }
+      }
+
       return {
         ...message,
         timeText: this.formatTime(message.createdAt || message.timestamp),
         user: {
           ...message.user,
-          nickname: message.user?.nickname || message.userName || '用户',
-          avatar: message.user?.avatar || message.userAvatar || ''
+          nickname: nickname,
+          avatar: message.user?.avatar || message.userAvatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/default_avatar.png'
         }
       }
     })

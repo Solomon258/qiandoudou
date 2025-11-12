@@ -5,6 +5,7 @@ import com.qiandoudou.service.CharacterVoiceMappingService;
 import com.qiandoudou.service.OssService;
 import com.qiandoudou.service.VolcengineTtsService;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpGet;
@@ -79,7 +80,18 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         String volcengineVoice = getVolcengineVoice(voiceType);
         logger.info("火山引擎TTS - 最终使用音色: {}", volcengineVoice);
 
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+        // 配置HTTP请求超时
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(10000)          // 连接超时 10秒
+                .setSocketTimeout(30000)           // Socket超时 30秒
+                .setConnectionRequestTimeout(10000) // 获取连接超时 10秒
+                .build();
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .setMaxConnTotal(50)               // 连接池最大连接数
+                .setMaxConnPerRoute(10)            // 单路由最大连接数
+                .build();
         
         try {
             // 构建请求
@@ -110,13 +122,13 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
             request.put("audio", audio);
             
             // 请求配置
-            Map<String, Object> requestConfig = new HashMap<>();
-            requestConfig.put("reqid", UUID.randomUUID().toString());
-            requestConfig.put("text", text);
-            requestConfig.put("text_type", "plain");
-            requestConfig.put("operation", "query");  // 添加缺失的operation参数
-            
-            request.put("request", requestConfig);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("reqid", UUID.randomUUID().toString());
+            requestBody.put("text", text);
+            requestBody.put("text_type", "plain");
+            requestBody.put("operation", "query");  // 添加缺失的operation参数
+
+            request.put("request", requestBody);
 
             String jsonRequest = objectMapper.writeValueAsString(request);
             logger.info("火山引擎TTS - HTTP请求体: {}", jsonRequest);
@@ -266,8 +278,19 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
      */
     private byte[] downloadAudioFromUrl(String audioUrl) throws IOException {
         logger.info("开始从URL下载音频数据: {}", audioUrl);
-        
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+
+        // 配置HTTP请求超时
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(10000)
+                .setSocketTimeout(30000)           // 下载音频可能需要更长时间
+                .setConnectionRequestTimeout(10000)
+                .build();
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .setMaxConnTotal(50)
+                .setMaxConnPerRoute(10)
+                .build();
         try {
             HttpGet httpGet = new HttpGet(audioUrl);
             

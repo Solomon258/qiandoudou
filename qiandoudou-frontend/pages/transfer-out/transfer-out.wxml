@@ -16,9 +16,9 @@
   <!-- 转出至区域 -->
   <view class="transfer-to-section">
     <text class="section-title">转出至</text>
-    
+
     <!-- 银行卡选项 -->
-    <view class="bank-card-item active" bindtap="selectBankCard" data-type="pingan">
+    <view class="bank-card-item {{selectedBankCard === 'pingan' ? 'active' : ''}}" bindtap="selectBankCard" data-type="pingan">
       <view class="bank-info">
         <view class="bank-logo pingan">
           <text class="bank-text">中国平安</text>
@@ -29,20 +29,39 @@
         </view>
       </view>
     </view>
-    
-    <view class="bank-card-item" bindtap="selectBankCard" data-type="other">
+
+    <!-- 其他钱包选项 -->
+    <view class="bank-card-item {{selectedOtherWallet ? 'active' : ''}}" bindtap="toggleWalletList">
       <view class="bank-info">
         <view class="bank-logo other">
           <text class="bank-icon">💰</text>
         </view>
         <view class="bank-details">
-          <text class="bank-name">牛津桥上喝咖啡</text>
-          <text class="bank-action">切换</text>
+          <text class="bank-name">{{selectedWalletName || '我的钱兜兜'}}</text>
+          <text class="bank-action">{{selectedOtherWallet ? '已选' : '选择'}}</text>
         </view>
       </view>
       <view class="expand-icon">
-        <text class="arrow-down">›</text>
+        <text class="arrow-down {{showWalletList ? 'open' : ''}}">›</text>
       </view>
+    </view>
+
+    <!-- 钱包列表（折叠展开） -->
+    <view class="wallet-list" wx:if="{{showWalletList && otherWallets.length > 0}}">
+      <view class="wallet-item" wx:for="{{otherWallets}}" wx:key="id" bindtap="selectOtherWallet" data-wallet-id="{{item.id}}">
+        <view class="wallet-info">
+          <text class="wallet-name">{{item.name}}</text>
+          <text class="wallet-balance">¥{{item.balance}}</text>
+        </view>
+        <view class="wallet-check" wx:if="{{selectedOtherWallet === item.id}}">
+          <text class="check-mark">✓</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 没有其他钱包时的提示 -->
+    <view class="empty-wallet-tip" wx:if="{{showWalletList && otherWallets.length === 0}}">
+      <text class="empty-text">暂无其他钱兜兜</text>
     </view>
   </view>
 
@@ -52,11 +71,12 @@
       <text class="amount-title">转出金额</text>
       <view class="amount-input-container">
         <text class="currency">¥</text>
-        <input class="amount-input" 
-               type="digit" 
+        <input class="amount-input"
+               type="text"
                placeholder="可转出金额{{availableAmount}}元"
-               value="{{transferAmount}}" 
-               bindinput="onAmountInput" />
+               value="{{transferAmount}}"
+               bindinput="onAmountInput"
+               maxlength="20" />
         <view class="transfer-all-btn" bindtap="transferAll">
           <text class="all-text">全部转出</text>
         </view>

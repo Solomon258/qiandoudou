@@ -91,6 +91,7 @@ public class BuddyController {
      */
     @PostMapping("/wallet/create")
     public Result<Map<String, Object>> createBuddyWallet(@RequestBody Map<String, Object> request) {
+        System.out.println("------------------1--------------");
         try {
             Long userId = Long.valueOf(request.get("userId").toString());
             String walletName = request.get("walletName").toString();

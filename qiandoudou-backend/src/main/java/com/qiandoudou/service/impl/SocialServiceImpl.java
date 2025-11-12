@@ -13,6 +13,7 @@ import com.qiandoudou.mapper.WalletMapper;
 import com.qiandoudou.mapper.WalletViewMapper;
 import com.qiandoudou.service.AiPartnerService;
 import com.qiandoudou.service.AudioDurationService;
+import com.qiandoudou.service.WalletService;
 import com.qiandoudou.entity.WalletView;
 import com.qiandoudou.service.SocialService;
 import org.slf4j.Logger;
@@ -66,41 +67,49 @@ public class SocialServiceImpl implements SocialService {
     @Autowired
     private BuddyCharacterMapper buddyCharacterMapper;
 
+    @Autowired
+    private WalletService walletService;
+
     @Override
     public Map<String, Object> getUserSocialStats(Long userId) {
         Map<String, Object> stats = new HashMap<>();
-        
+
         try {
-            // 获取真实的粉丝数量
-            Integer fansCount = userFollowMapper.getUserFansCount(userId);
-            
-            // 获取真实的关注数量
-            Integer followingCount = userFollowMapper.getUserFollowingCount(userId);
-            
+            // 获取用户的所有公开钱包
+            List<Map<String, Object>> publicWallets = walletService.getUserWallets(userId, true);
+
+            // 计算所有公开钱包的关注数之和
+            Integer fansCount = 0;
+            if (publicWallets != null && !publicWallets.isEmpty()) {
+                for (Map<String, Object> wallet : publicWallets) {
+                    Long walletId = ((Number) wallet.get("id")).longValue();
+                    Integer walletFansCount = userFollowMapper.getWalletFansCount(walletId);
+                    fansCount += (walletFansCount != null ? walletFansCount : 0);
+                }
+            }
+
             // 获取真实的获赞数量
             Integer likesCount = postLikeMapper.getUserTotalLikes(userId);
-            
+
             // 浏览数使用真实数据，新用户为0（后续可以添加真实统计）
             int viewsCount = 0;
-            
-            stats.put("fansCount", fansCount != null ? fansCount : 0);
+
+            stats.put("fansCount", fansCount);
             stats.put("likesCount", likesCount != null ? likesCount : 0);
             stats.put("viewsCount", viewsCount);
-            stats.put("followingCount", followingCount != null ? followingCount : 0);
-            
-            System.out.println("用户 " + userId + " 的真实社交统计: 粉丝" + fansCount + ", 获赞" + likesCount + ", 关注" + followingCount);
-            
+
+            System.out.println("用户 " + userId + " 的真实社交统计: 粉丝" + fansCount + "(所有公开钱包的关注数之和), 获赞" + likesCount);
+
         } catch (Exception e) {
             System.err.println("获取用户社交统计失败: " + e.getMessage());
             e.printStackTrace();
-            
+
             // 如果出错，返回默认数据
             stats.put("fansCount", 0);
             stats.put("likesCount", 0);
             stats.put("viewsCount", 0);
-            stats.put("followingCount", 0);
         }
-        
+
         return stats;
     }
 
@@ -113,27 +122,39 @@ public class SocialServiceImpl implements SocialService {
             if (walletOwnerId == null) {
                 throw new RuntimeException("钱包不存在");
             }
-            
+
             if (walletOwnerId.equals(userId)) {
                 throw new RuntimeException("不能关注自己的钱包");
             }
-            
-            // 1. 检查是否已经关注该钱包
+
+            // 1. 检查是否已经关注该钱包（包括已删除的记录）
             Integer existingFollow = userFollowMapper.checkUserFollowed(userId, walletId);
+
             if (existingFollow > 0) {
+                // 已经关注，不需要重复操作
                 throw new RuntimeException("已关注该钱包");
             }
-            
-            // 2. 在user_follows表中插入关注记录
-            UserFollow userFollow = new UserFollow();
-            userFollow.setFollowerId(userId);
-            userFollow.setWalletId(walletId);
-            userFollowMapper.insert(userFollow);
-            
-            // 3. 创建关注通知
+
+            // 2. 直接插入新的关注记录（使用INSERT IGNORE避免并发冲突）
+            // 由于改为真删除，不需要处理软删除的激活逻辑
+            int affected = userFollowMapper.upsertFollow(userId, walletId);
+            if (affected > 0) {
+                System.out.println("用户 " + userId + " 新增了对钱包 " + walletId + " 的关注");
+            } else {
+                // INSERT IGNORE 返回0，说明记录已存在（并发情况）
+                // 再次检查是否存在有效的关注记录
+                Integer recheck = userFollowMapper.checkUserFollowed(userId, walletId);
+                if (recheck <= 0) {
+                    throw new RuntimeException("关注失败，请重试");
+                }
+                // 如果存在有效记录，说明是并发操作，直接继续
+                System.out.println("用户 " + userId + " 的关注记录已存在（并发情况）");
+            }
+
+            // 4. 创建关注通知
             System.out.println("准备创建关注通知: 关注者=" + userId + ", 被关注者=" + walletOwnerId + ", 钱包=" + walletId);
             this.createFollowNotification(userId, walletOwnerId, walletId);
-            
+
             System.out.println("用户 " + userId + " 成功关注了钱包 " + walletId + " 的所有者 " + walletOwnerId);
         } catch (Exception e) {
             System.err.println("关注失败: " + e.getMessage());
@@ -382,8 +403,28 @@ public class SocialServiceImpl implements SocialService {
                 // 处理用户信息
                 Map<String, Object> user = new HashMap<>();
                 user.put("id", message.get("sender_id"));
-                user.put("nickname", message.get("sender_nickname"));
-                user.put("avatar", message.get("sender_avatar"));
+
+                // 获取昵称，如果为空则从title中提取
+                String nickname = (String) message.get("sender_nickname");
+                if (nickname == null || nickname.trim().isEmpty()) {
+                    // 从title中提取昵称（title格式: "昵称 xxx了你的动态"）
+                    String title = (String) message.get("title");
+                    if (title != null && !title.isEmpty()) {
+                        int spaceIndex = title.indexOf(" ");
+                        if (spaceIndex > 0) {
+                            nickname = title.substring(0, spaceIndex);
+                        }
+                    }
+                }
+                user.put("nickname", nickname);
+
+                // 获取头像，如果为空使用默认头像URL
+                String avatar = (String) message.get("sender_avatar");
+                if (avatar == null || avatar.trim().isEmpty()) {
+                    // 使用默认头像
+                    avatar = "https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/default_avatar.png";
+                }
+                user.put("avatar", avatar);
                 message.put("user", user);
                 
                 // 处理时间格式
@@ -567,19 +608,26 @@ public class SocialServiceImpl implements SocialService {
     }
 
     @Override
-    public Boolean checkUserFollowStatus(Long currentUserId, Long targetUserId) {
+    public Boolean checkWalletFollowStatus(Long userId, Long walletId) {
         try {
-            System.out.println("检查关注状态: currentUserId=" + currentUserId + ", targetUserId=" + targetUserId);
-            
-            Integer followCount = userFollowMapper.checkUserFollowed(currentUserId, targetUserId);
-            System.out.println("查询结果: followCount=" + followCount);
-            
+            System.out.println("检查钱包关注状态: userId=" + userId + ", walletId=" + walletId);
+
+            if (userId == null || walletId == null) {
+                System.err.println("缺少必要参数: userId=" + userId + ", walletId=" + walletId);
+                return false;
+            }
+
+            // 使用同样的userFollowMapper检查钱包关注状态
+            // checkUserFollowed方法实际上是检查userId是否关注targetId（可以是用户ID或钱包ID）
+            Integer followCount = userFollowMapper.checkUserFollowed(userId, walletId);
+            System.out.println("钱包关注查询结果: followCount=" + followCount);
+
             boolean isFollowing = followCount != null && followCount > 0;
-            System.out.println("最终关注状态: " + isFollowing);
-            
+            System.out.println("钱包最终关注状态: " + isFollowing);
+
             return isFollowing;
         } catch (Exception e) {
-            System.err.println("检查关注状态失败: " + e.getMessage());
+            System.err.println("检查钱包关注状态失败: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

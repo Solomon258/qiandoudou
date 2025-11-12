@@ -38,7 +38,7 @@ public class Wallet implements Serializable {
     private String name;
 
     /**
-     * 钱包类型：1-个人钱包，2-情侣钱包，3-梦想攒钱(购物)，4-梦想攒钱(旅行)
+     * 钱包类型：1-个人钱包，2-情侣钱包，3-搭子钱包，4-梦想攒钱(购物)，5-梦想攒钱(旅行)
      */
     private Integer type;
 

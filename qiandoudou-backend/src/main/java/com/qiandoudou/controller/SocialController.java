@@ -197,12 +197,12 @@ public class SocialController {
     }
 
     /**
-     * 检查用户关注状态
+     * 检查钱包关注状态
      */
-    @GetMapping("/user/check-follow")
-    public Result<Boolean> checkFollowStatus(@RequestParam Long currentUserId, @RequestParam Long targetUserId) {
+    @GetMapping("/wallet/check-follow")
+    public Result<Boolean> checkWalletFollowStatus(@RequestParam Long userId, @RequestParam Long walletId) {
         try {
-            Boolean isFollowing = socialService.checkUserFollowStatus(currentUserId, targetUserId);
+            Boolean isFollowing = socialService.checkWalletFollowStatus(userId, walletId);
             return Result.success(isFollowing);
         } catch (Exception e) {
             return Result.error(e.getMessage());

@@ -12,13 +12,18 @@ Page({
     uploadedImage: '', // OSS图片URL（用于显示）
     uploadedImageLocal: '', // 本地图片路径（用于AI分析）
     selectedBankCard: 'pingan',
+    selectedOtherWallet: null, // 选中的其他钱包ID
+    selectedWalletName: '', // 选中的钱包名称
     availableAmount: '0.00',
     transferLoading: false,
     // 光标控制相关
     noteCursor: -1,
     noteSelectionStart: -1,
     noteSelectionEnd: -1,
-    isUserTyping: false
+    isUserTyping: false,
+    // 其他钱包相关
+    otherWallets: [], // 用户的其他钱包列表
+    showWalletList: false // 是否显示钱包列表
   },
 
   onLoad(options) {
@@ -60,6 +65,9 @@ Page({
           wallet: wallet,
           availableAmount: wallet.balance
         })
+
+        // 加载用户的其他钱包列表（排除当前钱包）
+        this.loadOtherWallets(wallet.userId)
       })
       .catch(error => {
 
@@ -70,17 +78,81 @@ Page({
       })
   },
 
+  // 加载用户的其他钱包列表
+  loadOtherWallets(userId) {
+    walletAPI.getUserWallets(userId, false)
+      .then(result => {
+        let wallets = result.data || []
+
+        // 过滤出除了当前钱包以外的钱包
+        wallets = wallets.filter(w => w.id !== this.data.walletId)
+
+        this.setData({
+          otherWallets: wallets
+        })
+      })
+      .catch(error => {
+        console.error('加载其他钱包失败:', error)
+        // 加载失败不影响主流程，只显示错误日志
+      })
+  },
+
   // 选择银行卡
   selectBankCard(e) {
     const type = e.currentTarget.dataset.type
     this.setData({
-      selectedBankCard: type
+      selectedBankCard: type,
+      selectedOtherWallet: null, // 选择银行卡时清除钱包选择
+      selectedWalletName: '', // 清除钱包名称
+      showWalletList: false
     })
+  },
+
+  // 显示其他钱包列表
+  toggleWalletList() {
+    this.setData({
+      showWalletList: !this.data.showWalletList,
+      selectedBankCard: null // 选择钱包时清除银行卡选择
+    })
+  },
+
+  // 选择其他钱包
+  selectOtherWallet(e) {
+    const walletId = e.currentTarget.dataset.walletId
+    const walletIndex = this.data.otherWallets.findIndex(w => w.id === walletId)
+
+    if (walletIndex !== -1) {
+      const selectedWallet = this.data.otherWallets[walletIndex]
+      this.setData({
+        selectedOtherWallet: walletId,
+        selectedWalletName: selectedWallet.name,
+        showWalletList: false
+      })
+    }
   },
 
   // 金额输入
   onAmountInput(e) {
-    const value = e.detail.value
+    let value = e.detail.value
+
+    // 只允许数字和一个小数点，小数点后最多2位
+    // 先过滤掉非数字和非小数点的字符
+    value = value.replace(/[^\d.]/g, '')
+
+    // 只保留第一个小数点，删除多余的小数点
+    if (value.indexOf('.') !== value.lastIndexOf('.')) {
+      const dotIndex = value.indexOf('.')
+      value = value.substring(0, dotIndex + 1) + value.substring(dotIndex + 1).replace(/\./g, '')
+    }
+
+    // 如果存在小数点，限制小数点后只有2位
+    if (value.includes('.')) {
+      const parts = value.split('.')
+      if (parts[1] && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2)
+      }
+    }
+
     this.setData({
       transferAmount: value
     })
@@ -95,8 +167,18 @@ Page({
 
   // 备注输入
   onNoteInput(e) {
-    const value = e.detail.value
-    const cursor = e.detail.cursor
+    let value = e.detail.value
+    let cursor = e.detail.cursor
+
+    // 限制备注最多200字
+    if (value.length > 200) {
+      value = value.substring(0, 200)
+      // 如果光标位置超过200，调整光标位置
+      if (cursor > 200) {
+        cursor = 200
+      }
+    }
+
     this.setData({
       transferNote: value,
       noteLength: value.length,
@@ -269,7 +351,8 @@ Page({
         
         // 上传到OSS
         const { uploadUserImage } = require('../../utils/api.js')
-        uploadUserImage(tempFilePath, 'transfer_out')
+        const userId = app.globalData.userInfo?.id
+        uploadUserImage(tempFilePath, 'transfer_out', userId)
           .then(response => {
             wx.hideLoading()
             if (response.data && response.data.imageUrl) {
@@ -309,12 +392,26 @@ Page({
 
   // 确认转出
   confirmTransferOut() {
-    const { transferAmount, transferNote, wallet } = this.data
-    
+    const { transferAmount, transferNote, wallet, selectedBankCard, selectedOtherWallet } = this.data
+
+    // 校验1：金额是否为空
     if (!transferAmount || parseFloat(transferAmount) <= 0) {
       wx.showToast({
         title: '请输入转出金额',
         icon: 'error'
+      })
+      return
+    }
+
+    // 校验2：金额上限检查（不能超过 10,000,000）
+    const maxAmount = 10000000
+    const amount = parseFloat(transferAmount)
+    if (amount > maxAmount) {
+      wx.showModal({
+        title: '金额超过限制',
+        content: `单次转出金额不能超过 ¥${maxAmount.toLocaleString()}，请重新输入。`,
+        showCancel: false,
+        confirmText: '确定'
       })
       return
     }
@@ -327,7 +424,14 @@ Page({
       return
     }
 
-    const amount = parseFloat(transferAmount)
+    // 检查是否选择了转出目标（银行卡或其他钱包）
+    if (!selectedBankCard && !selectedOtherWallet) {
+      wx.showToast({
+        title: '请选择转出目标',
+        icon: 'error'
+      })
+      return
+    }
 
     if (amount > wallet.balance) {
       wx.showToast({
@@ -337,17 +441,30 @@ Page({
       return
     }
 
+    // 所有验证通过后才设置loading
     this.setData({ transferLoading: true })
 
     const description = transferNote || '转出'
     const imageUrl = this.data.uploadedImage || null
     const note = transferNote || null
 
-    walletAPI.transferOut(wallet.id, amount, description, imageUrl, note)
+    // 如果选择的是其他钱包，调用转账到钱包的API
+    // 如果选择的是银行卡，调用原有的转出API
+    const transferPromise = selectedOtherWallet ?
+      walletAPI.transferToWallet(wallet.id, selectedOtherWallet, amount, description, imageUrl, note) :
+      walletAPI.transferOut(wallet.id, amount, description, imageUrl, note)
+
+    transferPromise
       .then(result => {
-        wx.showToast({
-          title: `成功转出¥${amount}`,
-          icon: 'success'
+        // 使用 showModal 显示完整的转出金额（showToast title 最长7个字符会被截断）
+        wx.showModal({
+          title: '转出成功',
+          content: `成功转出 ¥${amount}`,
+          showCancel: false,
+          confirmText: '完成',
+          success: (res) => {
+            // 用户点击完成后的处理在then中继续
+          }
         })
 
         // 自动生成AI评论，并在完成后刷新页面

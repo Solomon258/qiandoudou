@@ -20,12 +20,13 @@
       </view>
       <view class="amount-input-section">
         <text class="currency-symbol">¥</text>
-        <input class="amount-input" 
-               type="digit" 
-               placeholder="请输入金额" 
-               value="{{transferAmount}}" 
+        <input class="amount-input"
+               type="text"
+               placeholder="请输入金额"
+               value="{{transferAmount}}"
                bindinput="onAmountInput"
-               focus="{{amountFocus}}" />
+               focus="{{amountFocus}}"
+               maxlength="20" />
       </view>
     </view>
 

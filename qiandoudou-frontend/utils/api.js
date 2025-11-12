@@ -2,8 +2,8 @@
 const app = getApp()
 
 // 后端API基础地址
-// const BASE_URL = 'http://localhost:8080/api'  // 本地开发
- const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
+const BASE_URL = 'http://localhost:8080/api'  // 本地开发
+//  const BASE_URL = 'https://heartllo.cn/api'  // 生产环境域名
 
 
 /**
@@ -236,6 +236,15 @@ const walletAPI = {
     })
   },
 
+  // 转账到其他钱包
+  transferToWallet(fromWalletId, toWalletId, amount, description, imageUrl, note) {
+    return request({
+      url: '/wallet/transfer-to-wallet',
+      method: 'POST',
+      data: { fromWalletId, toWalletId, amount, description, imageUrl, note }
+    })
+  },
+
   // 获取钱包交易记录
   getWalletTransactions(walletId) {
     return request({
@@ -323,18 +332,15 @@ const walletAPI = {
     })
   },
 
-  // 检查关注状态
-  checkFollowStatus(currentUserId, targetUserId) {
-
+  // 检查钱包关注状态
+  checkWalletFollowStatus(userId, walletId) {
     return request({
-      url: '/social/user/check-follow',
+      url: '/social/wallet/check-follow',
       method: 'GET',
-      data: { currentUserId, targetUserId }
+      data: { userId, walletId }
     }).then(result => {
-
       return result
     }).catch(error => {
-
       throw error
     })
   },
@@ -518,15 +524,6 @@ const walletAPI = {
       url: '/social/wallet/unfollow',
       method: 'POST',
       data: { userId, walletId }
-    })
-  },
-
-  // 检查用户关注状态
-  checkUserFollowStatus(currentUserId, targetUserId) {
-    return request({
-      url: '/social/user/follow-status',
-      method: 'GET',
-      data: { currentUserId, targetUserId }
     })
   },
 
@@ -766,10 +763,11 @@ function uploadFile(filePath, uploadUrl, formData = {}) {
  * 通用用户图片上传函数
  * @param {string} filePath 图片文件路径
  * @param {string} type 图片类型 (avatar, transfer, wallet_bg, etc.)
+ * @param {number} userId 用户ID（用于生成文件名）
  * @returns {Promise} 返回包含图片URL的Promise
  */
-function uploadUserImage(filePath, type = 'general') {
-  return uploadFile(filePath, '/wallet/upload-user-image', { type })
+function uploadUserImage(filePath, type = 'general', userId = null) {
+  return uploadFile(filePath, '/wallet/upload-user-image', { type, userId })
 }
 
 // 剧本相关API

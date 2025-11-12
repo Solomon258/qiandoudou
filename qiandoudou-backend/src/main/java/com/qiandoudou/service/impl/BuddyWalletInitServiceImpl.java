@@ -9,6 +9,7 @@ import com.qiandoudou.service.BuddyWalletInitService;
 import com.qiandoudou.service.TransactionService;
 import com.qiandoudou.service.WalletService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,16 +43,19 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
     public void initializeBuddyWalletSync(Long walletId, List<Long> buddyCharacterIds) {
         try {
             logger.info("开始同步初始化搭子钱包，钱包ID: {}, 搭子数量: {}", walletId, buddyCharacterIds.size());
-            
+
+            // 等待确保钱包创建事务已提交
+            Thread.sleep(1000);
+
             // 验证钱包是否存在
             Wallet wallet = walletService.getById(walletId);
             if (wallet == null) {
                 logger.error("钱包不存在，无法初始化，钱包ID: {}", walletId);
                 return;
             }
-            
-            logger.info("钱包验证成功，开始为每个搭子创建初始转账");
-            
+
+            logger.info("钱包验证成功，当前余额: {}, 开始为每个搭子创建初始转账", wallet.getBalance());
+
             for (Long buddyCharacterId : buddyCharacterIds) {
                 try {
                     BuddyCharacter buddyCharacter = buddyCharacterMapper.selectById(buddyCharacterId);
@@ -62,21 +66,24 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
 
                     // 调用AI生成个性化欢迎消息
                     String welcomeMessage = generateBuddyWelcomeMessage(buddyCharacter, wallet.getName());
-                    
-                    logger.info("开始为搭子 {} 创建初始转账", buddyCharacter.getName());
-                    
+
+                    logger.info("开始为搭子 {} 创建初始转账，当前钱包余额: {}", buddyCharacter.getName(), wallet.getBalance());
+
                     // 直接创建带有搭子信息的交易记录
                     createBuddyInitialTransaction(wallet, buddyCharacter, welcomeMessage);
-                    
+
                     logger.info("搭子 {} 初始转账成功", buddyCharacter.getName());
-                    
+
+                    // 添加间隔，避免并发问题
+                    Thread.sleep(500);
+
                 } catch (Exception e) {
                     logger.error("搭子初始转账失败，搭子ID: {}, 错误: ", buddyCharacterId, e);
                 }
             }
-            
+
             logger.info("搭子钱包同步初始化完成，钱包ID: {}", walletId);
-            
+
         } catch (Exception e) {
             logger.error("搭子钱包同步初始化失败，钱包ID: {}", walletId, e);
         }
@@ -85,12 +92,15 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
     @Override
     @Async
     public void initializeBuddyWalletAsync(Long walletId, List<Long> buddyCharacterIds) {
+        // 使用分布式锁避免与用户转账冲突
+        String lockKey = "wallet_init_" + walletId;
+
         try {
             logger.info("开始异步初始化搭子钱包，钱包ID: {}, 搭子数量: {}", walletId, buddyCharacterIds.size());
-            
-            // 等待一小段时间确保钱包创建事务已提交
-            Thread.sleep(2000);
-            
+
+            // 等待更长时间确保钱包创建和用户转账事务都已提交
+            Thread.sleep(5000);
+
             // 验证钱包是否存在
             Wallet wallet = walletService.getById(walletId);
             if (wallet == null) {
@@ -135,18 +145,14 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
 
     /**
      * 为搭子创建初始转账记录
+     * 统一使用 walletService.transferIn() 方法，确保交易记录正确创建
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void createBuddyInitialTransaction(Wallet wallet, BuddyCharacter buddyCharacter, String welcomeMessage) {
         try {
             BigDecimal initialAmount = new BigDecimal("0.01");
-            
-            // 更新钱包余额
-            BigDecimal newBalance = wallet.getBalance().add(initialAmount);
-            wallet.setBalance(newBalance);
-            walletService.updateById(wallet);
-            
-            logger.info("钱包余额更新成功，新余额: {}", newBalance);
+
+            logger.info("开始为搭子 {} 创建初始转账，钱包ID: {}, 金额: {}", buddyCharacter.getName(), wallet.getId(), initialAmount);
 
             // 生成搭子语音
             String voiceUrl = null;
@@ -162,7 +168,14 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
                 logger.warn("搭子语音生成异常: {}", e.getMessage());
             }
 
-            // 创建交易记录，包含搭子信息
+            // 获取当前钱包最新余额，用于设置交易记录
+            Wallet currentWallet = walletService.getById(wallet.getId());
+            BigDecimal currentBalance = currentWallet != null ? currentWallet.getBalance() : wallet.getBalance();
+            BigDecimal newBalance = currentBalance.add(initialAmount);
+
+            logger.info("当��钱包余额: {}, 准备为搭子 {} 增加: {}, 新余额: {}", currentBalance, buddyCharacter.getName(), initialAmount, newBalance);
+
+            // 直接创建交易记录，避免使用transferIn方法可能产生的并发问题
             Transaction transaction = new Transaction();
             transaction.setWalletId(wallet.getId());
             transaction.setUserId(wallet.getUserId());
@@ -171,26 +184,28 @@ public class BuddyWalletInitServiceImpl implements BuddyWalletInitService {
             transaction.setBalanceAfter(newBalance);
             transaction.setDescription("搭子初始转账");
             transaction.setNote(welcomeMessage);
-            
-            // 设置搭子相关字段（显示为AI角色）
-            transaction.setAiPartnerId(null); // 搭子不是AI伴侣，但可以显示为AI角色
+
+            // 设置搭子相关字段
             transaction.setAiPartnerName(buddyCharacter.getName());
             transaction.setAiPartnerAvatar(buddyCharacter.getAvatar());
             transaction.setAiMessage(welcomeMessage);
-            
+
             // 设置语音URL和时长
             if (voiceUrl != null) {
                 transaction.setVoiceUrl(voiceUrl);
                 transaction.setVoiceDuration("12s"); // 预估时长
-            } else {
-                transaction.setVoiceUrl(null);
-                transaction.setVoiceDuration(null);
             }
-            
+
             transaction.setCreateTime(java.time.LocalDateTime.now());
             transactionService.save(transaction);
-            
-            logger.info("搭子初始转账记录创建成功，交易ID: {}", transaction.getId());
+
+            logger.info("搭子交易记录创建成功，交易ID: {}, 搭子: {}, 金额: {}, 余额: {}",
+                transaction.getId(), buddyCharacter.getName(), initialAmount, newBalance);
+
+            // 最后更新钱包余额，确保原子操作
+            walletService.incrementWalletBalance(wallet.getId(), initialAmount);
+
+            logger.info("搭子 {} 初始转账成功，使用统一转账接口", buddyCharacter.getName());
 
         } catch (Exception e) {
             logger.error("创建搭子初始转账记录失败，搭子: {}", buddyCharacter.getName(), e);

@@ -111,7 +111,26 @@ Page({
 
   // 金额输入
   onAmountInput(e) {
-    const value = e.detail.value
+    let value = e.detail.value
+
+    // 只允许数字和一个小数点，小数点后最多2位
+    // 先过滤掉非数字和非小数点的字符
+    value = value.replace(/[^\d.]/g, '')
+
+    // 只保留第一个小数点，删除多余的小数点
+    if (value.indexOf('.') !== value.lastIndexOf('.')) {
+      const dotIndex = value.indexOf('.')
+      value = value.substring(0, dotIndex + 1) + value.substring(dotIndex + 1).replace(/\./g, '')
+    }
+
+    // 如果存在小数点，限制小数点后只有2位
+    if (value.includes('.')) {
+      const parts = value.split('.')
+      if (parts[1] && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2)
+      }
+    }
+
     this.setData({
       transferAmount: value
     })
@@ -119,7 +138,13 @@ Page({
 
   // 备注输入
   onNoteInput(e) {
-    const value = e.detail.value
+    let value = e.detail.value
+
+    // 限制备注最多200字
+    if (value.length > 200) {
+      value = value.substring(0, 200)
+    }
+
     this.setData({
       transferNote: value,
       noteLength: value.length
@@ -232,7 +257,8 @@ Page({
         
         // 上传到OSS
         const { uploadUserImage } = require('../../utils/api.js')
-        uploadUserImage(tempFilePath, 'transfer_in')
+        const userId = app.globalData.userInfo?.id
+        uploadUserImage(tempFilePath, 'transfer_in', userId)
           .then(response => {
             wx.hideLoading()
             if (response.data && response.data.imageUrl) {
@@ -319,9 +345,9 @@ Page({
   // 显示时间选项
   showDurationOptions() {
     wx.showActionSheet({
-      itemList: ['一直攒', '攒1个月', '攒3个月', '攒6个月', '攒1年'],
+      itemList: ['一直攒', '1个月', '3个月', '6个月', '1年'],
       success: (res) => {
-        const durations = ['一直攒', '攒1个月', '攒3个月', '攒6个月', '攒1年']
+        const durations = ['一直攒', '1个月', '3个月', '6个月', '1年']
         this.setData({
           'autoSaveSettings.duration': durations[res.tapIndex]
         })
@@ -349,10 +375,10 @@ Page({
     const dailyAmount = parseFloat(amount)
     
     let days = 365 // 默认一年
-    if (duration === '攒1个月') days = 30
-    else if (duration === '攒3个月') days = 90
-    else if (duration === '攒6个月') days = 180
-    else if (duration === '攒1年') days = 365
+    if (duration === '1个月') days = 30
+    else if (duration === '3个月') days = 90
+    else if (duration === '6个月') days = 180
+    else if (duration === '1年') days = 365
     
     let multiplier = 1
     if (method === '每周攒') multiplier = 7
@@ -401,23 +427,42 @@ Page({
     console.log('- wallet.id:', wallet?.id)
     console.log('- dreamMode:', dreamMode)
     
+    // 校验1：金额是否为空
     if (!transferAmount || parseFloat(transferAmount) <= 0) {
       wx.showToast({
         title: '请输入转入金额',
         icon: 'error'
       })
+      this.setData({ transferLoading: false })
       return
     }
-    
+
+    // 校验2：金额上限检查（不能超过 10,000,000）
+    const maxAmount = 10000000
+    const amount = parseFloat(transferAmount)
+    if (amount > maxAmount) {
+      wx.showModal({
+        title: '金额超过限制',
+        content: `单次转入金额不能超过 ¥${maxAmount.toLocaleString()}，请重新输入。`,
+        showCancel: false,
+        confirmText: '确定',
+        success: (res) => {
+          this.setData({ transferLoading: false })
+        }
+      })
+      return
+    }
+
     if (!wallet || !wallet.id) {
       console.error('钱包信息错误 - wallet:', wallet)
       wx.showToast({
         title: '钱包信息错误',
         icon: 'error'
       })
+      this.setData({ transferLoading: false })
       return
     }
-    const amount = parseFloat(transferAmount)
+
     const description = transferNote || '转入'
     const imageUrl = this.data.uploadedImage || null
     const note = transferNote || null
@@ -433,9 +478,15 @@ Page({
     transferPromise
       .then(result => {
         console.log('转入API返回结果:', result)
-        wx.showToast({
-          title: `成功转入¥${amount}`,
-          icon: 'success'
+        // 使用 showModal 显示完整的转入金额（showToast title 最长7个字符会被截断）
+        wx.showModal({
+          title: '转入成功',
+          content: `成功转入 ¥${amount}`,
+          showCancel: false,
+          confirmText: '完成',
+          success: (res) => {
+            // 用户点击完成后的处理在then中继续
+          }
         })
 
         // 自动生成AI评论，并在完成后刷新页面

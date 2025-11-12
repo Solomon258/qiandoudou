@@ -169,12 +169,12 @@
     
     <view class="modal-body">
       <view wx:if="{{editType === 'nickname' || editType === 'description'}}" class="input-group">
-        <input class="edit-input" 
-               placeholder="{{editType === 'nickname' ? '请输入昵称' : '请输入简介'}}"
+        <input class="edit-input"
+               placeholder="{{editType === 'nickname' ? '请输入昵称（最多12个字）' : '请输入简介'}}"
                value="{{editValue}}"
                bindinput="onEditInput"
-               maxlength="{{editType === 'nickname' ? 20 : 100}}"/>
-        <text class="input-counter">{{editValue.length}}/{{editType === 'nickname' ? 20 : 100}}</text>
+               maxlength="{{editType === 'nickname' ? 12 : 100}}"/>
+        <text class="input-counter">{{editValue.length}}/{{editType === 'nickname' ? 12 : 100}}</text>
       </view>
       
       <view wx:if="{{editType === 'gender'}}" class="gender-options">

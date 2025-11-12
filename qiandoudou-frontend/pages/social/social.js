@@ -9,61 +9,7 @@ Page({
       avatar: ''
     },
     wallets: [],
-    posts: [
-      {
-        id: 1,
-        userId: 101,
-        title: '宝儿的锦鲤小岛😈',
-        amount: '2221.21',
-        tags: ['生活', '攒钱'],
-        description: '一年每天自动存一块已到期（说真的，突然…',
-        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
-        backgroundStyle: 'background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);',
-        walletId: 1001,
-        participantCount: 2,
-        comments: [
-          {
-            userId: 201,
-            username: '冲动的',
-            message: '来啦记得回',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
-          },
-          {
-            userId: 202,
-            username: '足呱呱',
-            message: '好漂亮',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
-          }
-        ]
-      },
-      {
-        id: 2,
-        userId: 102,
-        title: '给朱敏攒钱了',
-        amount: '21231.21',
-        tags: ['情感', '校园'],
-        description: '给发哥攒钱买车',
-        bgImage: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
-        backgroundStyle: 'background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);',
-        walletId: 1002,
-        participantCount: 2,
-        comments: [
-          {
-            userId: 203,
-            username: '朱敏多',
-            message: '今天在垃圾桶捡到五块',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png',
-            amount: '+¥100.00'
-          },
-          {
-            userId: 202,
-            username: '足呱呱',
-            message: '来啦来啦',
-            avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/user-avatar.png'
-          }
-        ]
-      }
-    ]
+    posts: [] // 初始化为空，由后端 API 加载真实数据
   },
 
   onLoad() {
@@ -422,13 +368,13 @@ Page({
               title: wallet.name || '钱兜兜',
               amount: wallet.balance || '0.00',
               tags: [wallet.type === 2 ? '情侣' : '个人', '攒钱', wallet.ai_partner_name || '理财'],
-              description: recentTransactions.length > 0 
+              description: recentTransactions.length > 0
                 ? recentTransactions[0].description || '开始攒钱之旅'
                 : '开始攒钱之旅',
               bgImage: wallet.backgroundImage || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/bg.png',
               backgroundStyle: backgroundStyles[index % backgroundStyles.length],
               participantCount: wallet.type === 2 ? 2 : 1,
-              fansCount: 0, // 新钱包粉丝数为0，稍后从API获取真实数据
+              fansCount: parseInt(wallet.fansCount) || 0, // 直接使用后端返回的粉丝数
               comments: recentTransactions.slice(0, 2).map(tx => ({
                 username: wallet.owner_nickname || '用户',
                 message: tx.description || '攒钱记录',
@@ -438,13 +384,12 @@ Page({
             }
           })
 
-          
+          console.log('📊 加载的 posts 数据（包含粉丝数）:', posts)
           this.setData({ posts })
-          
-          // 为每个钱包获取真实的社交统计数据
-          this.loadSocialStatsForPosts(posts)
-        } else {
 
+          // 粉丝数已由后端 /wallet/public 接口返回，无需额外加载社交统计数据
+        } else {
+          console.error('❌ getPublicWallets API 返回错误或格式不正确:', response)
           // 如果API失败，保留原有的模拟数据
           this.updatePostsWithSocialStats()
         }
@@ -458,12 +403,12 @@ Page({
 
   // 为钱包列表加载真实的社交统计数据
   loadSocialStatsForPosts(posts) {
-
-    
     // 为每个钱包并行获取社交统计数据
     const socialStatsPromises = posts.map(post => {
-      return walletAPI.getUserSocialStats(post.userId)
+      console.log('开始加载钱包社交统计:', post.walletId)
+      return walletAPI.getWalletSocialStats(post.walletId)
         .then(response => {
+          console.log(`钱包 ${post.walletId} 社交统计加载成功:`, response.data)
           if (response.success && response.data) {
             return {
               walletId: post.walletId,
@@ -473,25 +418,29 @@ Page({
           return null
         })
         .catch(error => {
-
+          console.error(`钱包 ${post.walletId} 社交统计加载失败:`, error)
           return null
         })
     })
-    
+
     Promise.all(socialStatsPromises).then(results => {
-      const updatedPosts = [...this.data.posts]
-      
+      console.log('所有钱包社交统计加载完成:', results)
+      const updatedPosts = posts.map(post => ({ ...post }))
+
       results.forEach(result => {
         if (result) {
           const index = updatedPosts.findIndex(p => p.walletId === result.walletId)
           if (index !== -1) {
+            console.log(`更新钱包 ${result.walletId} 的粉丝数: ${result.socialStats.fansCount}`)
             updatedPosts[index].fansCount = result.socialStats.fansCount || 0
           }
         }
       })
 
-      
+      console.log('更新后的 posts 数据:', updatedPosts)
       this.setData({ posts: updatedPosts })
+    }).catch(error => {
+      console.error('Promise.all 失败:', error)
     })
   },
 

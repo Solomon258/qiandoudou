@@ -62,6 +62,16 @@ Page({
       }
     }
     app.globalData.eventBus.on('walletPublicStatusChanged', this.walletStatusChangeHandler)
+
+    // 监听兜圈圈刷新请求事件
+    this.socialRefreshHandler = (data) => {
+      console.log('💫 收到兜圈圈刷新请求事件:', data)
+      if (this.data.currentTab === 'social') {
+        this.loadPosts(true)
+        this.setData({ socialDataLoaded: true })
+      }
+    }
+    app.globalData.eventBus.on('needRefreshSocialPosts', this.socialRefreshHandler)
   },
   // onBack() {
   //   // 显示模态框
@@ -81,11 +91,13 @@ Page({
   onShow() {
     // 每次显示页面时刷新数据
     if (app.isLoggedIn()) {
+      console.log('📱 home.js onShow - 当前 Tab:', this.data.currentTab)
 
       this.loadData()
 
-      // 只在社交数据未加载时才刷新
-      if (!this.data.socialDataLoaded) {
+      // 每次进入社交圈页面时都刷新数据（包括从详情页返回）
+      if (this.data.currentTab === 'social') {
+        console.log('🔄 刷新兜圈圈数据...')
         this.loadPosts(true)
         this.setData({ socialDataLoaded: true })
       }
@@ -100,9 +112,12 @@ Page({
 
   onUnload() {
     // 移除事件监听器
+    const app = getApp()
     if (this.walletStatusChangeHandler) {
-      const app = getApp()
       app.globalData.eventBus.off('walletPublicStatusChanged', this.walletStatusChangeHandler)
+    }
+    if (this.socialRefreshHandler) {
+      app.globalData.eventBus.off('needRefreshSocialPosts', this.socialRefreshHandler)
     }
   },
 
@@ -115,14 +130,7 @@ Page({
         this.loadTransactions()
       }, 500)
     }
-    // 如果当前在社交页面，立即加载数据避免闪烁
-    if (this.data.currentTab === 'social' && !this.data.socialDataLoaded) {
-      // 稍微延迟以确保页面结构已渲染
-      setTimeout(() => {
-        this.loadPosts(true)
-        this.setData({ socialDataLoaded: true })
-      }, 100)
-    }
+    // 社交圈页面数据由 onShow 统一管理，这里不需要重复加载
   },
 
   // 加载钱兜兜列表
@@ -796,12 +804,20 @@ console.log(selectedWalletType)
           // 处理钱包类型（可能是布尔值或数字）
           const walletType = wallet.type === true || wallet.type === 'true' || wallet.type === 2 ? 2 : (wallet.type === 3 ? 3 : 1)
           
+          // 获取用户ID和头像信息
+          const ownerUserId = wallet.owner_id || wallet.userId || wallet.user_id
+          // 优先使用后端返回的头像，如果没有则使用OSS默认路径
+          const ownerAvatar = wallet.owner_avatar || wallet.avatar ||
+            (ownerUserId ? `https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/person/${ownerUserId}.jpeg` : '')
+
           // 构建社交动态数据
           const socialPost = {
             id: wallet.id,
             wallet_id: wallet.id,
             title: wallet.name || '未命名钱包',
             owner_nickname: wallet.owner_nickname || '匿名用户',
+            owner_id: ownerUserId,
+            owner_avatar: ownerAvatar, // 钱包所有者头像
             total_amount: parseFloat(wallet.balance || 0).toFixed(2),
             tags: walletType === 2 ? ['情感', '情侣', wallet.ai_partner_name || 'AI伴侣'] : (walletType === 3 ? ['生活', '搭子', '攒钱'] : ['生活', '攒钱', '个人']),
             description: this.generateWalletDescription({...wallet, type: walletType}, recentTransactions),
@@ -810,9 +826,9 @@ console.log(selectedWalletType)
               type: walletType,
               backgroundImage: wallet.backgroundImage || wallet.background_image
             }),
-            fansCount: 0, // 新钱包粉丝数为0，从后端获取真实数据
+            fansCount: parseInt(wallet.fansCount) || 0, // 使用后端返回的粉丝数
             participantCount: recentTransactions.length,
-            like_count: 0, // 新钱包点赞数为0，从后端获取真实数据  
+            like_count: 0, // 新钱包点赞数为0，从后端获取真实数据
             comment_count: recentTransactions.length,
             is_liked: false,
             recent_transactions: recentTransactions.slice(0, 2).map(transaction => ({
@@ -821,6 +837,8 @@ console.log(selectedWalletType)
               amount: parseFloat(transaction.amount || 0).toFixed(2),
               type: transaction.type,
               user_nickname: wallet.owner_nickname || '匿名用户',
+              user_avatar: ownerAvatar, // 用户头像
+              user_id: ownerUserId,
               comment: transaction.note || transaction.description || '无备注',
               create_time: this.formatTime(transaction.create_time)
             }))
@@ -982,10 +1000,10 @@ console.log(selectedWalletType)
       currentTab: tab
     })
     
-    // 只在标签页真正切换时才加载数据，避免重复加载
+    // 标签页切换时加载对应的数据
     if (previousTab !== tab) {
-      if (tab === 'social' && !this.data.socialDataLoaded) {
-        // 切换到兜圈圈页面且数据未加载时才加载
+      if (tab === 'social') {
+        // 切换到兜圈圈页面时刷新数据
         this.loadPosts(true)
         this.setData({ socialDataLoaded: true })
       } else if (tab === 'wallet') {
@@ -1135,9 +1153,9 @@ console.log(selectedWalletType)
       if (post) {
         const ownerNickname = encodeURIComponent(post.owner_nickname || '')
         const title = encodeURIComponent(post.title || '')
-        // 确保新钱包的社交数据为0，不传递任何可能的模拟数据
-        const fansCount = 0  // 新钱包粉丝数应该为0
-        const likeCount = 0  // 新钱包获赞数应该为0
+        // 从 post 对象中获取真实的社交数据
+        const fansCount = post.fansCount || 0  // 使用后端返回的粉丝数
+        const likeCount = post.like_count || 0  // 使用后端返回的点赞数
 
         url += `&ownerNickname=${ownerNickname}&title=${title}&fansCount=${fansCount}&likeCount=${likeCount}`
       }

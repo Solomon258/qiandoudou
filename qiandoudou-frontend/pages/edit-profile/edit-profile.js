@@ -163,75 +163,54 @@ Page({
     console.log('开始保存头像，路径:', imagePath)
     this.setData({ isUploadingAvatar: true })
 
-    // 检查是否为网络URL（微信头像）
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      console.log('检测到网络URL，需要先下载到本地')
-      
-      // 处理微信头像URL格式（确保使用HTTPS）
-      let processedUrl = imagePath
-      if (imagePath.startsWith('http://')) {
-        processedUrl = imagePath.replace('http://', 'https://')
-        console.log('转换HTTP为HTTPS:', processedUrl)
-      }
-      
-      // 先下载微信头像到本地
-      wx.downloadFile({
-        url: processedUrl,
-        timeout: 10000, // 设置10秒超时
-        success: (res) => {
-          console.log('微信头像下载成功:', res.tempFilePath)
-          console.log('下载响应状态码:', res.statusCode)
-          
-          // 验证下载的文件
-          wx.getFileInfo({
-            filePath: res.tempFilePath,
-            success: (fileInfo) => {
-              console.log('下载文件信息:', fileInfo)
-              if (fileInfo.size > 0) {
-                // 文件有效，开始上传
-                this.uploadAvatarToOSS(res.tempFilePath)
-              } else {
-                console.error('下载的文件大小为0')
-                this.handleAvatarError('下载的头像文件无效')
-              }
-            },
-            fail: (error) => {
-              console.error('获取文件信息失败:', error)
-              this.handleAvatarError('头像文件验证失败')
-            }
-          })
-        },
-        fail: (error) => {
-          console.error('微信头像下载失败:', error)
-          console.error('错误详情:', JSON.stringify(error))
-          
-          // 根据不同的错误类型给出不同的提示
-          let errorMsg = '头像下载失败'
-          if (error.errMsg) {
-            if (error.errMsg.includes('network')) {
-              errorMsg = '网络连接失败，请检查网络'
-            } else if (error.errMsg.includes('timeout')) {
-              errorMsg = '下载超时，请重试'
-            } else if (error.errMsg.includes('argv error')) {
-              errorMsg = '头像地址无效'
-            }
-          }
-          
-          this.handleAvatarError(errorMsg)
-        }
-      })
-    } else {
-      console.log('本地文件路径，直接上传')
-      // 本地文件，直接上传
-      this.uploadAvatarToOSS(imagePath)
-    }
+    // 无论什么格式的路径，都直接上传到OSS
+    // 包括：本地路径、wxfile格式、临时文件、网络URL等
+    console.log('直接上传头像到OSS，无需下载处理')
+    this.uploadAvatarToOSS(imagePath)
   },
 
   // 上传头像到OSS
   uploadAvatarToOSS(filePath) {
     console.log('上传头像到OSS，文件路径:', filePath)
+
+    // 如果是不完整的URL或特殊格式，先保存为本地文件
+    let finalFilePath = filePath
+    if (filePath.includes('https://tmp') || filePath.includes('wxfile://')) {
+      console.log('检测到特殊格式路径，先保存为本地文件')
+
+      // 对于wxfile://格式或特殊URL，使用saveFile保存
+      wx.saveFile({
+        tempFilePath: filePath,
+        success: (res) => {
+          console.log('文件已保存到本地:', res.savedFilePath)
+          this.performUploadToOSS(res.savedFilePath)
+        },
+        fail: (error) => {
+          console.error('文件保存失败:', error)
+          // 即使保存失败，也尝试直接上传
+          this.performUploadToOSS(filePath)
+        }
+      })
+    } else {
+      // 本地文件路径，直接上传
+      this.performUploadToOSS(filePath)
+    }
+  },
+
+  // 执行上传到OSS
+  performUploadToOSS(filePath) {
+    console.log('执行上传到OSS，最终文件路径:', filePath)
+
+    // 获取用户ID
+    const userId = app.globalData.userInfo?.id || wx.getStorageSync('userInfo')?.id
+    if (!userId) {
+      console.error('无法获取用户ID')
+      this.handleAvatarError('用户信息异常')
+      return
+    }
+
     const { uploadUserImage } = require('../../utils/api.js')
-    uploadUserImage(filePath, 'avatar')
+    uploadUserImage(filePath, 'avatar', userId)
       .then(response => {
         console.log('OSS上传响应:', response)
         if (response.data && response.data.imageUrl) {
@@ -560,10 +539,10 @@ Page({
       this.updateAvatarInfo(avatarUrl)
       return
     }
-    
+
     // 验证和处理微信头像URL
     console.log('原始微信头像URL:', avatarUrl)
-    
+
     // 检查URL是否有效
     if (!avatarUrl || avatarUrl.trim() === '') {
       console.error('微信头像URL为空')
@@ -575,61 +554,11 @@ Page({
       this.setData({ isUploadingAvatar: false })
       return
     }
-    
-    // 处理微信头像URL格式（确保使用HTTPS）
-    let processedUrl = avatarUrl
-    if (avatarUrl.startsWith('http://')) {
-      processedUrl = avatarUrl.replace('http://', 'https://')
-      console.log('转换HTTP为HTTPS:', processedUrl)
-    }
-    
-    // 先下载微信头像到本地
-    console.log('开始下载微信头像:', processedUrl)
-    wx.downloadFile({
-      url: processedUrl,
-      timeout: 10000, // 设置10秒超时
-      success: (downloadRes) => {
-        console.log('微信头像下载成功:', downloadRes.tempFilePath)
-        console.log('下载响应状态码:', downloadRes.statusCode)
-        
-        // 验证下载的文件
-        wx.getFileInfo({
-          filePath: downloadRes.tempFilePath,
-          success: (fileInfo) => {
-            console.log('下载文件信息:', fileInfo)
-            if (fileInfo.size > 0) {
-              // 文件有效，开始上传
-              this.uploadAvatarToOSS(downloadRes.tempFilePath)
-            } else {
-              console.error('下载的文件大小为0')
-              this.handleAvatarError('下载的头像文件无效')
-            }
-          },
-          fail: (error) => {
-            console.error('获取文件信息失败:', error)
-            this.handleAvatarError('头像文件验证失败')
-          }
-        })
-      },
-      fail: (error) => {
-        console.error('微信头像下载失败:', error)
-        console.error('错误详情:', JSON.stringify(error))
-        
-        // 根据不同的错误类型给出不同的提示
-        let errorMsg = '头像下载失败'
-        if (error.errMsg) {
-          if (error.errMsg.includes('network')) {
-            errorMsg = '网络连接失败，请检查网络'
-          } else if (error.errMsg.includes('timeout')) {
-            errorMsg = '下载超时，请重试'
-          } else if (error.errMsg.includes('argv error')) {
-            errorMsg = '头像地址无效'
-          }
-        }
-        
-        this.handleAvatarError(errorMsg)
-      }
-    })
+
+    // 无论什么格式的路径，都直接上传到OSS
+    // 包括：本地路径、wxfile格式、临时文件、网络URL等
+    console.log('直接上传头像到OSS，无需下载处理')
+    this.uploadAvatarToOSS(avatarUrl)
   },
   
   // 处理头像错误的统一方法
@@ -835,6 +764,14 @@ Page({
     if (editType === 'nickname' && !editValue.trim()) {
       wx.showToast({
         title: '昵称不能为空',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (editType === 'nickname' && editValue.length > 12) {
+      wx.showToast({
+        title: '昵称请少于12字',
         icon: 'none'
       })
       return

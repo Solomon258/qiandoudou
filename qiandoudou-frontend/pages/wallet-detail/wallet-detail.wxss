@@ -214,6 +214,22 @@
   opacity: 0.8;
 }
 
+/* 加载状态样式 */
+.follow-btn-image.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  animation: followLoading 1s infinite;
+}
+
+@keyframes followLoading {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 
 
 /* 兼容旧样式 */

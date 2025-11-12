@@ -560,7 +560,7 @@ Page({
         // 上传头像到OSS
         console.log('开始上传头像到OSS...')
         const { uploadUserImage } = require('../../utils/api.js')
-        uploadUserImage(downloadRes.tempFilePath, 'avatar')
+        uploadUserImage(downloadRes.tempFilePath, 'avatar', userId)
           .then(response => {
             console.log('头像上传OSS响应:', response)
             if (response.data && response.data.imageUrl) {

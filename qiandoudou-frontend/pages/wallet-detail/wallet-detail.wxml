@@ -51,9 +51,10 @@
       
       <!-- 关注按钮（在背景图右下角） -->
       <view wx:if="{{fromSocial && !isOwnWallet}}" class="follow-button-corner">
-        <image class="follow-btn-image {{isFollowing ? 'following' : ''}}" 
-               src="{{isFollowing ? 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/已关注.png' : 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/关注.png'}}" 
-               bindtap="toggleFollow"
+        <image class="follow-btn-image {{isFollowing ? 'following' : ''}} {{followLoading ? 'loading' : ''}}"
+               src="{{isFollowing ? 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/已关注.png' : 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/关注.png'}}"
+               bindtap="{{followLoading ? '' : 'toggleFollow'}}"
+               style="{{followLoading ? 'opacity: 0.6; cursor: not-allowed;' : ''}}"
                mode="aspectFit" />
       </view>
       
@@ -414,12 +415,11 @@
       <view class="modal-body">
         <view class="form-item">
           <text class="form-label">钱兜兜名称</text>
-          <input class="form-input" 
-                 type="text" 
-                 placeholder="请输入钱兜兜名称" 
-                 value="{{editingName}}" 
-                 bindinput="onNameInput" 
-                 maxlength="20" />
+          <input class="form-input"
+                 type="text"
+                 placeholder="请输入钱兜兜名称"
+                 value="{{editingName}}"
+                 bindinput="onNameInput" />
         </view>
       </view>
       

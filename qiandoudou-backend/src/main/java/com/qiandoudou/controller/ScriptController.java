@@ -215,4 +215,32 @@ public class ScriptController {
         }
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 更新剧本状态
+     */
+    @PostMapping("/update-status")
+    public ResponseEntity<Map<String, Object>> updateScriptStatus(@RequestBody Map<String, Object> params) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = Long.valueOf(params.get("userId").toString());
+            Long walletId = Long.valueOf(params.get("walletId").toString());
+            Long scriptId = Long.valueOf(params.get("scriptId").toString());
+            Integer status = Integer.valueOf(params.get("status").toString());
+
+            boolean updated = scriptService.updateScriptStatus(userId, walletId, scriptId, status);
+            if (updated) {
+                response.put("code", 200);
+                response.put("message", status == 2 ? "剧本状态已更新为已完成" : "剧本状态已更新");
+            } else {
+                response.put("code", 400);
+                response.put("message", "更新失败，未找到对应的剧本进度");
+            }
+        } catch (Exception e) {
+            log.error("更新剧本状态失败", e);
+            response.put("code", 500);
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
 }
