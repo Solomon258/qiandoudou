@@ -46,3 +46,6 @@ logs/
 
 # WeChat Mini Program
 .tea/
+
+# application.yml中有阿里云信息，提交不少去
+qiandoudou-backend/src/main/resources/application.yml
