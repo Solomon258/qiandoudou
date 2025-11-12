@@ -46,11 +46,11 @@
       {{chapterContent.content}}
     </view>
 
-    <!-- 选项区域 -->
-    <view class="choices-section" wx:if="{{chapterContent.choicesList && chapterContent.choicesList.length > 0}}">
+    <!-- 选项区域（只在章节未完成时显示） -->
+    <view class="choices-section" wx:if="{{chapterContent.choicesList && chapterContent.choicesList.length > 0 && currentChapter === userProgress.currentChapter}}">
       <view class="choices-title">你选择：</view>
       <view class="choices-list">
-        <view wx:for="{{chapterContent.choicesList}}" wx:key="selection" 
+        <view wx:for="{{chapterContent.choicesList}}" wx:key="selection"
               class="choice-item {{selectedChoice == item.selection ? 'selected' : ''}}"
               data-choice="{{item.selection}}" bindtap="selectChoice">
           <view class="choice-text">{{item.selection}}</view>

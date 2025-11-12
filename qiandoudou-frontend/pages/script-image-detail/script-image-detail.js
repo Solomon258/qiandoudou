@@ -139,6 +139,9 @@ Page({
           selectedChoice: null,
           transferButtonEnabled: false,
           showTransferButton: !isLastChapter
+        }, () => {
+          // 加载完章节后更新按钮显示状态
+          this.updateButtonVisibility()
         })
 
       } else {
@@ -161,7 +164,7 @@ Page({
   selectChapter(e) {
     const chapterNumber = parseInt(e.currentTarget.dataset.chapter)
     const currentProgress = this.data.userProgress?.currentChapter || 1
-    
+
     // 检查是否尝试访问未解锁的章节
     if (chapterNumber > currentProgress) {
       wx.showToast({
@@ -171,13 +174,36 @@ Page({
       })
       return
     }
-    
+
     if (chapterNumber !== this.data.currentChapter) {
       this.setData({
         currentChapter: chapterNumber
       })
       this.loadChapterContent(this.data.selectedScript.id, chapterNumber)
     }
+  },
+
+  // 更新按钮显示状态
+  updateButtonVisibility() {
+    const { currentChapter, userProgress, selectedScript } = this.data
+
+    console.log('========== updateButtonVisibility 调用 ==========')
+    console.log('currentChapter:', currentChapter)
+    console.log('userProgress.currentChapter:', userProgress?.currentChapter)
+    console.log('selectedScript.totalChapters:', selectedScript?.totalChapters)
+
+    // 只在以下情况显示按钮：
+    // 当前章节是用户正在进行的章节（currentChapter === userProgress.currentChapter）
+    // 包括最后一集，只要还没完成就显示
+    const isCurrentUnfinishedChapter = currentChapter === userProgress.currentChapter
+
+    console.log('isCurrentUnfinishedChapter:', isCurrentUnfinishedChapter)
+    console.log('showTransferButton 将设置为:', isCurrentUnfinishedChapter)
+    console.log('=========================================')
+
+    this.setData({
+      showTransferButton: isCurrentUnfinishedChapter
+    })
   },
 
   // 选择剧情选项
@@ -247,14 +273,39 @@ Page({
         amount
       )
 
+      console.log('========== processChoice 后端返回数据 ==========')
+      console.log('完整response:', JSON.stringify(response, null, 2))
+      console.log('response.code:', response.code)
+      console.log('response.success:', response.success)
+      console.log('response.isCompleted:', response.isCompleted)
+      console.log('response.nextChapter:', response.nextChapter)
+      console.log('response.message:', response.message)
+      console.log('=========================================')
+
       if (response.code === 200 && response.success) {
         wx.showToast({
           title: response.message,
           icon: 'success'
         })
 
+        console.log('开始处理后端响应逻辑...')
+        console.log('response.isCompleted:', response.isCompleted)
+
+        // 检查是否完成：根据 isCompleted 或 status 字段
+        // status: 2 表示已完成
+        const isScriptCompleted = response.isCompleted === true || response.status === 2
+        console.log('isScriptCompleted:', isScriptCompleted)
+
         // 处理基于nextId的跳转逻辑
-        if (response.isCompleted) {
+        if (isScriptCompleted) {
+          console.log('检测到脚本已完成，开始刷新进度')
+          // 刷新用户进度后显示完成提示
+          try {
+            await this.refreshUserProgress()
+          } catch (error) {
+            console.error('刷新进度失败:', error)
+          }
+
           wx.showModal({
             title: '恭喜',
             content: '您已完成整个剧本！',
@@ -263,23 +314,34 @@ Page({
         } else if (response.nextChapter) {
           // 直接使用后端返回的章节号跳转
           const nextChapterNumber = response.nextChapter
-          
+
           this.setData({
             currentChapter: nextChapterNumber,
             transferButtonEnabled: false
           })
-          
+
           // 加载指定的章节内容
           this.loadChapterContent(this.data.selectedScript.id, nextChapterNumber)
-          
+
           wx.showToast({
             title: `跳转到第${nextChapterNumber}集`,
             icon: 'success'
           })
-        }
 
-        // 刷新用户进度
-        this.refreshUserProgress()
+          // 刷新用户进度
+          try {
+            await this.refreshUserProgress()
+          } catch (error) {
+            console.error('刷新进度失败:', error)
+          }
+        } else {
+          // 其他情况也刷新进度
+          try {
+            await this.refreshUserProgress()
+          } catch (error) {
+            console.error('刷新进度失败:', error)
+          }
+        }
 
       } else {
         throw new Error(response.message || '处理失败')
@@ -296,18 +358,43 @@ Page({
     }
   },
 
-  // 刷新用户进度
-  async refreshUserProgress() {
-    try {
-      const response = await scriptAPI.getUserProgress(this.data.userId, this.data.selectedScript.id, this.data.walletId)
-      if (response.code === 200) {
-        this.setData({
-          userProgress: response.data
-        })
-      }
-    } catch (error) {
+  // 刷新用户进度 - 返回Promise以支持await
+  refreshUserProgress() {
+    return new Promise((resolve, reject) => {
+      try {
+        scriptAPI.getUserProgress(this.data.userId, this.data.selectedScript.id, this.data.walletId)
+          .then(response => {
+            console.log('========== refreshUserProgress 返回数据 ==========')
+            console.log('完整response:', JSON.stringify(response, null, 2))
+            console.log('response.data:', response.data)
+            console.log('currentChapter:', this.data.currentChapter)
+            console.log('=========================================')
 
-    }
+            if (response.code === 200) {
+              console.log('setData 前的 userProgress:', this.data.userProgress)
+              this.setData({
+                userProgress: response.data
+              }, () => {
+                console.log('setData 完成，新的 userProgress:', this.data.userProgress)
+                console.log('currentChapter:', this.data.currentChapter)
+                console.log('调用 updateButtonVisibility()')
+                // 更新进度后重新计算按钮显示状态
+                this.updateButtonVisibility()
+                resolve(response.data)
+              })
+            } else {
+              resolve(null)
+            }
+          })
+          .catch(error => {
+            console.error('刷新用户进度失败:', error)
+            reject(error)
+          })
+      } catch (error) {
+        console.error('刷新用户进度异常:', error)
+        reject(error)
+      }
+    })
   },
 
   // 返回剧本列表页面
