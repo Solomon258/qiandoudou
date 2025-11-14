@@ -196,7 +196,8 @@ Page({
           return {
             ...wallet,
             backgroundStyle: backgroundStyle,
-            textColorStyle: `color: ${textColor};`
+            textColorStyle: `color: ${textColor};`,
+            formattedBalance: this.formatAmount(wallet.balance)
           }
         })).then(walletsWithBackground => {
           this.setData({
@@ -213,7 +214,8 @@ Page({
             return {
               ...wallet,
               backgroundStyle: backgroundStyle,
-              textColorStyle: `color: ${textColor};`
+              textColorStyle: `color: ${textColor};`,
+              formattedBalance: this.formatAmount(wallet.balance)
             }
           })
           this.setData({
@@ -811,6 +813,7 @@ console.log(selectedWalletType)
             (ownerUserId ? `https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/person/${ownerUserId}.jpeg` : '')
 
           // 构建社交动态数据
+          const totalAmount = parseFloat(wallet.balance || 0)
           const socialPost = {
             id: wallet.id,
             wallet_id: wallet.id,
@@ -818,7 +821,8 @@ console.log(selectedWalletType)
             owner_nickname: wallet.owner_nickname || '匿名用户',
             owner_id: ownerUserId,
             owner_avatar: ownerAvatar, // 钱包所有者头像
-            total_amount: parseFloat(wallet.balance || 0).toFixed(2),
+            total_amount: totalAmount.toFixed(2),
+            formattedTotalAmount: totalAmount.toFixed(2),
             tags: walletType === 2 ? ['情感', '情侣', wallet.ai_partner_name || 'AI伴侣'] : (walletType === 3 ? ['生活', '搭子', '攒钱'] : ['生活', '攒钱', '个人']),
             description: this.generateWalletDescription({...wallet, type: walletType}, recentTransactions),
             backgroundStyle: this.getWalletBackgroundSync({
@@ -831,17 +835,21 @@ console.log(selectedWalletType)
             like_count: 0, // 新钱包点赞数为0，从后端获取真实数据
             comment_count: recentTransactions.length,
             is_liked: false,
-            recent_transactions: recentTransactions.slice(0, 2).map(transaction => ({
-              id: transaction.id,
-              description: transaction.description || '无描述',
-              amount: parseFloat(transaction.amount || 0).toFixed(2),
-              type: transaction.type,
-              user_nickname: wallet.owner_nickname || '匿名用户',
-              user_avatar: ownerAvatar, // 用户头像
-              user_id: ownerUserId,
-              comment: transaction.note || transaction.description || '无备注',
-              create_time: this.formatTime(transaction.create_time)
-            }))
+            recent_transactions: recentTransactions.slice(0, 2).map(transaction => {
+              const transactionAmount = parseFloat(transaction.amount || 0)
+              return {
+                id: transaction.id,
+                description: transaction.description || '无描述',
+                amount: transactionAmount.toFixed(2),
+                formattedAmount: transactionAmount.toFixed(2),
+                type: transaction.type,
+                user_nickname: wallet.owner_nickname || '匿名用户',
+                user_avatar: ownerAvatar, // 用户头像
+                user_id: ownerUserId,
+                comment: transaction.note || transaction.description || '无备注',
+                create_time: this.formatTime(transaction.create_time)
+              }
+            })
           }
 
           return socialPost
@@ -1369,5 +1377,36 @@ console.log(selectedWalletType)
       }, 1000)
     }
   },
+
+  /**
+   * 格式化金额为两位小数
+   * @param {number} amount - 金额
+   * @returns {string} - 格式化后的金额字符串
+   */
+  formatAmount(amount) {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0.00'
+    }
+    return parseFloat(amount).toFixed(2)
+  },
+
+  // 跳转到用户个人社交圈主页
+  goToUserProfile(e) {
+    const userId = e.currentTarget.dataset.userId
+    const username = e.currentTarget.dataset.username
+
+    console.log('点击用户头像，跳转到用户主页:', { userId, username })
+
+    if (userId) {
+      wx.navigateTo({
+        url: `/pages/user-social-profile/user-social-profile?userId=${userId}&username=${encodeURIComponent(username || '')}`
+      })
+    } else {
+      wx.showToast({
+        title: '用户信息获取失败',
+        icon: 'none'
+      })
+    }
+  }
 
 })

@@ -21,11 +21,11 @@
     <!-- 用户头像 -->
     <view class="user-avatar-container" bindtap="editProfile">
       <view class="user-avatar">
-        <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}" 
-               class="user-avatar-image" 
-               src="{{userInfo.avatar}}" 
+        <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}"
+               class="user-avatar-image"
+               src="{{userInfo.avatar}}"
                mode="aspectFill"/>
-        <text wx:else class="avatar-text">{{firstWallet && firstWallet.name ? firstWallet.name.charAt(0) : (userInfo.nickname ? userInfo.nickname.charAt(0) : '用')}}</text>
+        <text wx:else class="avatar-text">{{userInfo.nickname ? userInfo.nickname.charAt(0) : '用'}}</text>
       </view>
     </view>
 

@@ -70,6 +70,9 @@
     <!-- 账单流水模块 -->
     <view class="records-section">
       <view wx:for="{{records}}" wx:key="id" class="record-card">
+        <!-- ✅ 用户头像 -->
+        <image wx:if="{{item.userAvatar}}" class="record-avatar" src="{{item.userAvatar}}" mode="aspectFill" />
+
         <view class="record-left">
           <text class="record-title">{{item.typeText}}</text>
           <text class="record-time">{{item.createTime}}</text>

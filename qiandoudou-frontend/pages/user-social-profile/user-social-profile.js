@@ -50,48 +50,14 @@ Page({
   loadUserInfo() {
     const currentUserId = this.data.userId
     const currentUsername = this.data.username
-    
+
     console.log('个人主页加载用户信息, 目标用户ID:', currentUserId, '用户名:', currentUsername)
-    
+
     // 如果有传入的userId且不是当前登录用户，显示对应用户的信息
     if (currentUserId && currentUserId != (app.globalData.userInfo?.id)) {
-      // 这是别人的主页，使用模拟数据或从后端获取
-      const mockUsers = {
-        201: {
-          nickname: '冲动的',
-          description: '一个冲动的投资者，喜欢尝试新的理财方式',
-          avatar: ''
-        },
-        202: {
-          nickname: '足呱呱',
-          description: '专注于日常记账和小额投资',
-          avatar: ''
-        },
-        203: {
-          nickname: '朱敏多',
-          description: '善于发现生活中的小确幸和小收获',
-          avatar: ''
-        }
-      }
-      
-      const targetUserInfo = mockUsers[currentUserId] || {
-        nickname: currentUsername || `用户${currentUserId}`,
-        description: '这个人很懒，什么都没留下',
-        avatar: ''
-      }
-      
-      const displayUserInfo = {
-        nickname: targetUserInfo.nickname,
-        avatar: targetUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
-        description: targetUserInfo.description,
-        hasCustomAvatar: !!(targetUserInfo.avatar && !targetUserInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
-      }
-
-      console.log('显示其他用户的信息:', displayUserInfo)
-      
-      this.setData({
-        userInfo: displayUserInfo
-      })
+      // 这是别人的主页，从后端获取真实的用户信息
+      console.log('加载其他用户信息，从后端获取 userId:', currentUserId)
+      this.loadOtherUserInfoFromServer(currentUserId, currentUsername)
       return
     }
     
@@ -120,10 +86,55 @@ Page({
     }
   },
 
-  // 从服务器加载用户信息
+  // 从服务器加载其他用户的信息
+  loadOtherUserInfoFromServer(userId, defaultUsername) {
+    const { authAPI } = require('../../utils/api.js')
+
+    console.log('从服务器加载用户信息，userId:', userId)
+
+    authAPI.getCurrentUser(userId)
+      .then(result => {
+        const serverUserInfo = result.data
+
+        console.log('服务器返回的用户信息:', serverUserInfo)
+
+        // 设置用户信息
+        const displayUserInfo = {
+          id: serverUserInfo.id || userId,
+          nickname: serverUserInfo.nickname || defaultUsername || '钱兜兜用户',
+          avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+          description: serverUserInfo.description || '这个人很懒，什么都没留下',
+          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
+        }
+
+        console.log('显示用户信息:', displayUserInfo)
+
+        this.setData({
+          userInfo: displayUserInfo
+        })
+      })
+      .catch(error => {
+        console.error('加载用户信息失败:', error)
+
+        // 使用默认用户信息
+        const defaultUserInfo = {
+          id: userId,
+          nickname: defaultUsername || '钱兜兜用户',
+          avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
+          description: '这个人很懒，什么都没留下',
+          hasCustomAvatar: false
+        }
+
+        this.setData({
+          userInfo: defaultUserInfo
+        })
+      })
+  },
+
+  // 从服务器加载当前用户的信息
   loadUserInfoFromServer() {
     const { authAPI } = require('../../utils/api.js')
-    
+
     // 获取当前用户ID，如果没有用户ID则不加载
     const userId = app.globalData.userInfo?.id
     if (!userId) {
@@ -131,12 +142,12 @@ Page({
       return
     }
 
-    
+
     authAPI.getCurrentUser(userId)
       .then(result => {
         const serverUserInfo = result.data
 
-        
+
         // 设置用户信息
         const displayUserInfo = {
           id: serverUserInfo.id || 1,
@@ -145,11 +156,11 @@ Page({
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
           hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
         }
-        
+
         this.setData({
           userInfo: displayUserInfo
         })
-        
+
         // 同步到本地存储和全局数据
         wx.setStorageSync('userInfo', displayUserInfo)
         app.globalData.userInfo = displayUserInfo
@@ -157,7 +168,7 @@ Page({
       })
       .catch(error => {
 
-        
+
         // 使用默认用户信息
         const defaultUserInfo = {
           id: 1,
@@ -166,7 +177,7 @@ Page({
           description: '这个人很懒，什么都没留下',
           hasCustomAvatar: false
         }
-        
+
         this.setData({
           userInfo: defaultUserInfo
         })

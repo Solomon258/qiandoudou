@@ -116,11 +116,14 @@ Page({
     console.log('onShow - 准备刷新数据')
     console.log('- dreamWallet.id:', this.data.dreamWallet.id)
     console.log('- loading:', this.data.loading)
-    
+
     if (this.data.dreamWallet.id && !this.data.loading) {
       console.log('开始刷新梦想钱包数据')
       this.loadDreamWalletDetail(this.data.dreamWallet.id)
     }
+
+    // ✅ 启动相对时间更新定时器
+    this.startTimeUpdateTimer()
   },
 
   /**
@@ -486,25 +489,25 @@ Page({
         const formattedRecords = newRecords.map(record => {
           const isAutoDeposit = record.aiPartnerId || record.autoDeposit
           const isWithdraw = record.type === 2 || record.amount < 0
-          
+
           let typeText = ''
           let type = 'in'
           let amountText = ''
-          
+
           if (isWithdraw) {
             typeText = '主动为梦想支出'
             type = 'out'
-            amountText = `-${Math.abs(record.amount)}`
+            amountText = `-${this.formatAmount(Math.abs(record.amount))}`
           } else if (isAutoDeposit) {
             typeText = '自动为梦想存入'
             type = 'in'
-            amountText = `+${record.amount}`
+            amountText = `+${this.formatAmount(record.amount)}`
           } else {
             typeText = '主动为梦想存入'
             type = 'in'
-            amountText = `+${record.amount}`
+            amountText = `+${this.formatAmount(record.amount)}`
           }
-          
+
           return {
             id: record.id,
             amount: record.amount,
@@ -512,7 +515,9 @@ Page({
             typeText: typeText,
             amountText: amountText,
             createTime: this.formatTime(record.createTime),
-            description: record.description || typeText
+            description: record.description || typeText,
+            _rawCreateTime: record.createTime, // ✅ 保存原始时间戳，用于定期更新相对时间
+            userAvatar: app.globalData.userInfo?.avatar || '' // ✅ 使用页面加载时的用户头像
           }
         })
         
@@ -664,8 +669,8 @@ Page({
    * 格式化金额显示
    */
   formatAmount(amount) {
-    if (!amount && amount !== 0) return '0'
-    return amount.toLocaleString()
+    if (amount === null || amount === undefined || isNaN(amount)) return '0.00'
+    return parseFloat(amount).toFixed(2)
   },
 
   /**
@@ -740,6 +745,14 @@ Page({
     } else {
       return `${year}-${month}-${day}`
     }
+  },
+
+  /**
+   * 生命周期函数--页面卸载时清除定时器
+   */
+  onUnload() {
+    // ✅ 停止相对时间更新定时器，防止内存泄漏
+    this.stopTimeUpdateTimer()
   },
 
   /**
@@ -995,5 +1008,45 @@ Page({
           isFixedTop: false
         })
       }
+  },
+
+  /**
+   * ✅ 启动相对时间更新定时器
+   * 每10秒重新计算一次相对时间（"刚刚"、"5分钟前"等）
+   * 这样即使长时间停留在页面上，时间显示也能准确更新
+   */
+  startTimeUpdateTimer() {
+    // 如果已有定时器，先清除
+    if (this.timeUpdateTimer) {
+      clearInterval(this.timeUpdateTimer)
+    }
+
+    // 每10秒更新一次相对时间
+    this.timeUpdateTimer = setInterval(() => {
+      if (this.data.records && this.data.records.length > 0) {
+        // 重新格式化所有记录的时间
+        const updatedRecords = this.data.records.map(record => ({
+          ...record,
+          // 使用保存的原始时间戳重新计算相对时间
+          createTime: this.formatTime(record._rawCreateTime || record.createTime)
+        }))
+
+        this.setData({ records: updatedRecords })
+      }
+    }, 10000)  // 每10秒更新一次
+
+    console.log('✅ 相对时间更新定时器已启动')
+  },
+
+  /**
+   * ✅ 停止相对时间更新定时器
+   * 页面卸载时调用，防止内存泄漏
+   */
+  stopTimeUpdateTimer() {
+    if (this.timeUpdateTimer) {
+      clearInterval(this.timeUpdateTimer)
+      this.timeUpdateTimer = null
+      console.log('✅ 相对时间更新定时器已停止')
+    }
   }
 })

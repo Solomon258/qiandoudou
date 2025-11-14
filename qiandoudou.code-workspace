@@ -1,0 +1,108 @@
+{
+  "folders": [
+    {
+      "name": "后端 - qiandoudou-backend",
+      "path": "qiandoudou-backend"
+    },
+    {
+      "name": "前端 - qiandoudou-frontend",
+      "path": "qiandoudou-frontend"
+    }
+  ],
+  "settings": {
+    // ========== Java 配置（已更新为新版配置项）==========
+    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk1.8.0_131",
+    "java.configuration.runtimes": [
+      {
+        "name": "JavaSE-1.8",
+        "path": "C:\\Program Files\\Java\\jdk1.8.0_131",
+        "default": true
+      }
+    ],
+    
+    // ========== Maven 配置 ==========
+    "maven.terminal.useJavaHome": true,
+    "maven.executable.path": "",
+    
+    // ========== Spring Boot 配置（也更新为新配置项）==========
+    "spring-boot.ls.java.home": "C:\\Program Files\\Java\\jdk1.8.0_131",
+    
+    // ========== 文件编码 ==========
+    "files.encoding": "utf8",
+    "files.autoGuessEncoding": true,
+    
+    // ========== 编辑器配置 ==========
+    "editor.fontSize": 14,
+    "editor.tabSize": 4,
+    "editor.formatOnSave": false,
+    "editor.minimap.enabled": true,
+    
+    // ========== Java 代码格式化 ==========
+    "[java]": {
+      "editor.defaultFormatter": "redhat.java",
+      "editor.tabSize": 4
+    },
+    
+    // ========== 微信小程序配置 ==========
+    "[wxml]": {
+      "editor.defaultFormatter": "qiu8310.minapp-vscode",
+      "editor.tabSize": 2
+    },
+    "[wxss]": {
+      "editor.tabSize": 2
+    },
+    "[javascript]": {
+      "editor.tabSize": 2
+    },
+    "[json]": {
+      "editor.tabSize": 2
+    },
+    
+    // ========== 文件排除（不显示这些文件夹）==========
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/target": true,
+      "**/.idea": true,
+      "**/*.class": true
+    },
+    
+    // ========== 终端配置 ==========
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.env.windows": {
+      "JAVA_HOME": "C:\\Program Files\\Java\\jdk1.8.0_131"
+    },
+    "java.import.exclusions": [
+      "**/qiandoudou-frontend/**",
+      "**/node_modules/**",
+      "**/.metadata/**",
+      "**/archetype-resources/**",
+      "**/META-INF/maven/**"
+    ],
+    "minapp-vscode.wxToolsPath": "D:/2_installtions/微信web开发者工具/cli.bat"
+  },
+  
+  // ========== 推荐安装的插件 ==========
+  "extensions": {
+    "recommendations": [
+      // Java 相关
+      "vscjava.vscode-java-pack",
+      "vscjava.vscode-spring-boot-dashboard",
+      "redhat.java",
+      
+      // 微信小程序相关
+      "qiu8310.minapp-vscode",
+      "wowbox.minapp-helper",
+      
+      // Git 相关
+      "eamodio.gitlens",
+      
+      // 实用工具
+      "usernamehw.errorlens",
+      "intellsmi.comment-translate",
+      "PKief.material-icon-theme"
+    ]
+  }
+}

@@ -301,8 +301,8 @@
 .count_view {
   /* border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
-  position: absolute;
-  top: 206px;
+  position: relative;
+  top: -12px;
   width: 100%;
 }
 .operation-buttons {
@@ -358,8 +358,7 @@
 
 /* 剧本推广卡片 */
 .script-promotion {
-  margin: 20px 16px 12px 16px;
-  margin-top: 222px;
+  margin: 0px 16px 12px 16px;
 }
 
 .promo-card {
@@ -447,7 +446,7 @@
 /* 账单统计区域 */
 .bill-section {
   background: #ffffff;
-  margin: 12px 16px 20px 16px;
+  margin: 0px 16px 20px 16px;
   border-radius: 12px;
   overflow: hidden;
   /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
@@ -1783,4 +1782,9 @@
   color: #333;
   line-height: 1.5;
   flex: 1;
+}
+.user-avatar-image {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
 }

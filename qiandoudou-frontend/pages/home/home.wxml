@@ -58,7 +58,7 @@
             <image class="share-icon" src="/static/icon/share.svg" mode="aspectFit" />
           </view>
           <view class="wallet-amount">
-            <text class="amount-text">¥ {{item.balance || '0.00'}}</text>
+            <text class="amount-text">¥ {{item.formattedBalance}}</text>
           </view>
 
 
@@ -144,7 +144,7 @@
               <!-- 参与人数 -->
               <view class="participants">{{item.participantCount}}人</view>
             </view>
-            <view class="post-amount">¥{{item.total_amount}}</view>
+            <view class="post-amount">¥{{item.formattedTotalAmount}}</view>
           </view>
 
           <!-- 标签和描述 -->
@@ -156,7 +156,11 @@
           <!-- 最新一笔账单 -->
           <view class="recent-transactions">
             <view wx:if="{{item.recent_transactions && item.recent_transactions.length > 0}}" class="transaction-item">
-              <view class="transaction-user-avatar">
+              <view class="transaction-user-avatar"
+                    bindtap="goToUserProfile"
+                    data-user-id="{{item.owner_id}}"
+                    data-username="{{item.owner_nickname}}"
+                    catchtap="true">
                 <image wx:if="{{item.recent_transactions[0].user_avatar}}"
                        class="avatar-image"
                        src="{{item.recent_transactions[0].user_avatar}}"
@@ -166,7 +170,7 @@
               </view>
               <view class="transaction-content">
                 <text class="transaction-desc">{{item.recent_transactions[0].user_nickname}}：{{item.recent_transactions[0].comment}}</text>
-                <text wx:if="{{item.recent_transactions[0].amount > 0}}" class="amount-change">+¥{{item.recent_transactions[0].amount}}</text>
+                <text wx:if="{{item.recent_transactions[0].amount > 0}}" class="amount-change">+¥{{item.recent_transactions[0].formattedAmount}}</text>
               </view>
             </view>
           </view>

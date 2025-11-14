@@ -680,10 +680,19 @@ public class SocialServiceImpl implements SocialService {
             
             // 处理每个评论，添加AI伴侣信息和语音URL
             for (Map<String, Object> comment : comments) {
+                // 格式化 create_time 字段为字符串格式
+                Object createTimeObj = comment.get("create_time");
+                if (createTimeObj != null) {
+                    String formattedTime = formatCreateTime(createTimeObj);
+                    comment.put("create_time", formattedTime);
+                    comment.put("createTime", formattedTime);
+                    logger.info("评论ID: {} 的创建时间已格式化为: {}", comment.get("id"), formattedTime);
+                }
+
                 Object isAiCommentObj = comment.get("is_ai_comment");
-                boolean isAiComment = isAiCommentObj != null && 
+                boolean isAiComment = isAiCommentObj != null &&
                     (isAiCommentObj.equals(1) || isAiCommentObj.equals(true) || "1".equals(isAiCommentObj.toString()));
-                
+
                 comment.put("isAiComment", isAiComment);
                 
                 if (isAiComment) {
@@ -787,17 +796,61 @@ public class SocialServiceImpl implements SocialService {
             if (existingView > 0) {
                 return; // 已经浏览过，不重复记录
             }
-            
+
             // 记录浏览
             WalletView walletView = new WalletView();
             walletView.setUserId(userId);
             walletView.setWalletId(walletId);
             walletViewMapper.insert(walletView);
-            
+
             System.out.println("用户 " + userId + " 浏览了钱包 " + walletId);
         } catch (Exception e) {
             System.err.println("记录钱包浏览失败: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 格式化 create_time 字段
+     * 处理 LocalDateTime 对象转换为字符串格式（yyyy-MM-dd HH:mm:ss）
+     */
+    private String formatCreateTime(Object createTimeObj) {
+        if (createTimeObj == null) {
+            return null;
+        }
+
+        // 如果已经是字符串，直接返回
+        if (createTimeObj instanceof String) {
+            return (String) createTimeObj;
+        }
+
+        // 如果是 LocalDateTime 对象
+        if (createTimeObj instanceof LocalDateTime) {
+            LocalDateTime localDateTime = (LocalDateTime) createTimeObj;
+            return localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+
+        // 如果是数组（JSON序列化后的LocalDateTime样子），尝试转换
+        if (createTimeObj instanceof java.util.List) {
+            java.util.List<?> list = (java.util.List<?>) createTimeObj;
+            if (list.size() >= 6) {
+                try {
+                    int year = ((Number) list.get(0)).intValue();
+                    int month = ((Number) list.get(1)).intValue();
+                    int dayOfMonth = ((Number) list.get(2)).intValue();
+                    int hour = ((Number) list.get(3)).intValue();
+                    int minute = ((Number) list.get(4)).intValue();
+                    int second = ((Number) list.get(5)).intValue();
+
+                    LocalDateTime dateTime = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second);
+                    return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                } catch (Exception e) {
+                    logger.warn("无法将数组格式的时间转换为字符串: {}", e.getMessage());
+                }
+            }
+        }
+
+        // 其他情况，尝试转换为字符串
+        return createTimeObj.toString();
     }
 }

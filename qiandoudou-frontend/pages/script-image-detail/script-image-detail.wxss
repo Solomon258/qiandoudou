@@ -1,5 +1,6 @@
 /* pages/script-image-detail/script-image-detail.wxss */
 .container {
+  height: 100%;
   padding: 20rpx;
   background: linear-gradient(135deg, #fa6402 0%, #764ba2 100%);
   min-height: 100vh;

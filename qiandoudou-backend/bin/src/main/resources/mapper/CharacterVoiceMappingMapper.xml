@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiandoudou.mapper.CharacterVoiceMappingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.qiandoudou.entity.CharacterVoiceMapping">
+        <id column="id" property="id" />
+        <result column="character_name" property="characterName" />
+        <result column="original_tts_character_name" property="originalTtsCharacterName" />
+        <result column="original_tts_voice_path" property="originalTtsVoicePath" />
+        <result column="volcengine_character_name" property="volcengineCharacterName" />
+        <result column="volcengine_voice_type" property="volcengineVoiceType" />
+        <result column="gender" property="gender" />
+        <result column="voice_style" property="voiceStyle" />
+        <result column="description" property="description" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, character_name, original_tts_character_name, original_tts_voice_path, volcengine_character_name, volcengine_voice_type, gender, voice_style, description, create_time, update_time, deleted
+    </sql>
+
+    <!-- 根据人物名称获取声音配置 -->
+    <select id="getByCharacterName" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM character_voice_mapping
+        WHERE character_name = #{characterName}
+        AND deleted = 0
+        LIMIT 1
+    </select>
+
+</mapper>

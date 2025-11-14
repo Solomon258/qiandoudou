@@ -296,7 +296,8 @@ Page({
         this.setData({
           wallet,
           selectedBackground: wallet.backgroundImage || 'gradient1',
-          isOwnWallet: isOwnWallet
+          isOwnWallet: isOwnWallet,
+          formattedBalance: (wallet.balance || 0).toFixed(2)
         })
 
         console.log('=== setData 后的状态 ===')
@@ -380,6 +381,7 @@ Page({
             createTime: formattedTime,
             create_time: formattedTime,
             amount: parseFloat(transaction.amount).toFixed(2),
+            formattedAmount: parseFloat(transaction.amount).toFixed(2),
             subtitle: subtitle, // 副标题（灰色显示，如"转入"）
             category: subtitle,
             // AI伴侣相关数据
@@ -3519,6 +3521,124 @@ Page({
       },
       fail: (error) => {
         console.error('获取章节信息失败:', error)
+      }
+    })
+  },
+
+  // 标签切换
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab
+    this.setData({
+      activeTab: tab
+    })
+
+    // 如果切换到统计标签，加载统计数据
+    if (tab === 'stats') {
+      this.loadMonthlyStats()
+    }
+  },
+
+  // 月份选择器变化
+  onMonthChange(e) {
+    const date = new Date(e.detail.value)
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+
+    this.setData({
+      currentYear: year,
+      currentMonth: month,
+      currentDate: e.detail.value
+    })
+
+    // 重新加载该月的统计数据
+    this.loadMonthlyStats()
+  },
+
+  // 加载月度统计数据
+  loadMonthlyStats() {
+    const walletId = this.data.walletId
+    const { currentYear, currentMonth } = this.data
+
+    if (!walletId) {
+      console.error('钱包ID不存在')
+      return
+    }
+
+    this.setData({ statsLoading: true })
+
+    console.log(`加载${currentYear}年${currentMonth}月的统计数据`)
+
+    wx.request({
+      url: `${app.globalData.baseUrl}/wallet/monthly-stats`,
+      method: 'GET',
+      data: {
+        walletId,
+        year: currentYear,
+        month: currentMonth
+      },
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      success: (res) => {
+        console.log('统计数据响应:', res)
+
+        if (res.data && res.data.code === 200 && res.data.data) {
+          const stats = res.data.data
+
+          // 格式化统计数据
+          const formattedStats = {
+            monthlyIncome: (stats.monthlyIncome || 0).toFixed(2),
+            monthlyExpense: (stats.monthlyExpense || 0).toFixed(2),
+            monthlyProfit: (stats.monthlyProfit || 0).toFixed(2),
+            transactionCount: stats.transactionCount || 0,
+            formattedIncome: (stats.monthlyIncome || 0).toFixed(2),
+            formattedExpense: (stats.monthlyExpense || 0).toFixed(2),
+            formattedProfit: (stats.monthlyProfit || 0).toFixed(2)
+          }
+
+          this.setData({
+            monthlyStats: formattedStats,
+            statsLoading: false
+          })
+
+          console.log('统计数据已更新:', formattedStats)
+        } else {
+          console.error('统计数据格式错误:', res)
+          // 设置默认值
+          this.setData({
+            monthlyStats: {
+              monthlyIncome: '0.00',
+              monthlyExpense: '0.00',
+              monthlyProfit: '0.00',
+              transactionCount: 0,
+              formattedIncome: '0.00',
+              formattedExpense: '0.00',
+              formattedProfit: '0.00'
+            },
+            statsLoading: false
+          })
+        }
+      },
+      fail: (error) => {
+        console.error('加载统计数据失败:', error)
+        wx.showToast({
+          title: '加载统计数据失败',
+          icon: 'none'
+        })
+
+        // 设置默认值
+        this.setData({
+          monthlyStats: {
+            monthlyIncome: '0.00',
+            monthlyExpense: '0.00',
+            monthlyProfit: '0.00',
+            transactionCount: 0,
+            formattedIncome: '0.00',
+            formattedExpense: '0.00',
+            formattedProfit: '0.00'
+          },
+          statsLoading: false
+        })
       }
     })
   }

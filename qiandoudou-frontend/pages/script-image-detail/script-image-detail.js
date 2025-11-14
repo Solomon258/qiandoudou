@@ -84,18 +84,28 @@ Page({
     try {
       const response = await scriptAPI.getChapterContent(scriptId, chapterNumber, this.data.userId, this.data.walletId)
 
-      
+      console.log('========== loadChapterContent 后端返回 ==========')
+      console.log('chapterNumber:', chapterNumber)
+      console.log('完整response:', JSON.stringify(response, null, 2))
+      console.log('=========================================')
+
       if (response.code === 200) {
         const responseData = response.data
         let chapterData = null
-        
+
         // 处理新的数据结构：可能是直接的章节数据，也可能是包含chapter和userProgress的对象
         if (responseData.chapter) {
           // 新的数据结构
           chapterData = responseData.chapter
-          
+
           // 如果有用户进度数据，更新状态
           if (responseData.userProgress) {
+            console.log('========== 收到 userProgress 更新 ==========')
+            console.log('userProgress:', JSON.stringify(responseData.userProgress, null, 2))
+            console.log('userProgress.currentChapter:', responseData.userProgress.currentChapter)
+            console.log('userProgress.status:', responseData.userProgress.status)
+            console.log('=========================================')
+
             this.setData({
               userProgress: responseData.userProgress
             })
@@ -105,7 +115,7 @@ Page({
           // 兼容旧的数据结构
           chapterData = responseData
         }
-        
+
         // 检查章节数据是否存在
         if (!chapterData) {
 
@@ -115,7 +125,7 @@ Page({
           })
           return
         }
-        
+
         // 解析choices JSON
         let choicesList = []
         if (chapterData.choices) {
@@ -126,14 +136,21 @@ Page({
             choicesList = []
           }
         }
-        
+
         chapterData.choicesList = choicesList
 
-        
+
         // 检查是否为最后一集（没有选项或所有选项的nextId都为null）
-        const isLastChapter = !choicesList || choicesList.length === 0 || 
+        const isLastChapter = !choicesList || choicesList.length === 0 ||
                             choicesList.every(choice => choice.nextId === null || choice.nextId === undefined)
-        
+
+        console.log('========== 章节加载分析 ==========')
+        console.log('currentChapter:', chapterNumber)
+        console.log('isLastChapter:', isLastChapter)
+        console.log('choicesList:', choicesList)
+        console.log('showTransferButton 将设置为:', !isLastChapter)
+        console.log('=========================================')
+
         this.setData({
           chapterContent: chapterData,
           selectedChoice: null,
@@ -190,12 +207,12 @@ Page({
     console.log('========== updateButtonVisibility 调用 ==========')
     console.log('currentChapter:', currentChapter)
     console.log('userProgress.currentChapter:', userProgress?.currentChapter)
+    console.log('userProgress.status:', userProgress?.status)
     console.log('selectedScript.totalChapters:', selectedScript?.totalChapters)
 
     // 只在以下情况显示按钮：
-    // 当前章节是用户正在进行的章节（currentChapter === userProgress.currentChapter）
-    // 包括最后一集，只要还没完成就显示
-    const isCurrentUnfinishedChapter = currentChapter === userProgress.currentChapter
+    // 当前章节是用户正在进行的章节（currentChapter === userProgress.currentChapter）且状态不是已完成(status !== 2)
+    const isCurrentUnfinishedChapter = currentChapter === userProgress.currentChapter && userProgress.status !== 2
 
     console.log('isCurrentUnfinishedChapter:', isCurrentUnfinishedChapter)
     console.log('showTransferButton 将设置为:', isCurrentUnfinishedChapter)
@@ -278,6 +295,7 @@ Page({
       console.log('response.code:', response.code)
       console.log('response.success:', response.success)
       console.log('response.isCompleted:', response.isCompleted)
+      console.log('response.status:', response.status)
       console.log('response.nextChapter:', response.nextChapter)
       console.log('response.message:', response.message)
       console.log('=========================================')
@@ -288,13 +306,16 @@ Page({
           icon: 'success'
         })
 
-        console.log('开始处理后端响应逻辑...')
+        console.log('========== processChoice 响应处理 ==========')
         console.log('response.isCompleted:', response.isCompleted)
+        console.log('response.status:', response.status)
 
         // 检查是否完成：根据 isCompleted 或 status 字段
         // status: 2 表示已完成
         const isScriptCompleted = response.isCompleted === true || response.status === 2
         console.log('isScriptCompleted:', isScriptCompleted)
+        console.log('=========================================')
+
 
         // 处理基于nextId的跳转逻辑
         if (isScriptCompleted) {
