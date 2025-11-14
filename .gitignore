@@ -49,3 +49,11 @@ logs/
 
 # application.yml中有阿里云信息，提交不少去
 qiandoudou-backend/src/main/resources/application.yml
+
+# 忽略编译目录
+**/bin/
+**/target/
+
+# 忽略配置文件中的敏感信息
+**/application.yml
+**/application-*.yml
