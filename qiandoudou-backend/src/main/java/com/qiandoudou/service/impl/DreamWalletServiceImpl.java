@@ -540,7 +540,14 @@ public class DreamWalletServiceImpl implements DreamWalletService {
             if (itemName != null) {
                 List<String> progressImages = dreamImageConfigService.getProgressImages(1, itemName);
                 if (progressImages != null && !progressImages.isEmpty()) {
-                    // 根据进度百分比选择对应的图片（0-20%返回第1张，20-40%返回第2张，以此类推）
+                    // 根据进度百分比选择对应的图片
+                    // progressImages[0]: part1 (0-20%)
+                    // progressImages[1]: part2 (20-40%)
+                    // progressImages[2]: part3 (40-60%)
+                    // progressImages[3]: part4 (60-80%)
+                    // progressImages[4]: part5 (80-100%)
+                    // progressImages[5]: part6 (100%)
+                    if (progress >= 100) return progressImages.get(5);
                     if (progress >= 80) return progressImages.get(4);
                     if (progress >= 60) return progressImages.get(3);
                     if (progress >= 40) return progressImages.get(2);

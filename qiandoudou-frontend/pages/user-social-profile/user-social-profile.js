@@ -64,18 +64,34 @@ Page({
     // 这是自己的主页，显示当前登录用户信息
     const userInfo = wx.getStorageSync('userInfo') || app.globalData.userInfo
     console.log('个人主页加载自己的用户信息:', userInfo)
-    
+
     if (userInfo) {
       // 有本地用户信息，直接使用
+      // 判断是否是AI伴侣
+      const isAiPartner = !!(userInfo.aiPartnerAvatar || userInfo.ai_partner_avatar || userInfo.isAiPartner)
+
+      console.log('【user-social-profile loadUserInfo】处理本地用户信息:', {
+        nickname: userInfo.nickname,
+        avatar: userInfo.avatar,
+        aiPartnerAvatar: userInfo.aiPartnerAvatar,
+        ai_partner_avatar: userInfo.ai_partner_avatar,
+        isAiPartner: userInfo.isAiPartner,
+        computedIsAiPartner: isAiPartner,
+        fullUserInfo: userInfo
+      })
+
       const displayUserInfo = {
         nickname: userInfo.nickname || '钱兜兜用户',
         avatar: userInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
         description: userInfo.description || '这个人很懒，什么都没留下',
-        hasCustomAvatar: !!(userInfo.avatar && !userInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png'))
+        hasCustomAvatar: !!(userInfo.avatar && !userInfo.avatar.includes('53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png')),
+        // AI伴侣相关字段
+        isAiPartner: isAiPartner,
+        aiPartnerAvatar: userInfo.aiPartnerAvatar || userInfo.ai_partner_avatar
       }
 
       console.log('个人主页显示的用户信息:', displayUserInfo)
-      
+
       this.setData({
         userInfo: displayUserInfo
       })
@@ -98,13 +114,19 @@ Page({
 
         console.log('服务器返回的用户信息:', serverUserInfo)
 
+        // 判断是否是AI伴侣（通过是否有 aiPartnerAvatar 或 ai_partner_avatar 字段）
+        const isAiPartner = !!(serverUserInfo.aiPartnerAvatar || serverUserInfo.ai_partner_avatar || serverUserInfo.isAiPartner)
+
         // 设置用户信息
         const displayUserInfo = {
           id: serverUserInfo.id || userId,
           nickname: serverUserInfo.nickname || defaultUsername || '钱兜兜用户',
           avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
-          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
+          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http')),
+          // AI伴侣相关字段
+          isAiPartner: isAiPartner,
+          aiPartnerAvatar: serverUserInfo.aiPartnerAvatar || serverUserInfo.ai_partner_avatar
         }
 
         console.log('显示用户信息:', displayUserInfo)
@@ -122,7 +144,9 @@ Page({
           nickname: defaultUsername || '钱兜兜用户',
           avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: '这个人很懒，什么都没留下',
-          hasCustomAvatar: false
+          hasCustomAvatar: false,
+          isAiPartner: false,
+          aiPartnerAvatar: null
         }
 
         this.setData({
@@ -147,6 +171,8 @@ Page({
       .then(result => {
         const serverUserInfo = result.data
 
+        // 判断是否是AI伴侣（通过是否有 aiPartnerAvatar 或 ai_partner_avatar 字段）
+        const isAiPartner = !!(serverUserInfo.aiPartnerAvatar || serverUserInfo.ai_partner_avatar || serverUserInfo.isAiPartner)
 
         // 设置用户信息
         const displayUserInfo = {
@@ -154,7 +180,10 @@ Page({
           nickname: serverUserInfo.nickname || '钱兜兜用户',
           avatar: serverUserInfo.avatar || 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: serverUserInfo.description || '这个人很懒，什么都没留下',
-          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http'))
+          hasCustomAvatar: !!(serverUserInfo.avatar && serverUserInfo.avatar.startsWith('http')),
+          // AI伴侣相关字段
+          isAiPartner: isAiPartner,
+          aiPartnerAvatar: serverUserInfo.aiPartnerAvatar || serverUserInfo.ai_partner_avatar
         }
 
         this.setData({
@@ -175,7 +204,9 @@ Page({
           nickname: '钱兜兜用户',
           avatar: 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/include_images/53EAEFAA-39B8-4E6C-B88C-1DB241C01C23.png',
           description: '这个人很懒，什么都没留下',
-          hasCustomAvatar: false
+          hasCustomAvatar: false,
+          isAiPartner: false,
+          aiPartnerAvatar: null
         }
 
         this.setData({

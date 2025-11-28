@@ -18,14 +18,21 @@
 
   <!-- 用户信息区域 -->
   <view class="user-info-section">
-    <!-- 用户头像 -->
+    <!-- 用户头像或AI伴侣头像 -->
     <view class="user-avatar-container" bindtap="editProfile">
       <view class="user-avatar">
-        <image wx:if="{{userInfo.hasCustomAvatar && userInfo.avatar}}"
+        <!-- AI伴侣头像 -->
+        <image wx:if="{{userInfo.isAiPartner && userInfo.aiPartnerAvatar}}"
+               class="user-avatar-image"
+               src="{{userInfo.aiPartnerAvatar}}"
+               mode="aspectFill"/>
+        <!-- 用户自定义头像 -->
+        <image wx:elif="{{!userInfo.isAiPartner && userInfo.hasCustomAvatar && userInfo.avatar}}"
                class="user-avatar-image"
                src="{{userInfo.avatar}}"
                mode="aspectFill"/>
-        <text wx:else class="avatar-text">{{userInfo.nickname ? userInfo.nickname.charAt(0) : '用'}}</text>
+        <!-- 首字母显示 -->
+        <text wx:else class="avatar-text">{{userInfo.isAiPartner ? (userInfo.nickname ? userInfo.nickname.charAt(0) : 'A') : (userInfo.nickname ? userInfo.nickname.charAt(0) : '用')}}</text>
       </view>
     </view>
 

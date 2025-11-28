@@ -3,23 +3,30 @@
   min-height: 100vh;
   background: #f5f5f5;
 }
+.container::-webkit-scrollbar {
+  display: none;
+}
 
 /* 顶部导航栏 */
 .top-nav {
   display: flex;
   align-items: center;
+  align-content: center;
   justify-content: space-between;
   padding: 88rpx 32rpx 32rpx 32rpx; /* 考虑状态栏高度 */
   background: #ffffff;
   border-bottom: 1rpx solid #f0f0f0;
-  position: relative;
+  position: fixed;
+  height: 214rpx;
+  width: 100%;
   z-index: 10;
+  box-sizing: border-box;
 }
 
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  align-content: center;
 }
 
 .back-icon {
@@ -27,15 +34,18 @@
   height: 96rpx;
   display: flex;
   align-items: center;
+  align-content: center;
   justify-content: center;
 }
 
 .back-icon::after {
   content: '‹';
   font-size: 96rpx;
+  display: flex;
   color: #000000e6;
   font-weight: 300;
   margin-left: -12rpx;
+  margin-top: -20rpx;
 }
 
 .nav-title {
@@ -83,9 +93,8 @@
 
 /* 消息列表 */
 .messages-list {
-  padding: 0;
+  padding: 214rpx 0 0 0;
 }
-
 /* 消息项 */
 .message-item {
   display: flex;
@@ -104,6 +113,8 @@
 .user-avatar-container {
   margin-right: 24rpx;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .user-avatar {

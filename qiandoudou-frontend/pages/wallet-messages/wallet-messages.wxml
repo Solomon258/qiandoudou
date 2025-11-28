@@ -10,7 +10,7 @@
   </view>
 
   <!-- 消息列表 -->
-  <view class="messages-list">
+  <scroll-view scroll-y="true" class="messages-list">
     <!-- 加载状态 -->
     <view wx:if="{{loading}}" class="loading-container">
       <view class="loading-spinner"></view>
@@ -19,15 +19,23 @@
 
     <!-- 消息项 -->
     <view wx:for="{{messages}}" wx:key="id" class="message-item" bindtap="onMessageTap" data-message="{{item}}">
-      <!-- 左侧用户头像 -->
+      <!-- 左侧用户头像或AI伴侣头像 -->
       <view class="user-avatar-container">
         <view class="user-avatar">
-          <image wx:if="{{item.user.avatar && item.user.avatar !== 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/default_avatar.png'}}"
+          <!-- AI伴侣头像 -->
+          <image wx:if="{{item.isAiTransaction && item.aiPartnerAvatar && item.aiPartnerAvatar !== 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/default_avatar.png'}}"
+                 class="avatar-image"
+                 src="{{item.aiPartnerAvatar}}"
+                 mode="aspectFill"
+                 onerror="handleImageError"/>
+          <!-- 用户自定义头像 -->
+          <image wx:elif="{{!item.isAiTransaction && item.user.avatar && item.user.avatar !== 'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/default_avatar.png'}}"
                  class="avatar-image"
                  src="{{item.user.avatar}}"
                  mode="aspectFill"
                  onerror="handleImageError"/>
-          <text wx:else class="avatar-text">{{item.user.nickname ? item.user.nickname.charAt(0) : '用'}}</text>
+          <!-- 首字母显示 -->
+          <text wx:else class="avatar-text">{{item.isAiTransaction ? (item.aiPartnerName ? item.aiPartnerName.charAt(0) : 'A') : (item.user.nickname ? item.user.nickname.charAt(0) : '用')}}</text>
         </view>
       </view>
 
@@ -65,5 +73,5 @@
       <text class="empty-text">暂无互动消息</text>
       <text class="empty-desc">当有用户关注、点赞或评论你的钱兜兜时，消息会显示在这里</text>
     </view>
-  </view>
+  </scroll-view>
 </view>

@@ -50,18 +50,21 @@ public interface WalletMapper extends BaseMapper<Wallet> {
             "(" +
             "  SELECT JSON_ARRAYAGG(" +
             "    JSON_OBJECT(" +
-            "      'id', t.id, " +
-            "      'description', t.description, " +
-            "      'amount', t.amount, " +
-            "      'type', t.type, " +
-            "      'create_time', t.create_time, " +
-            "      'note', t.note" +
+            "      'id', t2.id, " +
+            "      'description', t2.description, " +
+            "      'amount', t2.amount, " +
+            "      'type', t2.type, " +
+            "      'create_time', t2.create_time, " +
+            "      'note', t2.note" +
             "    )" +
             "  ) " +
-            "  FROM transactions t " +
-            "  WHERE t.wallet_id = w.id AND t.deleted = 0 " +
-            "  ORDER BY t.create_time DESC " +
-            "  LIMIT 2" +
+            "  FROM (" +
+            "    SELECT t.id, t.description, t.amount, t.type, t.create_time, t.note " +
+            "    FROM transactions t " +
+            "    WHERE t.wallet_id = w.id AND t.deleted = 0 " +
+            "    ORDER BY t.create_time DESC " +
+            "    LIMIT 2" +
+            "  ) t2" +
             ") as recent_transactions " +
             "FROM wallets w " +
             "LEFT JOIN users u ON w.user_id = u.id " +

@@ -625,14 +625,19 @@ Page({
         if (result && result.data && result.data.length > 0) {
           const progressImages = result.data
           // 根据进度百分比选择对应的图片
-          // part0: 0-20%, part1: 20-40%, part2: 40-60%, part3: 60-80%, part4: 80-100%, part5: 100%
+          // progressImages[0]: part1 (0-20%)
+          // progressImages[1]: part2 (20-40%)
+          // progressImages[2]: part3 (40-60%)
+          // progressImages[3]: part4 (60-80%)
+          // progressImages[4]: part5 (80-100%)
+          // progressImages[5]: part6 (100%)
           let selectedImage
-          if (progress >= 100) selectedImage = progressImages[5]  // >= 100% 时返回 part5
-          else if (progress >= 80) selectedImage = progressImages[4]  // >= 80% && < 100% 时返回 part4
-          else if (progress >= 60) selectedImage = progressImages[3]  // >= 60% && < 80% 时返回 part3
-          else if (progress >= 40) selectedImage = progressImages[2]  // >= 40% && < 60% 时返回 part2
-          else if (progress >= 20) selectedImage = progressImages[1]  // >= 20% && < 40% 时返回 part1
-          else selectedImage = progressImages[0]  // < 20% 时返回 part0
+          if (progress >= 100) selectedImage = progressImages[5]  // >= 100% 时返回 part6
+          else if (progress >= 80) selectedImage = progressImages[4]  // >= 80% && < 100% 时返回 part5
+          else if (progress >= 60) selectedImage = progressImages[3]  // >= 60% && < 80% 时返回 part4
+          else if (progress >= 40) selectedImage = progressImages[2]  // >= 40% && < 60% 时返回 part3
+          else if (progress >= 20) selectedImage = progressImages[1]  // >= 20% && < 40% 时返回 part2
+          else selectedImage = progressImages[0]  // < 20% 时返回 part1
 
           console.log('选中的图片:', selectedImage, '图片索引:', progressImages.indexOf(selectedImage))
           return selectedImage

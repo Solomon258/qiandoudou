@@ -11,7 +11,7 @@
     <view class="share-card">
     <!-- 汽车图片 -->
     <view class="car-image-container">
-      <image class="car-image" src="{{carImageUrl}}" mode="aspectFill" />
+      <image class="car-image" src="{{carImageUrl}}" mode="aspectFill"/>
     </view>
 
     <!-- 梦想信息 -->
@@ -23,7 +23,7 @@
 
     <!-- 激励文案 -->
     <view class="motivation-text">
-      <text class="motivation">攒钱冲目标！{{badgeProgress}}% 稳稳拿下，每一笔储蓄都在向心仪好物"小跑靠近"，这执行力太绝～</text>
+      <text class="motivation">攒钱冲目标！{{badgeProgress}}% 稳稳拿下。</text>
     </view>
 
     <!-- 日期 -->

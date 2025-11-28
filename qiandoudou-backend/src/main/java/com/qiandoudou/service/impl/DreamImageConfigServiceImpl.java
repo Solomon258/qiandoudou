@@ -62,20 +62,20 @@ public class DreamImageConfigServiceImpl extends ServiceImpl<DreamImageConfigMap
 
         String baseUrl = config.getProgressImageBaseUrl();
 
-        // 生成5张进度图片的URL，分别对应20%、40%、60%、80%、100%
+        // 生成6张进度图片的URL，分别对应0-20%、20-40%、40-60%、60-80%、80-100%、100%
         // 支持三种格式：
         // 1. 包含 {{partX}} 模板变量的：https://oss.../image/dream/goods/car/{{partX}}.png
         // 2. 包含 {progress} 占位符的（兼容旧格式）：/static/icon/progress/progress-camera-{progress}.png
         // 3. 以 / 结尾的目录（兼容旧格式）：/static/icon/progress/progress-camera/
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 6; i++) {
             String imageUrl;
 
             if (baseUrl.contains("{{partX}}")) {
-                // 格式1：替换 {{partX}} 模板变量为实际进度编号（part1, part2, ..., part5）
+                // 格式1：替换 {{partX}} 模板变量为实际进度编号（part1, part2, ..., part6）
                 imageUrl = baseUrl.replace("{{partX}}", "part" + i);
                 log.debug("使用{{partX}}模板格式，第{}张图片: {}", i, imageUrl);
             } else if (baseUrl.contains("{progress}")) {
-                // 格式2：替换 {progress} 占位符为实际进度编号（1-5）
+                // 格式2：替换 {progress} 占位符为实际进度编号（1-6）
                 imageUrl = baseUrl.replace("{progress}", String.valueOf(i));
                 log.debug("使用{{progress}}占位符格式，第{}张图片: {}", i, imageUrl);
             } else {

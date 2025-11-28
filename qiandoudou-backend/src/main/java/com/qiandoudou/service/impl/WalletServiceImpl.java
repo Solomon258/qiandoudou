@@ -268,16 +268,47 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     public Map<String, Object> getPublicWallets(Integer page, Integer size) {
         // 计算偏移量
         int offset = (page - 1) * size;
-        
+
         // 获取分页数据
         List<Map<String, Object>> wallets = baseMapper.getPublicWalletsWithRecentTransactions(offset, size);
-        
+
+        // 处理每个钱包的最新交易，确保按时间倒序排列
+        for (Map<String, Object> wallet : wallets) {
+            Object recentTransactionsObj = wallet.get("recent_transactions");
+            if (recentTransactionsObj != null && recentTransactionsObj instanceof String) {
+                try {
+                    // 解析JSON数组
+                    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    List<Map<String, Object>> transactions = objectMapper.readValue(
+                        (String) recentTransactionsObj,
+                        new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {}
+                    );
+
+                    // 按create_time倒序排序（最新的在前）
+                    if (transactions != null && !transactions.isEmpty()) {
+                        transactions.sort((t1, t2) -> {
+                            String time1 = (String) t1.get("create_time");
+                            String time2 = (String) t2.get("create_time");
+                            if (time1 == null || time2 == null) return 0;
+                            return time2.compareTo(time1); // 倒序
+                        });
+
+                        // 将排序后的数组重新转换为JSON字符串
+                        String sortedJson = objectMapper.writeValueAsString(transactions);
+                        wallet.put("recent_transactions", sortedJson);
+                    }
+                } catch (Exception e) {
+                    logger.warn("解析或排序recent_transactions失败: {}", e.getMessage());
+                }
+            }
+        }
+
         // 获取总数
         Long total = baseMapper.getPublicWalletsCount();
-        
+
         // 计算是否还有更多数据
         boolean hasMore = (long) offset + size < total;
-        
+
         // 构建返回结果
         Map<String, Object> result = new HashMap<>();
         result.put("list", wallets);
@@ -285,7 +316,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         result.put("page", page);
         result.put("size", size);
         result.put("hasMore", hasMore);
-        
+
         return result;
     }
 

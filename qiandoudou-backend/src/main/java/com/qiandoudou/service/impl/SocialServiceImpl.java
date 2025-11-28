@@ -400,6 +400,19 @@ public class SocialServiceImpl implements SocialService {
                 }
                 message.put("type", typeText); // 前端使用的是type字段
                 
+                // 处理AI伴侣信息 - 添加 AI 伴侣头像支持
+                Long aiPartnerId = (Long) message.get("ai_partner_id");
+                String aiPartnerName = (String) message.get("ai_partner_name");
+                String aiPartnerAvatar = (String) message.get("ai_partner_avatar");
+
+                // 如果有AI伴侣信息，则添加到消息中
+                if (aiPartnerId != null) {
+                    message.put("ai_partner_id", aiPartnerId);
+                    message.put("ai_partner_name", aiPartnerName);
+                    message.put("ai_partner_avatar", aiPartnerAvatar);
+                    System.out.println("【后端API】添加AI伴侣信息: id=" + aiPartnerId + ", name=" + aiPartnerName + ", avatar=" + aiPartnerAvatar);
+                }
+
                 // 处理用户信息
                 Map<String, Object> user = new HashMap<>();
                 user.put("id", message.get("sender_id"));
@@ -426,7 +439,7 @@ public class SocialServiceImpl implements SocialService {
                 }
                 user.put("avatar", avatar);
                 message.put("user", user);
-                
+
                 // 处理时间格式
                 Object createTimeObj = message.get("create_time");
                 if (createTimeObj != null) {

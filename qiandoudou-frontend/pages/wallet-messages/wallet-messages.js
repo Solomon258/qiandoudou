@@ -30,7 +30,8 @@ Page({
   // 加载互动消息
   loadMessages() {
     const userId = app.globalData.userInfo?.id
-    if (!userId) {
+    if (!userId) {
+
       this.setData({ loading: false })
       return
     }
@@ -46,9 +47,11 @@ Page({
           messages: this.data.currentPage === 1 ? processedMessages : [...this.data.messages, ...processedMessages],
           loading: false,
           hasMore: messages.length >= 20 // 假设每页20条
-        })
+        })
+
       })
-      .catch(error => {
+      .catch(error => {
+
         
         this.setData({
           messages: [],
@@ -71,9 +74,30 @@ Page({
         }
       }
 
+      // 判断是否是AI伴侣交易（只要有ai_partner_id就认为是AI交易）
+      const isAiTransaction = !!(message.ai_partner_id || message.aiPartnerId)
+      const aiPartnerAvatar = message.ai_partner_avatar || message.aiPartnerAvatar
+      const aiPartnerName = message.ai_partner_name || message.aiPartnerName
+
+      console.log('【wallet-messages processMessages】处理消息:', {
+        messageId: message.id,
+        type: message.type,
+        isAiPartner: message.isAiPartner,
+        ai_partner_id: message.ai_partner_id,
+        aiPartnerId: message.aiPartnerId,
+        isAiTransaction: isAiTransaction,
+        aiPartnerAvatar: aiPartnerAvatar,
+        aiPartnerName: aiPartnerName,
+        userName: message.user?.nickname,
+        fullMessage: message
+      })
+
       return {
         ...message,
         timeText: this.formatTime(message.createdAt || message.timestamp),
+        isAiTransaction: isAiTransaction,
+        aiPartnerAvatar: aiPartnerAvatar,
+        aiPartnerName: aiPartnerName,
         user: {
           ...message.user,
           nickname: nickname,
@@ -138,7 +162,8 @@ Page({
 
   // 点击消息项
   onMessageTap(e) {
-    const message = e.currentTarget.dataset.message
+    const message = e.currentTarget.dataset.message
+
     
     if (message.walletId) {
       // 跳转到对应的钱包详情页
@@ -172,9 +197,11 @@ Page({
     }
 
     walletAPI.markMessagesAsRead(userId)
-      .then(result => {
+      .then(result => {
+
       })
-      .catch(error => {
+      .catch(error => {
+
       })
   }
 })

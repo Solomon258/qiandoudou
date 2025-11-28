@@ -23,16 +23,23 @@ public interface NotificationMapper extends BaseMapper<Notification> {
     @Select("SELECT n.id, n.user_id, n.sender_id, CAST(n.type AS UNSIGNED) as type, n.title, n.content, " +
             "n.related_id, n.wallet_id, n.transaction_id, n.post_image, " +
             "n.is_read, n.create_time, n.update_time, " +
-            "u.nickname as sender_nickname, u.avatar as sender_avatar, " +
-            "w.name as wallet_name " +
+            "COALESCE(u.nickname, bc.name, ap_sender.name) as sender_nickname, " +
+            "COALESCE(u.avatar, bc.avatar, ap_sender.avatar) as sender_avatar, " +
+            "w.name as wallet_name, " +
+            "t.ai_partner_id, t.ai_partner_name, " +
+            "COALESCE(t.ai_partner_avatar, ap_trans.avatar) as ai_partner_avatar " +
             "FROM notifications n " +
             "LEFT JOIN users u ON n.sender_id = u.id " +
+            "LEFT JOIN buddy_characters bc ON n.sender_id = bc.id " +
+            "LEFT JOIN ai_partners ap_sender ON n.sender_id = ap_sender.id " +
             "LEFT JOIN wallets w ON n.wallet_id = w.id " +
+            "LEFT JOIN transactions t ON n.transaction_id = t.id " +
+            "LEFT JOIN ai_partners ap_trans ON t.ai_partner_id = ap_trans.id " +
             "WHERE n.user_id = #{userId} AND n.deleted = 0 " +
             "ORDER BY n.create_time DESC " +
             "LIMIT #{offset}, #{pageSize}")
-    List<Map<String, Object>> getUserInteractionMessages(@Param("userId") Long userId, 
-                                                        @Param("offset") Integer offset, 
+    List<Map<String, Object>> getUserInteractionMessages(@Param("userId") Long userId,
+                                                        @Param("offset") Integer offset,
                                                         @Param("pageSize") Integer pageSize);
 
     /**

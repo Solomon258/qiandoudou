@@ -155,7 +155,8 @@ Page({
           const progressImages = result.data
           // 根据进度百分比选择对应的图片
           let selectedImage
-          if (progress >= 80) selectedImage = progressImages[4]
+          if (progress >= 100) selectedImage = progressImages[5]
+          else if (progress >= 80) selectedImage = progressImages[4]
           else if (progress >= 60) selectedImage = progressImages[3]
           else if (progress >= 40) selectedImage = progressImages[2]
           else if (progress >= 20) selectedImage = progressImages[1]
@@ -176,7 +177,8 @@ Page({
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part2.png',
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part3.png',
       'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part4.png',
-      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part5.png'
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part5.png',
+      'https://qiandoudou.oss-cn-guangzhou.aliyuncs.com/res/image/dream/goods/car/part6.png'
     ]
 
     let selectedImage

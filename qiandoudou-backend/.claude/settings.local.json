@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C .. status)"
+      "Bash(git -C .. status)",
+      "Bash(dir:*)",
+      "SlashCommand(/init)",
+      "Bash(git -C \"d:\\4_code\\qiandoudou\" log --oneline -10)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

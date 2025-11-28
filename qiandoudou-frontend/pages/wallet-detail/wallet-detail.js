@@ -373,8 +373,22 @@ Page({
           }
           
           // 检查是否为AI伴侣交易或搭子交易
-          const isAiTransaction = transaction.aiPartnerId || transaction.ai_partner_id || transaction.isAiTransaction || 
+          const isAiTransaction = transaction.aiPartnerId || transaction.ai_partner_id || transaction.isAiTransaction ||
                                   transaction.aiPartnerName || transaction.ai_partner_name
+
+          console.log('【wallet-detail loadTransactions】格式化交易:', {
+            transactionId: transaction.id,
+            type: transaction.type,
+            aiPartnerId: transaction.aiPartnerId,
+            ai_partner_id: transaction.ai_partner_id,
+            isAiTransaction: transaction.isAiTransaction,
+            aiPartnerName: transaction.aiPartnerName,
+            ai_partner_name: transaction.ai_partner_name,
+            aiPartnerAvatar: transaction.aiPartnerAvatar,
+            ai_partner_avatar: transaction.ai_partner_avatar,
+            computedIsAiTransaction: isAiTransaction,
+            fullTransaction: transaction
+          })
 
           return {
             ...transaction,
@@ -403,10 +417,24 @@ Page({
           }
         })
 
+        console.log('【wallet-detail loadTransactions】setData前的交易列表:', formattedTransactions.map(t => ({
+          id: t.id,
+          isAiTransaction: t.isAiTransaction,
+          aiPartnerName: t.aiPartnerName,
+          aiPartnerAvatar: t.aiPartnerAvatar
+        })))
+
         this.setData({
           transactions: formattedTransactions
         })
-        
+
+        console.log('【wallet-detail loadTransactions】setData后的交易列表:', this.data.transactions.map(t => ({
+          id: t.id,
+          isAiTransaction: t.isAiTransaction,
+          aiPartnerName: t.aiPartnerName,
+          aiPartnerAvatar: t.aiPartnerAvatar
+        })))
+
         // 加载每个交易的用户头像信息
         this.loadTransactionsUserData(formattedTransactions)
         
@@ -461,19 +489,35 @@ Page({
   loadTransactionsUserData(transactions) {
     const { authAPI } = require('../../utils/api.js')
     const userCache = new Map() // 缓存用户信息，避免重复请求
-    
+
     // 为每个交易并行加载用户数据
     const userDataPromises = transactions.map(transaction => {
-      // 如果是AI交易，不需要加载用户头像
+      // 如果是AI交易，直接使用AI伴侣信息
       if (transaction.isAiTransaction) {
-        return Promise.resolve(null)
+        console.log('【wallet-detail loadTransactionsUserData】处理AI交易:', {
+          transactionId: transaction.id,
+          isAiTransaction: transaction.isAiTransaction,
+          aiPartnerName: transaction.aiPartnerName,
+          aiPartnerAvatar: transaction.aiPartnerAvatar
+        })
+
+        // 返回AI伴侣的头像信息
+        return Promise.resolve({
+          transactionId: transaction.id,
+          isAiTransaction: true,
+          userData: {
+            nickname: transaction.aiPartnerName || 'AI伴侣',
+            avatar: transaction.aiPartnerAvatar,
+            hasCustomAvatar: !!(transaction.aiPartnerAvatar && transaction.aiPartnerAvatar.startsWith('http'))
+          }
+        })
       }
-      
+
       const userId = transaction.userId || transaction.user_id
       if (!userId) {
         return Promise.resolve(null)
       }
-      
+
       // 检查缓存
       if (userCache.has(userId)) {
         return Promise.resolve({
@@ -481,7 +525,7 @@ Page({
           userData: userCache.get(userId)
         })
       }
-      
+
       return authAPI.getCurrentUser(userId)
         .then(response => {
           if (response.code === 200 && response.data) {
@@ -492,7 +536,7 @@ Page({
             }
             // 缓存用户信息
             userCache.set(userId, userData)
-            
+
             return {
               transactionId: transaction.id,
               userData: userData
@@ -505,11 +549,11 @@ Page({
           return null
         })
     })
-    
+
     // 等待所有用户数据加载完成
     Promise.all(userDataPromises).then(results => {
       const updatedTransactions = [...this.data.transactions]
-      
+
       results.forEach(result => {
         if (result) {
           const transactionIndex = updatedTransactions.findIndex(t => t.id === result.transactionId)
@@ -583,12 +627,16 @@ Page({
             
             // 更新评论列表，处理AI评论
             const processedComments = result.comments.map(comment => {
+              const userName = comment.userName || comment.user_nickname || '匿名用户';
+              const content = comment.content || '';
               const processedComment = {
                 ...comment,
                 isAiComment: comment.isAiComment || false,
                 aiPartnerName: comment.aiPartnerName || comment.user_nickname,
                 aiPartnerAvatar: comment.aiPartnerAvatar || comment.user_avatar,
-                userName: comment.userName || comment.user_nickname || '匿名用户',
+                userName: userName,
+                content: content,
+                fullText: `${userName}：${content}`, // 拼接昵称和评论内容
                 voiceUrl: comment.voiceUrl || comment.voice_url,
                 voiceDuration: comment.voiceDuration || comment.voice_duration, // 优先使用数据库中的真实时长
                 isPlayingVoice: false,
@@ -1431,10 +1479,14 @@ Page({
         if (response.success && response.data) {
           // 处理评论数据格式
           const comments = response.data.map(comment => {
+            const userName = comment.user_nickname || comment.userName || '匿名用户';
+            const content = comment.content || '';
             const processedComment = {
               id: comment.id,
-              userName: comment.user_nickname || comment.userName || '匿名用户',
-              content: comment.content,
+              userName: userName,
+              userAvatar: comment.user_avatar || comment.userAvatar, // 添加用户头像
+              content: content,
+              fullText: `${userName}：${content}`, // 拼接昵称和评论内容
               time: this.formatTime(comment.create_time || comment.createTime),
               userId: comment.user_id || comment.userId,
               // AI评论相关字段
@@ -1609,8 +1661,6 @@ Page({
     // 从后端重新获取最新的社交数据，确保评论数量准确
     walletAPI.getTransactionSocialData(transactionId, currentUserId)
       .then(response => {
-        debugger
-
         if (response.success && response.data) {
           // 更新交易的评论数和点赞数
           const transactions = this.data.transactions
@@ -2072,23 +2122,37 @@ Page({
     })
   },
 
+  // 预览交易图片
+  previewTransactionImage(e) {
+    const url = e.currentTarget.dataset.url
+    if (!url) {
+      console.warn('图片URL为空')
+      return
+    }
+
+    wx.previewImage({
+      urls: [url], // 需要预览的图片链接列表
+      current: url // 当前显示图片的链接
+    })
+  },
+
   // AI语音播放功能
   playAiVoice(e) {
     console.log('=== AI语音播放开始 ===')
-    
+
     // 检查事件对象
     if (!e || !e.currentTarget) {
       console.warn('事件对象无效')
       return
     }
-    
+
     // 检查数据绑定
     const dataset = e.currentTarget.dataset
     if (!dataset || !dataset.transaction) {
       console.warn('交易数据无效')
       return
     }
-    
+
     const transaction = dataset.transaction
     const transactionId = transaction.id
     console.log('准备播放交易语音:', transactionId, '当前播放状态:', this.data.currentPlayingVoice)
