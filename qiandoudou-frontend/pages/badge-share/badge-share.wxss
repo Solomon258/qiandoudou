@@ -1,8 +1,9 @@
 /* pages/badge-share/badge-share.wxss */
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.6);
-  padding: 80rpx 32rpx 40rpx;
+  padding: 60px 20px 40px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,7 +15,7 @@
 .card-wrapper {
   position: relative;
   width: 100%;
-  max-width: 600rpx;
+  height: 100%;
 }
 
 /* 关闭按钮 */
@@ -38,18 +39,38 @@
 
 /* 分享卡片 */
 .share-card {
+  position: relative;
   width: 100%;
+  height: 100%;
   background: #FFFFFF;
   border-radius: 24rpx;
   overflow: hidden;
   box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
 }
-
+.share-card-info {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  border-radius: 8px;
+  width: calc(100% - 20px);
+  margin: 0 10px;
+  background: rgba(255,255,255,0.8);
+  transform: translateX(calc(-50% - 10px));
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.share-card-info-right {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
 /* 汽车图片容器 */
 .car-image-container {
   position: relative;
   width: 100%;
-  height: 600rpx;
+  height: 100%;
   background: linear-gradient(180deg, #8B7CF6 0%, #A78BFA 100%);
 }
 
@@ -87,17 +108,20 @@
 }
 
 .amount {
-  font-size: 72rpx;
+  font-family: PingFangSC-Semibold;
+  font-size: 24px;
   color: #000000;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 33px;
   display: block;
 }
 
 .amount-label {
-  font-size: 28rpx;
-  color: #999999;
-  display: block;
+  font-family: PingFangSC-Regular;
+  font-size: 10px;
+  color: rgba(0,0,0,0.90);
+  text-align: left;
+  font-weight: 400;
 }
 
 /* 激励文案 */
@@ -113,71 +137,56 @@
   display: block;
 }
 
-/* 日期 */
-.date-info {
-  padding: 0 32rpx 32rpx;
-  text-align: right;
+.share-card-info-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .date {
-  font-size: 24rpx;
-  color: #999999;
+  font-family: PingFangSC-Regular;
+  font-size: 16px;
+  color: rgba(0,0,0,0.85);
+  font-weight: 400;
+  line-height: 22px;
 }
 
-/* 小程序码区域 */
-.qr-code-section {
-  display: flex;
-  align-items: center;
-  padding: 32rpx;
-  border-top: 1rpx solid #F0F0F0;
-  gap: 16rpx;
-}
+
 
 .qr-code {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 8rpx;
+  width: 68px;
+  height: 68px;
 }
 
 .qr-text {
-  flex: 1;
+  text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
-}
-
-.qr-title {
-  font-size: 28rpx;
-  color: #000000;
-  font-weight: 500;
-}
-
-.qr-desc {
-  font-size: 24rpx;
-  color: #999999;
+  justify-content: flex-end;
+  font-family: PingFangSC-Regular;
+  font-size: 10px;
+  color: rgba(0,0,0,0.60);
+  font-weight: 400;
 }
 
 /* 底部按钮区域 */
 .bottom-actions {
   width: 100%;
-  max-width: 600rpx;
-  margin-top: 40rpx;
+  margin-top: 15px;
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
 }
 
 /* 主分享按钮 */
-.share-btn {
+.bottom-actions .share-btn {
   width: 100%;
-  height: 96rpx;
-  background: #1677FF;
-  border-radius: 16rpx;
+  height: 56px;
+  background: #FF7214;
+  border-radius: 12px;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16rpx;
   box-shadow: 0 4rpx 12rpx rgba(22, 119, 255, 0.3);
 }
 
@@ -193,6 +202,7 @@
 .btn-icon {
   width: 32rpx;
   height: 32rpx;
+  margin-right: 10rpx;
   filter: brightness(0) invert(1);
 }
 
@@ -209,6 +219,7 @@
   align-items: center;
   width: 100%;
   padding: 0 20rpx;
+  margin-top: 40rpx;
 }
 
 .share-option-item {
